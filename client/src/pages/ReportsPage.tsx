@@ -37,7 +37,6 @@ export const ReportsPage: React.FC = () => {
   const [detailRecord, setDetailRecord] = useState<any | null>(null);
 
   // Fetch all laboratories initially
-
   const fetchLabs = async () => {
     try {
       const res = await api.getLabs();
@@ -140,15 +139,15 @@ export const ReportsPage: React.FC = () => {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header Banner */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-2xl border border-cyan-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-blue-600" />
+            <FileSpreadsheet className="w-5 h-5 text-cyan-600" />
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Semester & Laboratory Attendance & Feedback Reports
             </h1>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-600 mt-1">
             Department of IoT and Cybersecurity Including Blockchain Technology • Semester-wise & Lab-wise verification analytics & audit exports
           </p>
         </div>
@@ -156,7 +155,7 @@ export const ReportsPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={fetchReport}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+            className="px-3 py-2 bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors border border-slate-200 hover:border-cyan-200"
             title="Refresh Report Data"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -165,7 +164,7 @@ export const ReportsPage: React.FC = () => {
 
           <button
             onClick={handleDownloadCsv}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all"
+            className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all shadow-orange-500/20"
           >
             <Download className="w-4 h-4" />
             <span>Download Filtered CSV</span>
@@ -173,7 +172,7 @@ export const ReportsPage: React.FC = () => {
 
           <button
             onClick={handlePrint}
-            className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+            className="px-3 py-2 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
           >
             <Printer className="w-4 h-4" />
             <span>Print View</span>
@@ -181,11 +180,11 @@ export const ReportsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Semester Filter Tabs (Explicitly supporting 3rd semester filtering!) */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
+      {/* Semester Filter Tabs */}
+      <div className="bg-white p-4 rounded-2xl border border-cyan-100 shadow-sm space-y-3">
         <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-slate-100">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-            <Layers className="w-4 h-4 text-blue-600" />
+            <Layers className="w-4 h-4 text-cyan-600" />
             <span>1. Select Semester:</span>
           </div>
 
@@ -193,7 +192,7 @@ export const ReportsPage: React.FC = () => {
             {selectedSemester === 'ALL' ? (
               <span className="text-slate-500 font-medium">Viewing all semesters</span>
             ) : (
-              <span className="font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+              <span className="font-bold text-cyan-800 bg-cyan-50 px-2.5 py-1 rounded-lg border border-cyan-200">
                 Filtered strictly to: <strong>Semester {selectedSemester}</strong>
               </span>
             )}
@@ -210,8 +209,8 @@ export const ReportsPage: React.FC = () => {
                 onClick={() => setSelectedSemester(opt.value)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 ring-2 ring-blue-300'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200'
+                    ? 'bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-md shadow-cyan-500/25 ring-2 ring-cyan-300'
+                    : 'bg-slate-50 hover:bg-cyan-50 text-slate-600 hover:text-cyan-800 border border-slate-200 hover:border-cyan-200'
                 }`}
               >
                 <span>{opt.label}</span>
@@ -223,14 +222,14 @@ export const ReportsPage: React.FC = () => {
         {/* Lab & Section Filter Dropdowns */}
         <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-4 flex-wrap text-xs">
           <div className="flex items-center gap-4 flex-wrap">
-            {/* Laboratory Dropdown (strictly filtered to selected semester!) */}
+            {/* Laboratory Dropdown */}
             <div className="flex items-center gap-1.5">
               <Building2 className="w-4 h-4 text-slate-400" />
               <span className="text-slate-600 font-semibold">2. Choose Laboratory:</span>
               <select
                 value={selectedLabId}
                 onChange={(e) => setSelectedLabId(e.target.value)}
-                className="p-2 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 text-xs min-w-[220px]"
+                className="p-2 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 text-xs min-w-[220px] focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="ALL">
                   {selectedSemester !== 'ALL' ? `All Laboratories in Semester ${selectedSemester}` : 'All Laboratories'}
@@ -252,7 +251,7 @@ export const ReportsPage: React.FC = () => {
               placeholder="Search student USN, name, or lab..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
         </div>
@@ -260,17 +259,17 @@ export const ReportsPage: React.FC = () => {
 
       {/* KPI Summary Cards for Selected Scope */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle">
+        <div className="bg-white p-4 rounded-2xl border border-cyan-100 shadow-sm">
           <div className="text-[11px] font-semibold text-slate-500">Filtered Semester</div>
-          <div className="text-xl font-extrabold text-blue-700 mt-1">
+          <div className="text-xl font-extrabold text-cyan-700 mt-1">
             {selectedSemester !== 'ALL' ? `Semester ${selectedSemester}` : 'All Semesters'}
           </div>
-          <div className="text-[10px] text-slate-400 mt-0.5">
+          <div className="text-[10px] text-slate-500 mt-0.5">
             {availableLabs.length} Laboratories in scope
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle">
+        <div className="bg-white p-4 rounded-2xl border border-cyan-100 shadow-sm">
           <div className="text-[11px] font-semibold text-slate-500">Attendance Logged</div>
           <div className="text-xl font-extrabold text-slate-900 mt-1">
             {totalAttendance}
@@ -279,31 +278,31 @@ export const ReportsPage: React.FC = () => {
           <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">Physical Geofence Verified</div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle">
+        <div className="bg-white p-4 rounded-2xl border border-cyan-100 shadow-sm">
           <div className="text-[11px] font-semibold text-slate-500">Feedback Submissions</div>
           <div className="text-xl font-extrabold text-slate-900 mt-1">
             {totalFeedback > 0 ? totalFeedback : records.length}
             <span className="text-xs font-normal text-slate-500 ml-1">logged</span>
           </div>
-          <div className="text-[10px] text-slate-400 mt-0.5">
+          <div className="text-[10px] text-cyan-700 font-semibold mt-0.5">
             {verifiedCount} Verified Genuine
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle">
+        <div className="bg-white p-4 rounded-2xl border border-orange-100 shadow-sm">
           <div className="text-[11px] font-semibold text-slate-500">Mismatches / Proxy Flags</div>
-          <div className={`text-xl font-extrabold mt-1 ${mismatchCount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+          <div className={`text-xl font-extrabold mt-1 ${mismatchCount > 0 ? 'text-orange-600' : 'text-emerald-600'}`}>
             {mismatchCount}
             <span className="text-xs font-normal text-slate-500 ml-1">issues</span>
           </div>
-          <div className="text-[10px] text-slate-400 mt-0.5">
+          <div className="text-[10px] text-slate-500 mt-0.5">
             {mismatchCount === 0 ? '✅ 100% Genuine Submissions' : '⚠️ Requires Admin Review'}
           </div>
         </div>
       </div>
 
       {/* Report Selection Tabs */}
-      <div className="flex border-b border-slate-200 bg-white px-4 rounded-xl shadow-subtle">
+      <div className="flex border-b border-cyan-100 bg-white px-4 rounded-xl shadow-sm">
         {[
           { id: 'attendance', label: '1. Laboratory Attendance Records (Semester & Lab-Wise)' },
           { id: 'verification', label: '2. Student Feedback Submissions (Semester & Lab-Wise)' },
@@ -314,7 +313,7 @@ export const ReportsPage: React.FC = () => {
             onClick={() => setActiveReport(tab.id as any)}
             className={`py-3.5 px-4 text-xs font-bold border-b-2 transition-all ${
               activeReport === tab.id
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-cyan-600 text-cyan-700'
                 : 'border-transparent text-slate-500 hover:text-slate-900'
             }`}
           >
@@ -324,19 +323,19 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Reports Table View */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-subtle overflow-hidden">
+      <div className="bg-white rounded-2xl border border-cyan-100 shadow-sm overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-slate-500">
-            <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <div className="w-8 h-8 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
             <span>Compiling semester-wise & laboratory-wise records...</span>
           </div>
         ) : filteredRecords.length === 0 ? (
           <div className="p-12 text-center text-slate-500 space-y-3">
-            <FileSpreadsheet className="w-10 h-10 text-slate-300 mx-auto" />
+            <FileSpreadsheet className="w-10 h-10 text-cyan-200 mx-auto" />
             <h3 className="text-sm font-bold text-slate-800">
               No Records Found for {selectedSemester !== 'ALL' ? `Semester ${selectedSemester}` : 'the Selected Criteria'}
             </h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
               There are currently no attendance or feedback records logged for this semester and laboratory selection.
             </p>
           </div>
@@ -346,7 +345,7 @@ export const ReportsPage: React.FC = () => {
             {activeReport === 'attendance' && (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                  <thead className="bg-cyan-50/50 border-b border-cyan-100 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="py-3 px-4">Date & Time</th>
                       <th className="py-3 px-3">Student USN & Name</th>
@@ -360,13 +359,13 @@ export const ReportsPage: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredRecords.map((r) => (
-                      <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
+                      <tr key={r.id} className="hover:bg-cyan-50/30 transition-colors">
                         <td className="py-3 px-4 font-mono text-slate-500 text-[11px]">
                           {new Date(r.timestamp).toLocaleString()}
                         </td>
                         <td className="py-3 px-3">
                           <div className="font-bold text-slate-900">{r.student_name}</div>
-                          <div className="font-mono text-[11px] text-blue-700">{r.usn}</div>
+                          <div className="font-mono text-[11px] text-cyan-700 font-bold">{r.usn}</div>
                         </td>
                         <td className="py-3 px-3">
                           <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
@@ -384,7 +383,7 @@ export const ReportsPage: React.FC = () => {
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
                             r.geofence_status === 'INSIDE'
                               ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                              : 'text-red-700 bg-red-50 border-red-200'
+                              : 'text-orange-700 bg-orange-50 border-orange-200'
                           }`}>
                             {r.geofence_status}
                           </span>
@@ -408,7 +407,7 @@ export const ReportsPage: React.FC = () => {
             {activeReport === 'verification' && (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                  <thead className="bg-cyan-50/50 border-b border-cyan-100 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="py-3 px-4">Feedback ID</th>
                       <th className="py-3 px-3">Student USN & Name</th>
@@ -423,8 +422,8 @@ export const ReportsPage: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredRecords.map((r) => (
-                      <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3 px-4 font-mono font-bold text-blue-700">
+                      <tr key={r.id} className="hover:bg-cyan-50/30 transition-colors">
+                        <td className="py-3 px-4 font-mono font-bold text-cyan-700">
                           #FB-{r.id}
                           <div className="text-[10px] font-normal text-slate-400">
                             {new Date(r.submitted_at).toLocaleTimeString()}
@@ -433,7 +432,7 @@ export const ReportsPage: React.FC = () => {
 
                         <td className="py-3 px-3">
                           <div className="font-bold text-slate-900">{r.student_name}</div>
-                          <div className="text-[11px] font-mono text-blue-700 font-semibold">{r.usn}</div>
+                          <div className="text-[11px] font-mono text-cyan-700 font-semibold">{r.usn}</div>
                         </td>
 
                         <td className="py-3 px-3 font-bold text-slate-700">
@@ -460,13 +459,13 @@ export const ReportsPage: React.FC = () => {
                             <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
                               r.hands_on?.includes('Yes') || r.hands_on?.includes('performed')
                                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : 'bg-red-50 text-red-700 border border-red-200'
+                                : 'bg-orange-50 text-orange-700 border border-orange-200'
                             }`}>
                               Hands-on: {r.hands_on?.slice(0, 16)}...
                             </span>
                             <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
                               r.teaching_basics?.includes('Thoroughly') || r.teaching_basics === 'Excellent' || r.teaching_basics === 'Good'
-                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                ? 'bg-cyan-50 text-cyan-700 border border-cyan-200'
                                 : 'bg-amber-50 text-amber-700 border border-amber-200'
                             }`}>
                               Basics: {r.teaching_basics?.slice(0, 14)}...
@@ -485,14 +484,14 @@ export const ReportsPage: React.FC = () => {
                               PRESENT (MATCHED)
                             </span>
                           ) : (
-                            <span className="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200 animate-pulse">
+                            <span className="text-[10px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200 animate-pulse">
                               MISSING ATTENDANCE
                             </span>
                           )}
                         </td>
 
                         <td className="py-3 px-3 font-mono font-semibold">
-                          <span className={r.distance_to_lab > 50 ? 'text-red-600 font-bold' : 'text-slate-800'}>
+                          <span className={r.distance_to_lab > 50 ? 'text-orange-600 font-bold' : 'text-slate-800'}>
                             {r.distance_to_lab}m
                           </span>
                         </td>
@@ -503,7 +502,7 @@ export const ReportsPage: React.FC = () => {
                               ? 'bg-emerald-100 text-emerald-800'
                               : r.verification_status === 'SUSPICIOUS'
                               ? 'bg-amber-100 text-amber-800'
-                              : 'bg-red-100 text-red-800'
+                              : 'bg-orange-100 text-orange-800'
                           }`}>
                             {r.verification_status}
                           </span>
@@ -512,7 +511,7 @@ export const ReportsPage: React.FC = () => {
                         <td className="py-3 px-3 text-right">
                           <button
                             onClick={() => setDetailRecord(r)}
-                            className="p-1.5 hover:bg-slate-100 rounded-lg text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1 font-semibold text-[11px]"
+                            className="p-1.5 hover:bg-cyan-50 rounded-lg text-cyan-700 hover:text-cyan-900 transition-colors inline-flex items-center gap-1 font-semibold text-[11px]"
                             title="Inspect Complete Student Responses"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -526,12 +525,11 @@ export const ReportsPage: React.FC = () => {
               </div>
             )}
 
-
             {/* View Mode 3: Matrix Correlation View */}
             {activeReport === 'matrix' && (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                  <thead className="bg-cyan-50/50 border-b border-cyan-100 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="py-3 px-4">Student USN & Name</th>
                       <th className="py-3 px-3">Semester</th>
@@ -545,14 +543,13 @@ export const ReportsPage: React.FC = () => {
                   <tbody className="divide-y divide-slate-100">
                     {filteredRecords.map((r) => {
                       const hasAttendance = !!r.attendance_id;
-                      const hasFeedback = true;
                       const isGenuine = hasAttendance && r.verification_status === 'VERIFIED';
 
                       return (
-                        <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
+                        <tr key={r.id} className="hover:bg-cyan-50/30 transition-colors">
                           <td className="py-3 px-4">
                             <div className="font-bold text-slate-900">{r.student_name}</div>
-                            <div className="font-mono text-blue-700">{r.usn}</div>
+                            <div className="font-mono text-cyan-700 font-bold">{r.usn}</div>
                           </td>
 
                           <td className="py-3 px-3 font-semibold text-slate-700">
@@ -570,7 +567,7 @@ export const ReportsPage: React.FC = () => {
                                 <span>Checked in ({r.distance_to_lab}m)</span>
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
                                 <XCircle className="w-3 h-3" />
                                 <span>Not in Lab</span>
                               </span>
@@ -578,7 +575,7 @@ export const ReportsPage: React.FC = () => {
                           </td>
 
                           <td className="py-3 px-3 text-center">
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">
                               <CheckCircle className="w-3 h-3" />
                               <span>Submitted (#FB-{r.id})</span>
                             </span>
@@ -590,7 +587,7 @@ export const ReportsPage: React.FC = () => {
                                 ✅ GENUINE IN-LAB PARTICIPATION
                               </span>
                             ) : (
-                              <span className="text-[10px] font-bold text-rose-800 bg-rose-100 px-2.5 py-0.5 rounded">
+                              <span className="text-[10px] font-bold text-orange-800 bg-orange-100 px-2.5 py-0.5 rounded">
                                 ⚠️ PROXY / MISMATCH FLAGGED
                               </span>
                             )}
@@ -614,11 +611,11 @@ export const ReportsPage: React.FC = () => {
 
       {/* Inspection Modal for Complete Student Feedback */}
       {detailRecord && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 animate-fadeIn">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-cyan-100 animate-fadeIn">
+            <div className="p-6 border-b border-cyan-100 flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-700">
                   Comprehensive Lab Audit Details
                 </span>
                 <h3 className="text-lg font-extrabold text-slate-900">
@@ -635,11 +632,11 @@ export const ReportsPage: React.FC = () => {
 
             <div className="p-6 space-y-6">
               {/* Student & Session Information */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-cyan-50/40 rounded-2xl border border-cyan-100 text-xs">
                 <div>
                   <span className="text-slate-400 text-[10px] uppercase font-bold block">Student</span>
                   <strong className="text-slate-800">{detailRecord.student_name}</strong>
-                  <div className="font-mono text-blue-600">{detailRecord.usn}</div>
+                  <div className="font-mono text-cyan-700 font-bold">{detailRecord.usn}</div>
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px] uppercase font-bold block">Class</span>
@@ -719,9 +716,9 @@ export const ReportsPage: React.FC = () => {
                   </div>
 
                   {detailRecord.comments && (
-                    <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-xl">
-                      <span className="text-amber-800 text-[11px] font-bold block">Student Confidential Grievance / Observation:</span>
-                      <p className="text-amber-950 text-xs mt-1 italic leading-relaxed">
+                    <div className="p-3 bg-orange-50/60 border border-orange-200 rounded-xl">
+                      <span className="text-orange-800 text-[11px] font-bold block">Student Confidential Grievance / Observation:</span>
+                      <p className="text-orange-950 text-xs mt-1 italic leading-relaxed">
                         "{detailRecord.comments}"
                       </p>
                     </div>
@@ -730,7 +727,7 @@ export const ReportsPage: React.FC = () => {
               </div>
 
               {/* Physical Security Verification Details */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
+              <div className="p-4 bg-cyan-50/40 rounded-2xl border border-cyan-100 space-y-2 text-xs">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
                   Security Handshake Diagnostics
                 </span>
@@ -738,7 +735,7 @@ export const ReportsPage: React.FC = () => {
                   <div>Geofence Displacement: <strong>{detailRecord.distance_to_lab} meters</strong></div>
                   <div>Physical Attendance: <strong>{detailRecord.attendance_id ? 'VERIFIED MATCH' : 'NOT FOUND'}</strong></div>
                   <div>Submitted At: <strong>{new Date(detailRecord.submitted_at).toLocaleString()}</strong></div>
-                  <div>Final Status: <strong className="text-blue-700">{detailRecord.verification_status}</strong></div>
+                  <div>Final Status: <strong className="text-cyan-700">{detailRecord.verification_status}</strong></div>
                 </div>
               </div>
             </div>
@@ -746,7 +743,7 @@ export const ReportsPage: React.FC = () => {
             <div className="p-4 border-t border-slate-100 flex justify-end">
               <button
                 onClick={() => setDetailRecord(null)}
-                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold"
+                className="px-5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white rounded-xl text-xs font-bold shadow-sm"
               >
                 Close Audit Inspection
               </button>
@@ -757,4 +754,5 @@ export const ReportsPage: React.FC = () => {
     </div>
   );
 };
+
 

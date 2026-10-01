@@ -67,35 +67,35 @@ export const AlertsPage: React.FC = () => {
   const getSeverityBadge = (sev: string) => {
     switch (sev) {
       case 'CRITICAL':
-        return <span className="bg-red-600 text-white font-bold text-[10px] px-2 py-0.5 rounded shadow">CRITICAL</span>;
+        return <span className="bg-orange-600 text-white font-bold text-[10px] px-2 py-0.5 rounded shadow shadow-orange-600/20">CRITICAL</span>;
       case 'HIGH':
-        return <span className="bg-red-100 text-red-800 border border-red-300 font-bold text-[10px] px-2 py-0.5 rounded">HIGH</span>;
+        return <span className="bg-orange-100 text-orange-800 border border-orange-300 font-bold text-[10px] px-2 py-0.5 rounded">HIGH</span>;
       case 'MEDIUM':
         return <span className="bg-amber-100 text-amber-800 border border-amber-300 font-bold text-[10px] px-2 py-0.5 rounded">MEDIUM</span>;
       default:
-        return <span className="bg-blue-100 text-blue-800 border border-blue-300 font-bold text-[10px] px-2 py-0.5 rounded">INFO</span>;
+        return <span className="bg-cyan-100 text-cyan-800 border border-cyan-300 font-bold text-[10px] px-2 py-0.5 rounded">INFO</span>;
     }
   };
 
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-2xl border border-cyan-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <BellRing className="w-5 h-5 text-red-600" />
+            <BellRing className="w-5 h-5 text-orange-600" />
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Security Alerts & Verification Anomaly Center
             </h1>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-600 mt-1">
             Real-time notifications triggered by missing attendance, outside-geofence submissions, and expired dynamic QR tokens
           </p>
         </div>
 
         <button
           onClick={fetchAlerts}
-          className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-1.5 transition-colors"
+          className="px-3.5 py-2 bg-slate-50 hover:bg-cyan-50 text-slate-700 hover:text-cyan-800 font-semibold rounded-xl text-xs flex items-center gap-1.5 transition-colors border border-slate-200 hover:border-cyan-200"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           <span>Refresh Alerts</span>
@@ -103,7 +103,7 @@ export const AlertsPage: React.FC = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-cyan-100 shadow-sm">
         <div className="flex items-center gap-2">
           {['UNRESOLVED', 'RESOLVED', 'ALL'].map((st) => (
             <button
@@ -111,8 +111,8 @@ export const AlertsPage: React.FC = () => {
               onClick={() => setSelectedStatus(st)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 selectedStatus === st
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  ? 'bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-cyan-50 hover:text-cyan-800'
               }`}
             >
               {st}
@@ -121,14 +121,14 @@ export const AlertsPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-400 font-medium">Severity:</span>
+          <span className="text-slate-500 font-medium">Severity:</span>
           {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM'].map((sev) => (
             <button
               key={sev}
               onClick={() => setSelectedSeverity(sev)}
               className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
                 selectedSeverity === sev
-                  ? 'bg-slate-900 text-white'
+                  ? 'bg-orange-500 text-white shadow-sm'
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -146,7 +146,7 @@ export const AlertsPage: React.FC = () => {
               key={alert.id}
               className={`p-4 rounded-2xl border transition-all ${
                 alert.status === 'UNRESOLVED'
-                  ? 'bg-white border-amber-300 shadow-sm'
+                  ? 'bg-white border-orange-200 shadow-sm'
                   : 'bg-slate-50 border-slate-200 opacity-75'
               }`}
             >
@@ -154,7 +154,7 @@ export const AlertsPage: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <div className={`p-2 rounded-xl mt-0.5 ${
                     alert.severity === 'CRITICAL' || alert.severity === 'HIGH'
-                      ? 'bg-red-50 text-red-600'
+                      ? 'bg-orange-50 text-orange-600'
                       : 'bg-amber-50 text-amber-600'
                   }`}>
                     <ShieldAlert className="w-5 h-5" />
@@ -174,9 +174,9 @@ export const AlertsPage: React.FC = () => {
                       {alert.message}
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 mt-2">
+                    <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-600 mt-2">
                       {alert.student_name && (
-                        <span>Student: <strong>{alert.student_name}</strong> ({alert.usn})</span>
+                        <span>Student: <strong>{alert.student_name}</strong> (<span className="text-cyan-700 font-mono font-semibold">{alert.usn}</span>)</span>
                       )}
                       {alert.lab_name && (
                         <span>Lab: <strong>{alert.lab_name}</strong></span>
@@ -200,7 +200,7 @@ export const AlertsPage: React.FC = () => {
                       setResolveModalAlert(alert);
                       setNotes('');
                     }}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors"
+                    className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-bold transition-colors shadow-sm shadow-orange-500/20"
                   >
                     Resolve Alert
                   </button>
@@ -209,18 +209,18 @@ export const AlertsPage: React.FC = () => {
             </div>
           ))
         ) : (
-          <div className="bg-white p-10 rounded-2xl border border-slate-200 text-center text-slate-400 space-y-2">
+          <div className="bg-white p-10 rounded-2xl border border-cyan-100 text-center text-slate-400 space-y-2 shadow-sm">
             <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-500" />
             <div className="font-bold text-slate-700">No Unresolved Alerts</div>
-            <div className="text-xs text-slate-400">All laboratory security verification signals are currently normal.</div>
+            <div className="text-xs text-slate-500">All laboratory security verification signals are currently normal.</div>
           </div>
         )}
       </div>
 
       {/* Resolution Modal */}
       {resolveModalAlert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-cyan-100 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <h3 className="font-bold text-slate-900 text-sm">Resolve Security Alert</h3>
               <button onClick={() => setResolveModalAlert(null)} className="text-slate-400 hover:text-slate-600">✕</button>
@@ -236,7 +236,7 @@ export const AlertsPage: React.FC = () => {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Explain resolution (e.g. Student warned regarding proxy sharing, or verified manual exception)..."
-                  className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   rows={3}
                 ></textarea>
               </div>
@@ -252,7 +252,7 @@ export const AlertsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={resolving}
-                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow"
+                  className="px-4 py-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg text-xs font-bold shadow shadow-orange-500/20"
                 >
                   Mark as Resolved
                 </button>
@@ -264,3 +264,4 @@ export const AlertsPage: React.FC = () => {
     </div>
   );
 };
+

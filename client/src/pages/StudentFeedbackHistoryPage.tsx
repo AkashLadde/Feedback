@@ -33,7 +33,7 @@ export const StudentFeedbackHistoryPage: React.FC = () => {
       case 'SUSPICIOUS':
         return <span className="bg-amber-100 text-amber-800 border border-amber-300 font-bold px-2 py-0.5 rounded text-[11px]">SUSPICIOUS</span>;
       case 'MISMATCH':
-        return <span className="bg-purple-100 text-purple-800 border border-purple-300 font-bold px-2 py-0.5 rounded text-[11px]">MISMATCH</span>;
+        return <span className="bg-orange-100 text-orange-800 border border-orange-300 font-bold px-2 py-0.5 rounded text-[11px]">MISMATCH</span>;
       case 'INVALID':
         return <span className="bg-red-100 text-red-800 border border-red-300 font-bold px-2 py-0.5 rounded text-[11px]">INVALID</span>;
       default:
@@ -44,10 +44,10 @@ export const StudentFeedbackHistoryPage: React.FC = () => {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-2xl border border-cyan-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-600" />
+            <FileText className="w-5 h-5 text-orange-600" />
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               My Feedback Verification Statuses
             </h1>

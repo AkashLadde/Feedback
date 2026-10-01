@@ -182,64 +182,64 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50/40 via-white to-orange-50/40 flex flex-col justify-between">
       {/* Institutional Top Navigation Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-3.5 flex items-center justify-between shadow-subtle">
+      <div className="bg-white border-b border-cyan-100 px-6 py-3.5 flex items-center justify-between shadow-subtle">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-700 to-cyan-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 font-extrabold text-sm">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-cyan-500 to-orange-500 flex items-center justify-center text-white shadow-md shadow-cyan-500/20 font-black text-sm tracking-wider">
             GND
           </div>
           <div>
             <span className="text-base font-extrabold text-slate-900">Guru Nanak Dev Engineering College Bidar</span>
-            <span className="text-xs text-blue-700 font-semibold hidden md:inline ml-2">
+            <span className="text-xs text-cyan-800 font-semibold hidden md:inline ml-2">
               • Dept. of CSE in IoT & Cyber Security including Block Chain Technology
             </span>
           </div>
         </div>
-        <div className="text-xs font-bold text-slate-600 hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>Academic Year 2026-27</span>
+        <div className="text-xs font-bold text-slate-700 hidden sm:flex items-center gap-2 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200">
+          <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+          <span className="text-orange-900">Academic Year 2026-27</span>
         </div>
       </div>
 
       {/* Main Authentication Card */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-          {/* Left Institutional Information Panel */}
-          <div className="md:col-span-5 bg-gradient-to-br from-blue-800 via-indigo-900 to-slate-950 p-8 text-white flex flex-col justify-between space-y-6">
+        <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 bg-white rounded-3xl shadow-xl border border-cyan-100 overflow-hidden">
+          {/* Left Institutional Information Panel - Bright Cyan & Orange Theme */}
+          <div className="md:col-span-5 bg-gradient-to-br from-cyan-500 via-cyan-600 to-orange-500 p-8 text-white flex flex-col justify-between space-y-6">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 bg-blue-500/30 backdrop-blur-sm border border-blue-400/40 text-blue-200 text-xs font-semibold px-3 py-1 rounded-full">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-xs border border-white/30 text-white text-xs font-bold px-3 py-1 rounded-full shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-orange-300 animate-pulse"></span>
                 <span>Official GNDEC CSE-ICB Portal</span>
               </div>
-              <h1 className="text-2xl font-extrabold tracking-tight leading-snug">
+              <h1 className="text-2xl font-black tracking-tight leading-snug text-white">
                 Attendance & Student Feedback System
               </h1>
-              <p className="text-xs text-blue-200 leading-relaxed">
+              <p className="text-xs text-cyan-50 leading-relaxed font-medium">
                 Dedicated academic platform for 3rd, 5th, and 7th Semester. Each student creates their genuine account to access timetables, mark laboratory attendance, and submit confidential teacher feedback.
               </p>
             </div>
 
-            <div className="space-y-3 pt-6 border-t border-blue-500/30 text-xs">
-              <div className="flex items-center gap-2.5 text-blue-100">
-                <CheckCircle2 className="w-4 h-4 text-cyan-300 shrink-0" />
+            <div className="space-y-3 pt-6 border-t border-white/20 text-xs font-semibold">
+              <div className="flex items-center gap-2.5 text-white">
+                <CheckCircle2 className="w-4 h-4 text-orange-200 shrink-0" />
                 <span>1st Step: Each student registers their own account</span>
               </div>
-              <div className="flex items-center gap-2.5 text-blue-100">
-                <CheckCircle2 className="w-4 h-4 text-cyan-300 shrink-0" />
+              <div className="flex items-center gap-2.5 text-white">
+                <CheckCircle2 className="w-4 h-4 text-orange-200 shrink-0" />
                 <span>Sign in using your USN or Institutional Email</span>
               </div>
-              <div className="flex items-center gap-2.5 text-blue-100">
-                <CheckCircle2 className="w-4 h-4 text-cyan-300 shrink-0" />
+              <div className="flex items-center gap-2.5 text-white">
+                <CheckCircle2 className="w-4 h-4 text-orange-200 shrink-0" />
                 <span>3rd, 5th & 7th Semester Schedules & Laboratories</span>
               </div>
-              <div className="flex items-center gap-2.5 text-blue-100">
-                <CheckCircle2 className="w-4 h-4 text-cyan-300 shrink-0" />
-                <span>100% Genuine Data — No pre-fed dummy records</span>
+              <div className="flex items-center gap-2.5 text-white">
+                <CheckCircle2 className="w-4 h-4 text-orange-200 shrink-0" />
+                <span>Zero Duplicate Attendance & High-Precision GPS</span>
               </div>
             </div>
 
-            <div className="text-[11px] text-blue-300 pt-4">
+            <div className="text-[11px] text-cyan-100 font-medium pt-4">
               Guru Nanak Dev Engineering College, Mailoor Road, Bidar, Karnataka
             </div>
           </div>
@@ -248,19 +248,19 @@ export const LoginPage: React.FC = () => {
           <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div>
               {/* Backend API Server Connectivity Bar */}
-              <div className="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+              <div className="mb-4 bg-cyan-50/40 border border-cyan-100 rounded-2xl p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                    <Server className="w-3.5 h-3.5 text-blue-600" />
+                    <Server className="w-3.5 h-3.5 text-cyan-600" />
                     <span>Backend API:</span>
-                    <span className="font-mono text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 truncate max-w-[170px] sm:max-w-[240px]">
+                    <span className="font-mono text-[10px] text-cyan-700 bg-white px-2 py-0.5 rounded-lg border border-cyan-200 truncate max-w-[170px] sm:max-w-[240px]">
                       {serverUrl ? serverUrl : 'Local / Relative (/api)'}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowServerConfig(!showServerConfig)}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-xs"
+                    className="text-xs font-bold text-cyan-600 hover:text-cyan-800 flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-xs"
                   >
                     <Settings className="w-3 h-3" />
                     <span>{showServerConfig ? 'Close' : 'Set Backend URL'}</span>
@@ -268,7 +268,7 @@ export const LoginPage: React.FC = () => {
                 </div>
 
                 {showServerConfig && (
-                  <div className="mt-2.5 pt-2.5 border-t border-slate-200 space-y-2 animate-fadeIn">
+                  <div className="mt-2.5 pt-2.5 border-t border-cyan-100 space-y-2 animate-fadeIn">
                     <p className="text-[11px] text-slate-600 leading-tight">
                       Paste your live Render Backend URL (e.g. <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-800">https://gndec-cse-feedback.onrender.com</code>) to connect the Vercel frontend:
                     </p>
@@ -278,13 +278,13 @@ export const LoginPage: React.FC = () => {
                         placeholder="https://your-app.onrender.com"
                         value={serverUrl}
                         onChange={(e) => setServerUrl(e.target.value)}
-                        className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none bg-white"
                       />
                       <button
                         type="button"
                         onClick={handleConnectServer}
                         disabled={testingServer}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                        className="bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-xs disabled:opacity-50"
                       >
                         {testingServer ? (
                           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -308,7 +308,7 @@ export const LoginPage: React.FC = () => {
                   }}
                   className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 ${
                     authMode === 'LOGIN'
-                      ? 'bg-white text-blue-700 shadow-sm'
+                      ? 'bg-white text-cyan-800 shadow-sm'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -323,7 +323,7 @@ export const LoginPage: React.FC = () => {
                   }}
                   className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 ${
                     authMode === 'REGISTER'
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -361,7 +361,7 @@ export const LoginPage: React.FC = () => {
                       onClick={() => handleRoleTabChange('STUDENT')}
                       className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                         roleTab === 'STUDENT'
-                          ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                          ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -374,7 +374,7 @@ export const LoginPage: React.FC = () => {
                       onClick={() => handleRoleTabChange('TEACHER')}
                       className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                         roleTab === 'TEACHER'
-                          ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -402,7 +402,7 @@ export const LoginPage: React.FC = () => {
                               ? 'e.g. 3GN24CB001 or student@gndec.ac.in'
                               : 'e.g. harish.joshi@gndec.ac.in, aarti.pawar@gndec.ac.in'
                           }
-                          className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-800"
+                          className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white font-medium text-slate-800"
                         />
                       </div>
                     </div>
@@ -417,7 +417,7 @@ export const LoginPage: React.FC = () => {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="••••••••"
-                          className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-800"
+                          className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white font-medium text-slate-800"
                         />
                       </div>
                     </div>
@@ -425,7 +425,7 @@ export const LoginPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+                      className="w-full bg-gradient-to-r from-cyan-600 via-cyan-500 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-cyan-500/20 transition-all disabled:opacity-50"
                     >
                       {loading ? (
                         <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -442,12 +442,12 @@ export const LoginPage: React.FC = () => {
 
                   {/* Student Register Callout if on student tab */}
                   {roleTab === 'STUDENT' && (
-                    <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-center justify-between gap-2 mt-2">
+                    <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-xl text-xs text-cyan-900 flex items-center justify-between gap-2 mt-2">
                       <span className="text-[11px] font-medium">New student? Create your account first.</span>
                       <button
                         type="button"
                         onClick={() => setAuthMode('REGISTER')}
-                        className="text-blue-700 font-extrabold hover:underline text-[11px]"
+                        className="text-cyan-700 font-extrabold hover:underline text-[11px]"
                       >
                         Register Now →
                       </button>
@@ -459,7 +459,7 @@ export const LoginPage: React.FC = () => {
                 <div className="space-y-4 animate-fadeIn">
                   <div>
                     <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                      <GraduationCap className="w-5 h-5 text-blue-600" />
+                      <GraduationCap className="w-5 h-5 text-cyan-600" />
                       <span>Student Account Registration</span>
                     </h2>
                     <p className="text-xs text-slate-500 mt-0.5">
@@ -479,7 +479,7 @@ export const LoginPage: React.FC = () => {
                           placeholder="e.g. Ramesh Patil"
                           value={regName}
                           onChange={(e) => setRegName(e.target.value)}
-                          className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                          className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-cyan-500 outline-none font-medium"
                         />
                       </div>
                     </div>
@@ -494,7 +494,7 @@ export const LoginPage: React.FC = () => {
                           placeholder="e.g. 3GN24CB015"
                           value={regUsn}
                           onChange={(e) => setRegUsn(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase font-bold"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-cyan-500 outline-none font-mono uppercase font-bold"
                         />
                       </div>
 
@@ -503,7 +503,7 @@ export const LoginPage: React.FC = () => {
                         <select
                           value={regSemester}
                           onChange={(e) => handleSemesterChangeInReg(parseInt(e.target.value, 10))}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-slate-800"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-cyan-500 outline-none"
                         >
                           <option value={3}>3rd Semester (2024-2028)</option>
                           <option value={5}>5th Semester (2023-2027)</option>
@@ -524,7 +524,7 @@ export const LoginPage: React.FC = () => {
                             placeholder="ramesh.patil@gndec.ac.in"
                             value={regEmail}
                             onChange={(e) => setRegEmail(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                            className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-cyan-500 outline-none font-mono"
                           />
                         </div>
                       </div>
@@ -538,7 +538,7 @@ export const LoginPage: React.FC = () => {
                             placeholder="+91-9448012345"
                             value={regPhone}
                             onChange={(e) => setRegPhone(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 font-mono"
+                            className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
                           />
                         </div>
                       </div>
@@ -554,7 +554,7 @@ export const LoginPage: React.FC = () => {
                           placeholder="Min 6 chars"
                           value={regPassword}
                           onChange={(e) => setRegPassword(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-cyan-500 outline-none font-mono"
                         />
                       </div>
 
@@ -566,7 +566,7 @@ export const LoginPage: React.FC = () => {
                           placeholder="Repeat password"
                           value={regConfirmPassword}
                           onChange={(e) => setRegConfirmPassword(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-cyan-500 outline-none font-mono"
                         />
                       </div>
                     </div>
@@ -574,7 +574,7 @@ export const LoginPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 mt-4"
+                      className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-cyan-600 hover:from-orange-600 hover:to-cyan-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-orange-500/20 transition-all disabled:opacity-50 mt-4"
                     >
                       {loading ? (
                         <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

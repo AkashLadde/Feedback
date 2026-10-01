@@ -166,7 +166,7 @@ export const StudentFeedbackPage: React.FC = () => {
   if (loading) {
     return (
       <div className="p-8 text-center text-slate-500">
-        <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+        <div className="w-8 h-8 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
         <span>Validating dynamic QR session security handshake...</span>
       </div>
     );
@@ -184,7 +184,7 @@ export const StudentFeedbackPage: React.FC = () => {
               onClick={() => setMode('DIRECT')}
               className={`px-4 py-2 rounded-xl font-bold transition-all ${
                 mode === 'DIRECT'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -195,7 +195,7 @@ export const StudentFeedbackPage: React.FC = () => {
               onClick={() => setMode('QR')}
               className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
                 mode === 'QR'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -205,7 +205,7 @@ export const StudentFeedbackPage: React.FC = () => {
           </div>
 
           <span className="text-xs font-semibold text-slate-500">
-            Student: <strong>{user?.name}</strong> ({user?.usn}) • Sem <strong>{user?.semester || 7}</strong>
+            Student: <strong className="text-slate-900">{user?.name}</strong> ({user?.usn}) • Sem <strong className="text-cyan-700">{user?.semester || 7}</strong>
           </span>
         </div>
 
@@ -218,7 +218,7 @@ export const StudentFeedbackPage: React.FC = () => {
             <select
               value={selectedLabId || ''}
               onChange={(e) => setSelectedLabId(Number(e.target.value))}
-              className="w-full text-xs font-semibold py-2.5 px-3.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+              className="w-full text-xs font-semibold py-2.5 px-3.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-800"
             >
               {semesterLabs.map((l) => (
                 <option key={l.id} value={l.id}>
@@ -230,7 +230,7 @@ export const StudentFeedbackPage: React.FC = () => {
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-blue-600 flex items-center gap-1.5">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-cyan-600 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 Active Laboratory Feedback Session
               </div>
@@ -246,7 +246,7 @@ export const StudentFeedbackPage: React.FC = () => {
               <span className="bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-mono font-semibold text-slate-700">
                 Semester {activeSession?.semester || user?.semester || 3}
               </span>
-              <span className="bg-blue-50 text-blue-800 px-3 py-1.5 rounded-xl border border-blue-200 text-xs font-semibold">
+              <span className="bg-cyan-50 text-cyan-800 px-3 py-1.5 rounded-xl border border-cyan-200 text-xs font-semibold">
                 Room {activeSession?.room_number || 'Lab'}
               </span>
             </div>
@@ -335,7 +335,7 @@ export const StudentFeedbackPage: React.FC = () => {
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => setActiveTab('student-feedback-history')}
-                  className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold"
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
                 >
                   View My Submission Log
                 </button>
@@ -350,7 +350,7 @@ export const StudentFeedbackPage: React.FC = () => {
         {/* Dynamic QR Token */}
         <div>
           <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
-            Dynamic QR Token Signature <span className="text-red-500">*</span>
+            Dynamic QR Token Signature <span className="text-orange-500">*</span>
           </label>
           <div className="relative">
             <QrCode className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -360,7 +360,7 @@ export const StudentFeedbackPage: React.FC = () => {
               value={qrToken}
               onChange={(e) => setQrToken(e.target.value)}
               placeholder="Paste or scan dynamic HMAC QR token..."
-              className="w-full text-xs font-mono pl-10 pr-3 py-3 rounded-2xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-xs font-mono pl-10 pr-3 py-3 rounded-2xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <p className="text-[11px] text-slate-400 mt-1">
@@ -371,7 +371,7 @@ export const StudentFeedbackPage: React.FC = () => {
         {/* SECTION 1: TEACHER LAB CONDUCT & INSTRUCTION */}
         <div className="pt-4 border-t border-slate-100 space-y-6">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-blue-600" />
+            <BookOpen className="w-4 h-4 text-cyan-600" />
             <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wide">
               1. Laboratory Teaching & Demonstration Quality
             </h2>
@@ -380,7 +380,7 @@ export const StudentFeedbackPage: React.FC = () => {
           {/* Q1: Teaching Basics */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-800">
-              Q1. Was the theory/basics of the lab taught by the teacher before starting? <span className="text-red-500">*</span>
+              Q1. Was the theory/basics of the lab taught by the teacher before starting? <span className="text-orange-500">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
               {[
@@ -394,7 +394,7 @@ export const StudentFeedbackPage: React.FC = () => {
                   onClick={() => setTeachingBasics(item.label)}
                   className={`p-3 rounded-2xl border text-left font-medium transition-all ${
                     teachingBasics === item.label
-                      ? 'bg-blue-50 border-blue-600 text-blue-900 ring-2 ring-blue-500/20 shadow-sm font-semibold'
+                      ? 'bg-cyan-50 border-cyan-600 text-cyan-900 ring-2 ring-cyan-500/20 shadow-sm font-semibold'
                       : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
                   }`}
                 >
@@ -405,7 +405,7 @@ export const StudentFeedbackPage: React.FC = () => {
                     }`}>
                       {item.tag}
                     </span>
-                    {teachingBasics === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
+                    {teachingBasics === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-600" />}
                   </div>
                   <div className="text-[11px] leading-snug">{item.label}</div>
                 </button>
@@ -416,7 +416,7 @@ export const StudentFeedbackPage: React.FC = () => {
           {/* Q2: Hands-on Experiments Done */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-800">
-              Q2. Were hands-on practical experiments actually performed by you? <span className="text-red-500">*</span>
+              Q2. Were hands-on practical experiments actually performed by you? <span className="text-orange-500">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {[
@@ -431,13 +431,13 @@ export const StudentFeedbackPage: React.FC = () => {
                   onClick={() => setHandsOn(item.label)}
                   className={`p-3 rounded-2xl border text-left transition-all ${
                     handsOn === item.label
-                      ? 'bg-blue-50 border-blue-600 text-blue-900 ring-2 ring-blue-500/20 shadow-sm font-semibold'
+                      ? 'bg-cyan-50 border-cyan-600 text-cyan-900 ring-2 ring-cyan-500/20 shadow-sm font-semibold'
                       : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs">{item.label}</span>
-                    {handsOn === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                    {handsOn === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-600 shrink-0" />}
                   </div>
                   <p className="text-[10px] text-slate-500 mt-1">{item.sub}</p>
                 </button>
@@ -448,7 +448,7 @@ export const StudentFeedbackPage: React.FC = () => {
           {/* Q3: Teacher Guidance & Presence */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-800">
-              Q3. Instructor / Teacher Guidance and In-Lab Presence <span className="text-red-500">*</span>
+              Q3. Instructor / Teacher Guidance and In-Lab Presence <span className="text-orange-500">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {[
@@ -463,13 +463,13 @@ export const StudentFeedbackPage: React.FC = () => {
                   onClick={() => setTeacherGuidance(item.label)}
                   className={`p-3 rounded-2xl border text-left transition-all ${
                     teacherGuidance === item.label
-                      ? 'bg-blue-50 border-blue-600 text-blue-900 ring-2 ring-blue-500/20 shadow-sm font-semibold'
+                      ? 'bg-cyan-50 border-cyan-600 text-cyan-900 ring-2 ring-cyan-500/20 shadow-sm font-semibold'
                       : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs">{item.label}</span>
-                    {teacherGuidance === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                    {teacherGuidance === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-600 shrink-0" />}
                   </div>
                   <p className="text-[10px] text-slate-500 mt-1">{item.sub}</p>
                 </button>
@@ -480,7 +480,7 @@ export const StudentFeedbackPage: React.FC = () => {
           {/* Q4: Doubt Clearance & Cooperation */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-800">
-              Q4. Cooperation for doubt clearance by teacher <span className="text-red-500">*</span>
+              Q4. Cooperation for doubt clearance by teacher <span className="text-orange-500">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {[
@@ -495,13 +495,13 @@ export const StudentFeedbackPage: React.FC = () => {
                   onClick={() => setDoubtSupport(item.label)}
                   className={`p-3 rounded-2xl border text-left transition-all ${
                     doubtSupport === item.label
-                      ? 'bg-blue-50 border-blue-600 text-blue-900 ring-2 ring-blue-500/20 shadow-sm font-semibold'
+                      ? 'bg-cyan-50 border-cyan-600 text-cyan-900 ring-2 ring-cyan-500/20 shadow-sm font-semibold'
                       : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-bold text-xs">{item.label}</span>
-                    {doubtSupport === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                    {doubtSupport === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-600 shrink-0" />}
                   </div>
                 </button>
               ))}
@@ -512,7 +512,7 @@ export const StudentFeedbackPage: React.FC = () => {
         {/* SECTION 2: STUDENT UNDERSTANDING & VIVA */}
         <div className="pt-4 border-t border-slate-100 space-y-6">
           <div className="flex items-center gap-2">
-            <UserCheck className="w-4 h-4 text-indigo-600" />
+            <UserCheck className="w-4 h-4 text-orange-600" />
             <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wide">
               2. Student Understanding & Viva Examination
             </h2>
@@ -521,7 +521,7 @@ export const StudentFeedbackPage: React.FC = () => {
           {/* Q5: Reason Understanding */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-800">
-              Q5. Did you understand the REASON behind the experiment and HOW it works? <span className="text-red-500">*</span>
+              Q5. Did you understand the REASON behind the experiment and HOW it works? <span className="text-orange-500">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {[
@@ -536,13 +536,13 @@ export const StudentFeedbackPage: React.FC = () => {
                   onClick={() => setReasonUnderstanding(item.label)}
                   className={`p-3 rounded-2xl border text-left transition-all ${
                     reasonUnderstanding === item.label
-                      ? 'bg-indigo-50 border-indigo-600 text-indigo-900 ring-2 ring-indigo-500/20 shadow-sm font-semibold'
+                      ? 'bg-orange-50 border-orange-600 text-orange-900 ring-2 ring-orange-500/20 shadow-sm font-semibold'
                       : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs">{item.label}</span>
-                    {reasonUnderstanding === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />}
+                    {reasonUnderstanding === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600 shrink-0" />}
                   </div>
                   <p className="text-[10px] text-slate-500 mt-1">{item.sub}</p>
                 </button>
@@ -553,7 +553,7 @@ export const StudentFeedbackPage: React.FC = () => {
           {/* Q6: Viva Voce Taken */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-800">
-              Q6. Was Viva Voce conducted for this experiment? <span className="text-red-500">*</span>
+              Q6. Was Viva Voce conducted for this experiment? <span className="text-orange-500">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
               {[
@@ -567,18 +567,18 @@ export const StudentFeedbackPage: React.FC = () => {
                   onClick={() => setVivaTaken(item.label)}
                   className={`p-3 rounded-2xl border text-left transition-all ${
                     vivaTaken === item.label
-                      ? 'bg-indigo-50 border-indigo-600 text-indigo-900 ring-2 ring-indigo-500/20 shadow-sm font-semibold'
+                      ? 'bg-orange-50 border-orange-600 text-orange-900 ring-2 ring-orange-500/20 shadow-sm font-semibold'
                       : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                       item.tag === 'Individual Viva' ? 'bg-emerald-100 text-emerald-800' :
-                      item.tag === 'Group Viva' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                      item.tag === 'Group Viva' ? 'bg-cyan-100 text-cyan-800' : 'bg-red-100 text-red-800'
                     }`}>
                       {item.tag}
                     </span>
-                    {vivaTaken === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />}
+                    {vivaTaken === item.label && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600 shrink-0" />}
                   </div>
                   <div className="text-[11px] leading-snug">{item.label}</div>
                 </button>
@@ -599,7 +599,7 @@ export const StudentFeedbackPage: React.FC = () => {
           {/* Q7: Hardware / Software Setup */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-800">
-              Q7. Hardware / Software setup condition during the lab <span className="text-red-500">*</span>
+              Q7. Hardware / Software setup condition during the lab <span className="text-orange-500">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
               {[
@@ -632,7 +632,7 @@ export const StudentFeedbackPage: React.FC = () => {
           {/* Q8: Lab Punctuality & Duration */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-800">
-              Q8. Lab duration and punctuality <span className="text-red-500">*</span>
+              Q8. Lab duration and punctuality <span className="text-orange-500">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
               {[
@@ -665,7 +665,7 @@ export const StudentFeedbackPage: React.FC = () => {
           {/* Overall 5-Star Rating */}
           <div className="space-y-2 p-4 bg-slate-50 rounded-2xl border border-slate-200">
             <label className="block text-xs font-bold text-slate-900">
-              Overall Rating of Today's Laboratory Session & Teacher Execution <span className="text-red-500">*</span>
+              Overall Rating of Today's Laboratory Session & Teacher Execution <span className="text-orange-500">*</span>
             </label>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
@@ -681,7 +681,7 @@ export const StudentFeedbackPage: React.FC = () => {
                     <Star
                       className={`w-7 h-7 ${
                         (hoverRating || overallRating) >= star
-                          ? 'text-amber-400 fill-amber-400'
+                          ? 'text-orange-400 fill-orange-400'
                           : 'text-slate-300'
                       }`}
                     />
@@ -711,7 +711,7 @@ export const StudentFeedbackPage: React.FC = () => {
               onChange={(e) => setComments(e.target.value)}
               rows={3}
               placeholder="If the teacher did not teach, skipped viva, or refused to clear doubts, mention details here confidentially for the HOD..."
-              className="w-full text-xs p-3.5 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-xs p-3.5 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             ></textarea>
           </div>
         </div>
@@ -726,7 +726,7 @@ export const StudentFeedbackPage: React.FC = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="px-7 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-2xl shadow-lg shadow-blue-500/25 flex items-center gap-2 transition-all disabled:opacity-50"
+            className="px-7 py-3 bg-gradient-to-r from-cyan-600 via-cyan-500 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white font-bold text-xs rounded-2xl shadow-cyan flex items-center gap-2 transition-all disabled:opacity-50"
           >
             {submitting ? (
               <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

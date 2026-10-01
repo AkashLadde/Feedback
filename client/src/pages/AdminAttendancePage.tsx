@@ -81,7 +81,7 @@ export const AdminAttendancePage: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-subtle flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Classroom & Laboratory Attendance Records
             </h1>
@@ -102,7 +102,7 @@ export const AdminAttendancePage: React.FC = () => {
 
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-emerald-600/20 transition-all"
+            className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-orange transition-all"
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span>Export CSV</span>
@@ -114,7 +114,7 @@ export const AdminAttendancePage: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
-            <Users className="w-4 h-4 text-blue-600" />
+            <Users className="w-4 h-4 text-cyan-600" />
             <span>Total Attendance Marks</span>
           </div>
           <div className="text-2xl font-extrabold text-slate-900">{stats.total}</div>
@@ -139,13 +139,13 @@ export const AdminAttendancePage: React.FC = () => {
           <div className="text-[11px] text-rose-700 mt-1">Verified Absentees</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-amber-200 bg-amber-50/20 shadow-subtle">
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-800 mb-1">
-            <Clock className="w-4 h-4 text-amber-600" />
+        <div className="bg-white p-5 rounded-2xl border border-orange-200 bg-orange-50/20 shadow-subtle">
+          <div className="flex items-center gap-2 text-xs font-semibold text-orange-800 mb-1">
+            <Clock className="w-4 h-4 text-orange-600" />
             <span>Late Check-ins</span>
           </div>
-          <div className="text-2xl font-extrabold text-amber-950">{stats.late}</div>
-          <div className="text-[11px] text-amber-700 mt-1">Arrived Post-Threshold</div>
+          <div className="text-2xl font-extrabold text-orange-950">{stats.late}</div>
+          <div className="text-[11px] text-orange-700 mt-1">Arrived Post-Threshold</div>
         </div>
       </div>
 
@@ -160,7 +160,7 @@ export const AdminAttendancePage: React.FC = () => {
                 onClick={() => setSelectedSem(sem)}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
                   selectedSem === sem
-                    ? 'bg-blue-600 text-white shadow-sm'
+                    ? 'bg-cyan-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -195,7 +195,7 @@ export const AdminAttendancePage: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchAttendance()}
-            className="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
           />
         </div>
       </div>

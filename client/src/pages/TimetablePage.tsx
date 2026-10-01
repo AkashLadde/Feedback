@@ -73,7 +73,7 @@ export const TimetablePage: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-subtle flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-blue-600" />
+            <FlaskConical className="w-5 h-5 text-cyan-600" />
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Practical Laboratory Time Tables • Academic Year 2026-27
             </h1>
@@ -92,7 +92,7 @@ export const TimetablePage: React.FC = () => {
                 onClick={() => setActiveSem(sem)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeSem === sem
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                    ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -112,16 +112,16 @@ export const TimetablePage: React.FC = () => {
       </div>
 
       {/* Main Timetable Document Card */}
-      <div className="bg-white rounded-3xl border border-slate-300 shadow-xl p-6 sm:p-8 space-y-6 print:border-none print:shadow-none">
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-card p-6 sm:p-8 space-y-6 print:border-none print:shadow-none">
         {/* Document Header */}
-        <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900">
+        <div className="text-center space-y-1 pb-4 border-b-2 border-slate-300">
           <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 uppercase tracking-wide">
             Guru Nanak Dev Engineering College Bidar
           </h2>
           <h3 className="text-xs sm:text-sm font-bold text-slate-700">
             Department of CSE in IoT & Cyber Security including Block Chain Technology
           </h3>
-          <div className="text-sm font-extrabold text-blue-900 underline pt-1">
+          <div className="text-sm font-extrabold text-cyan-800 underline pt-1">
             {activeSem === 3 ? '3RD' : activeSem === 5 ? '5TH' : '7TH'} SEMESTER PRACTICAL LABORATORY SCHEDULE
           </div>
           <div className="flex items-center justify-between text-xs font-semibold text-slate-600 pt-2 px-2">
@@ -133,23 +133,23 @@ export const TimetablePage: React.FC = () => {
 
         {/* Practical Lab Schedule Grid */}
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-slate-800 text-center text-xs">
+          <table className="w-full border-collapse border border-slate-300 text-center text-xs">
             <thead>
               <tr className="bg-slate-100 font-bold text-slate-900">
-                <th className="border border-slate-800 p-3 w-32">
+                <th className="border border-slate-300 p-3 w-32">
                   DAY / PERIOD
                 </th>
-                <th className="border border-slate-800 p-3 text-xs leading-relaxed bg-blue-50/50">
-                  <div className="font-extrabold text-blue-950">MORNING PRACTICAL LAB SESSION</div>
-                  <div className="text-[11px] font-mono text-blue-700 font-bold">09.00 AM - 12.00 PM</div>
+                <th className="border border-slate-300 p-3 text-xs leading-relaxed bg-cyan-50/50">
+                  <div className="font-extrabold text-cyan-950">MORNING PRACTICAL LAB SESSION</div>
+                  <div className="text-[11px] font-mono text-cyan-700 font-bold">09.00 AM - 12.00 PM</div>
                 </th>
-                <th className="border border-slate-800 p-2 text-[10px] w-28 bg-emerald-50 leading-tight">
+                <th className="border border-slate-300 p-2 text-[10px] w-28 bg-emerald-50 leading-tight">
                   <div className="font-bold text-emerald-950">LUNCH BREAK</div>
                   <div className="text-slate-500">01.00 PM - 02.00 PM</div>
                 </th>
-                <th className="border border-slate-800 p-3 text-xs leading-relaxed bg-indigo-50/50">
-                  <div className="font-extrabold text-indigo-950">AFTERNOON PRACTICAL LAB SESSION</div>
-                  <div className="text-[11px] font-mono text-indigo-700 font-bold">02.00 PM - 05.00 PM</div>
+                <th className="border border-slate-300 p-3 text-xs leading-relaxed bg-orange-50/50">
+                  <div className="font-extrabold text-orange-950">AFTERNOON PRACTICAL LAB SESSION</div>
+                  <div className="text-[11px] font-mono text-orange-700 font-bold">02.00 PM - 05.00 PM</div>
                 </th>
               </tr>
             </thead>
@@ -157,16 +157,16 @@ export const TimetablePage: React.FC = () => {
               {currentSchedule.map((row, rIdx) => (
                 <tr key={row.day} className="h-16">
                   {/* Day Label */}
-                  <td className="border border-slate-800 font-extrabold bg-slate-50 text-slate-900 p-3 text-xs">
+                  <td className="border border-slate-300 font-extrabold bg-slate-50 text-slate-900 p-3 text-xs">
                     {row.day}
                   </td>
 
                   {/* Morning Practical Session */}
-                  <td className="border border-slate-800 p-3 font-semibold bg-white text-left">
+                  <td className="border border-slate-300 p-3 font-semibold bg-white text-left">
                     {row.morning ? (
                       <div className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="font-mono text-[11px] font-extrabold text-blue-800 bg-blue-100 px-2 py-0.5 rounded">
+                          <span className="font-mono text-[11px] font-extrabold text-cyan-800 bg-cyan-100 px-2 py-0.5 rounded">
                             {row.morning.code}
                           </span>
                           <span className="text-[10px] text-slate-500 font-medium">
@@ -183,7 +183,7 @@ export const TimetablePage: React.FC = () => {
 
                   {/* Lunch Break Banner */}
                   {rIdx === 0 ? (
-                    <td rowSpan={6} className="border border-slate-800 bg-emerald-100 font-extrabold text-[11px] text-emerald-950 tracking-widest uppercase p-1 text-center">
+                    <td rowSpan={6} className="border border-slate-300 bg-emerald-100 font-extrabold text-[11px] text-emerald-950 tracking-widest uppercase p-1 text-center">
                       <div className="writing-vertical flex items-center justify-center h-full mx-auto" style={{ writingMode: 'vertical-rl' }}>
                         L U N C H &nbsp; B R E A K
                       </div>
@@ -191,11 +191,11 @@ export const TimetablePage: React.FC = () => {
                   ) : null}
 
                   {/* Afternoon Practical Session */}
-                  <td className="border border-slate-800 p-3 font-semibold bg-white text-left">
+                  <td className="border border-slate-300 p-3 font-semibold bg-white text-left">
                     {row.afternoon ? (
                       <div className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="font-mono text-[11px] font-extrabold text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded">
+                          <span className="font-mono text-[11px] font-extrabold text-orange-800 bg-orange-100 px-2 py-0.5 rounded">
                             {row.afternoon.code}
                           </span>
                           <span className="text-[10px] text-slate-500 font-medium">

@@ -59,7 +59,7 @@ export const VerificationAuditPage: React.FC = () => {
       case 'SUSPICIOUS':
         return <span className="bg-amber-100 text-amber-800 border border-amber-300 font-bold px-2 py-0.5 rounded text-[11px]">SUSPICIOUS</span>;
       case 'MISMATCH':
-        return <span className="bg-purple-100 text-purple-800 border border-purple-300 font-bold px-2 py-0.5 rounded text-[11px]">MISMATCH</span>;
+        return <span className="bg-orange-100 text-orange-800 border border-orange-300 font-bold px-2 py-0.5 rounded text-[11px]">MISMATCH</span>;
       case 'INVALID':
         return <span className="bg-red-100 text-red-800 border border-red-300 font-bold px-2 py-0.5 rounded text-[11px]">INVALID</span>;
       default:
@@ -70,10 +70,10 @@ export const VerificationAuditPage: React.FC = () => {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-2xl border border-cyan-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-blue-600" />
+            <ShieldCheck className="w-5 h-5 text-cyan-600" />
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Attendance + Feedback Verification Engine Audit
             </h1>
@@ -85,7 +85,7 @@ export const VerificationAuditPage: React.FC = () => {
 
         <button
           onClick={fetchRecords}
-          className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-1.5 transition-colors"
+          className="px-3.5 py-2 bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-sm"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           <span>Refresh Audit Feed</span>
@@ -96,18 +96,18 @@ export const VerificationAuditPage: React.FC = () => {
       {summary && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { id: 'ALL', label: 'All Records', count: summary.total, color: 'border-slate-300 bg-white text-slate-800' },
+            { id: 'ALL', label: 'All Records', count: summary.total, color: 'border-slate-200 bg-white text-slate-800' },
             { id: 'VERIFIED', label: 'Verified Genuine', count: summary.verified, color: 'border-emerald-300 bg-emerald-50 text-emerald-800' },
             { id: 'SUSPICIOUS', label: 'Suspicious Proxy', count: summary.suspicious, color: 'border-amber-300 bg-amber-50 text-amber-800' },
-            { id: 'MISMATCH', label: 'Lab/Sec Mismatch', count: summary.mismatch, color: 'border-purple-300 bg-purple-50 text-purple-800' },
+            { id: 'MISMATCH', label: 'Lab/Sec Mismatch', count: summary.mismatch, color: 'border-orange-300 bg-orange-50 text-orange-800' },
             { id: 'INVALID', label: 'Invalid Tokens/Geo', count: summary.invalid, color: 'border-red-300 bg-red-50 text-red-800' },
-            { id: 'PENDING REVIEW', label: 'Pending Review', count: summary.pending_review, color: 'border-slate-300 bg-slate-100 text-slate-700' }
+            { id: 'PENDING REVIEW', label: 'Pending Review', count: summary.pending_review, color: 'border-cyan-300 bg-cyan-50 text-cyan-800' }
           ].map((pill) => (
             <button
               key={pill.id}
               onClick={() => setSelectedStatus(pill.id)}
               className={`p-3 rounded-xl border text-left transition-all ${
-                selectedStatus === pill.id ? 'ring-2 ring-blue-500 font-bold shadow-sm' : 'opacity-80 hover:opacity-100'
+                selectedStatus === pill.id ? 'ring-2 ring-cyan-500 font-bold shadow-sm' : 'opacity-80 hover:opacity-100'
               } ${pill.color}`}
             >
               <div className="text-[10px] uppercase font-semibold">{pill.label}</div>
@@ -118,7 +118,7 @@ export const VerificationAuditPage: React.FC = () => {
       )}
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white p-4 rounded-xl border border-cyan-100 shadow-sm flex flex-wrap items-center justify-between gap-3">
         <form onSubmit={handleSearch} className="flex-1 max-w-md relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           <input
@@ -126,7 +126,7 @@ export const VerificationAuditPage: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search student name, USN, or lab code..."
-            className="w-full text-xs pl-9 pr-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-xs pl-9 pr-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
         </form>
 
@@ -136,10 +136,10 @@ export const VerificationAuditPage: React.FC = () => {
       </div>
 
       {/* Verification Audit Table (Section 35) */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-subtle overflow-hidden">
+      <div className="bg-white rounded-2xl border border-cyan-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+            <thead className="bg-cyan-50/60 border-b border-cyan-100 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="py-3 px-4">Student</th>
                 <th className="py-3 px-3">Laboratory</th>
@@ -166,7 +166,7 @@ export const VerificationAuditPage: React.FC = () => {
                     <tr
                       key={r.feedback_id}
                       onClick={() => setInspectFeedbackId(r.feedback_id)}
-                      className="hover:bg-slate-50/80 cursor-pointer transition-colors"
+                      className="hover:bg-cyan-50/40 cursor-pointer transition-colors"
                     >
                       <td className="py-3 px-4">
                         <div className="font-bold text-slate-900">{r.student_name}</div>
@@ -193,7 +193,7 @@ export const VerificationAuditPage: React.FC = () => {
                         )}
                       </td>
                       <td className="py-3 px-3 text-center font-medium text-slate-700">
-                        <span className="text-[11px] text-blue-700 font-semibold">{r.teaching_basics}</span>
+                        <span className="text-[11px] text-cyan-700 font-semibold">{r.teaching_basics}</span>
                       </td>
                       <td className="py-3 px-3">
                         <span className={`font-mono text-[11px] font-bold ${
@@ -222,7 +222,7 @@ export const VerificationAuditPage: React.FC = () => {
                             e.stopPropagation();
                             setInspectFeedbackId(r.feedback_id);
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 transition-colors"
                           title="Open Inspection Details"
                         >
                           <Eye className="w-4 h-4" />

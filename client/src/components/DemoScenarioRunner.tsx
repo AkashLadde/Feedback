@@ -71,22 +71,22 @@ export const DemoScenarioRunner: React.FC = () => {
   const currentScenarioObj = scenarios.find(s => s.id === activeScenario)!;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border border-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fadeIn">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border border-cyan-100">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-cyan-600 via-cyan-500 to-orange-500 text-white px-6 py-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm text-white flex items-center justify-center font-bold">
               ⚡
             </div>
             <div>
               <h2 className="text-lg font-bold">LabGuard Verification Engine Demonstration Suite</h2>
-              <p className="text-xs text-blue-200">Simulate Section 40 fraud detection workflows with live backend evaluation</p>
+              <p className="text-xs text-white/80">Simulate Section 40 fraud detection workflows with live backend evaluation</p>
             </div>
           </div>
           <button
             onClick={() => setDemoModalOpen(false)}
-            className="text-slate-300 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+            className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -110,7 +110,7 @@ export const DemoScenarioRunner: React.FC = () => {
                     }}
                     className={`w-full text-left p-3.5 rounded-xl border transition-all ${
                       isSelected
-                        ? 'bg-blue-50 border-blue-400 shadow-sm ring-1 ring-blue-300'
+                        ? 'bg-cyan-50 border-cyan-400 shadow-sm ring-1 ring-cyan-300'
                         : 'bg-white hover:bg-slate-50 border-slate-200'
                     }`}
                   >
@@ -131,21 +131,21 @@ export const DemoScenarioRunner: React.FC = () => {
           </div>
 
           {/* Right Column: Execution & Inspection */}
-          <div className="md:col-span-7 bg-slate-50 rounded-xl p-5 border border-slate-200 flex flex-col justify-between">
+          <div className="md:col-span-7 bg-cyan-50/30 rounded-xl p-5 border border-cyan-100 flex flex-col justify-between">
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <div>
                   <h4 className="font-bold text-slate-900 text-sm">{currentScenarioObj.title}</h4>
-                  <div className="text-xs text-blue-700 font-medium mt-0.5">{currentScenarioObj.student}</div>
+                  <div className="text-xs text-cyan-700 font-medium mt-0.5">{currentScenarioObj.student}</div>
                 </div>
                 <span className={`text-[11px] font-bold px-2.5 py-1 rounded border ${currentScenarioObj.badgeColor}`}>
                   {currentScenarioObj.expected}
                 </span>
               </div>
 
-              <div className="bg-white p-3.5 rounded-lg border border-slate-200 text-xs text-slate-700 leading-relaxed">
+              <div className="bg-white p-3.5 rounded-lg border border-cyan-100 text-xs text-slate-700 leading-relaxed shadow-sm">
                 <div className="flex items-center gap-1.5 font-semibold text-slate-900 mb-1">
-                  <Info className="w-4 h-4 text-blue-600" />
+                  <Info className="w-4 h-4 text-cyan-600" />
                   <span>Scenario Description</span>
                 </div>
                 {currentScenarioObj.desc}
@@ -155,12 +155,12 @@ export const DemoScenarioRunner: React.FC = () => {
               <button
                 onClick={() => handleRun(currentScenarioObj.id)}
                 disabled={running !== null}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md shadow-cyan-500/20 transition-all disabled:opacity-50"
               >
                 {running === currentScenarioObj.id ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    <span>Evaluating 10-Rule Verification Engine...</span>
+                    <span>Evaluating Verification Engine...</span>
                   </>
                 ) : (
                   <>
@@ -172,7 +172,7 @@ export const DemoScenarioRunner: React.FC = () => {
 
               {/* Result Output Display */}
               {result && (
-                <div className="mt-3 p-4 bg-white rounded-xl border border-slate-200 shadow-sm animate-fadeIn">
+                <div className="mt-3 p-4 bg-white rounded-xl border border-cyan-100 shadow-sm animate-fadeIn">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-slate-800">Verification Result:</span>
                     <span
@@ -215,10 +215,10 @@ export const DemoScenarioRunner: React.FC = () => {
             </div>
 
             <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
-              <span>Runs against live SQLite database on port 5000</span>
+              <span>Runs against live database</span>
               <button
                 onClick={() => setDemoModalOpen(false)}
-                className="text-blue-600 hover:text-blue-800 font-semibold"
+                className="text-cyan-600 hover:text-cyan-800 font-semibold"
               >
                 Done
               </button>

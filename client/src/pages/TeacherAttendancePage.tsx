@@ -212,16 +212,16 @@ export const TeacherAttendancePage: React.FC = () => {
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-wrap items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-cyan-600 via-cyan-500 to-orange-500 rounded-3xl p-6 sm:p-8 text-white shadow-cyan flex flex-wrap items-center justify-between gap-6">
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 bg-blue-500/30 backdrop-blur-sm border border-blue-400/40 text-blue-200 text-xs font-semibold px-3 py-1 rounded-full">
-            <UserCheck className="w-3.5 h-3.5 text-cyan-300" />
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-bold px-3 py-1 rounded-full">
+            <UserCheck className="w-3.5 h-3.5 text-white" />
             <span>Guru Nanak Dev Engineering College Bidar • CSE-ICB</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Teacher Attendance Portal
           </h1>
-          <p className="text-xs sm:text-sm text-blue-200 max-w-2xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-white/90 max-w-2xl leading-relaxed font-medium">
             Take roll-call attendance for 3rd, 5th, and 7th semester lectures and laboratories. 
             Student feedback is recorded anonymously and kept strictly confidential.
           </p>
@@ -232,8 +232,8 @@ export const TeacherAttendancePage: React.FC = () => {
             onClick={() => setActiveView('TAKE')}
             className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${
               activeView === 'TAKE'
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 ring-2 ring-blue-300'
-                : 'bg-white/10 text-blue-200 hover:bg-white/20'
+                ? 'bg-white text-cyan-900 shadow-lg shadow-black/10 ring-2 ring-white/50'
+                : 'bg-white/20 text-white hover:bg-white/30'
             }`}
           >
             <UserCheck className="w-4 h-4" />
@@ -243,8 +243,8 @@ export const TeacherAttendancePage: React.FC = () => {
             onClick={() => setActiveView('HISTORY')}
             className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${
               activeView === 'HISTORY'
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 ring-2 ring-blue-300'
-                : 'bg-white/10 text-blue-200 hover:bg-white/20'
+                ? 'bg-white text-cyan-900 shadow-lg shadow-black/10 ring-2 ring-white/50'
+                : 'bg-white/20 text-white hover:bg-white/30'
             }`}
           >
             <History className="w-4 h-4" />
@@ -272,7 +272,7 @@ export const TeacherAttendancePage: React.FC = () => {
               {/* Semester Picker */}
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-blue-600" />
+                  <Layers className="w-3.5 h-3.5 text-cyan-600" />
                   <span>Semester</span>
                 </label>
                 <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
@@ -283,7 +283,7 @@ export const TeacherAttendancePage: React.FC = () => {
                       onClick={() => setSelectedSem(sem)}
                       className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
                         selectedSem === sem
-                          ? 'bg-blue-600 text-white shadow-sm'
+                          ? 'bg-cyan-600 text-white shadow-sm'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -296,13 +296,13 @@ export const TeacherAttendancePage: React.FC = () => {
               {/* Subject / Course Picker */}
               <div className="lg:col-span-2">
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
-                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                  <BookOpen className="w-3.5 h-3.5 text-orange-600" />
                   <span>Subject / Laboratory ({labs.length})</span>
                 </label>
                 <select
                   value={selectedLabId || ''}
                   onChange={(e) => setSelectedLabId(Number(e.target.value))}
-                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800"
+                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium text-slate-800"
                 >
                   {labs.map(l => (
                     <option key={l.id} value={l.id}>
@@ -315,27 +315,27 @@ export const TeacherAttendancePage: React.FC = () => {
               {/* Date */}
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                  <Calendar className="w-3.5 h-3.5 text-cyan-600" />
                   <span>Date</span>
                 </label>
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800"
+                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium text-slate-800"
                 />
               </div>
 
               {/* Time Slot */}
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-blue-600" />
+                  <Clock className="w-3.5 h-3.5 text-orange-600" />
                   <span>Time Slot</span>
                 </label>
                 <select
                   value={selectedSlot}
                   onChange={(e) => setSelectedSlot(e.target.value)}
-                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800"
+                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium text-slate-800"
                 >
                   <option value="09.00 AM - 12.00 PM">09.00 AM - 12.00 PM (Morning Lab Session)</option>
                   <option value="02.00 PM - 05.00 PM">02.00 PM - 05.00 PM (Afternoon Lab Session)</option>
@@ -351,7 +351,7 @@ export const TeacherAttendancePage: React.FC = () => {
               <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-slate-900">{selectedLab.name}</span>
-                  <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <span className="bg-cyan-100 text-cyan-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
                     {selectedLab.code}
                   </span>
                   <span className="text-slate-400">•</span>
@@ -386,7 +386,7 @@ export const TeacherAttendancePage: React.FC = () => {
                 <span className="text-xs font-bold">{absentCount} Absent</span>
               </div>
               <div className="h-4 w-px bg-slate-200"></div>
-              <div className="flex items-center gap-2 text-blue-700 font-extrabold text-xs">
+              <div className="flex items-center gap-2 text-cyan-700 font-extrabold text-xs">
                 <span>{attendancePercent}% Attendance Rate</span>
               </div>
             </div>
@@ -415,7 +415,7 @@ export const TeacherAttendancePage: React.FC = () => {
                 type="button"
                 onClick={handleSaveAttendance}
                 disabled={saving}
-                className="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+                className="px-5 py-2 bg-gradient-to-r from-cyan-600 via-cyan-500 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-cyan transition-all disabled:opacity-50"
               >
                 {saving ? (
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -437,14 +437,14 @@ export const TeacherAttendancePage: React.FC = () => {
               placeholder="Search student by name or USN (e.g. 3GN24CB...)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="w-full text-xs pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
             />
           </div>
 
           {/* Students Roster Grid */}
           {loading ? (
             <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-slate-200">
-              <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+              <div className="w-8 h-8 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
               <span className="text-xs font-bold">Loading Semester {selectedSem} Student Roster...</span>
             </div>
           ) : filteredStudents.length === 0 ? (
@@ -473,7 +473,7 @@ export const TeacherAttendancePage: React.FC = () => {
                         <span className="text-xs font-mono font-bold text-slate-400 w-6">
                           {String(idx + 1).padStart(2, '0')}
                         </span>
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-700 to-cyan-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-600 to-orange-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
                           {s.name?.charAt(0)}
                         </div>
                         <div className="min-w-0">
@@ -496,7 +496,7 @@ export const TeacherAttendancePage: React.FC = () => {
                           placeholder="Add remark (optional)"
                           value={att.remarks}
                           onChange={(e) => handleRemarksChange(s.student_id, e.target.value)}
-                          className="text-[11px] px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white w-32 sm:w-44 text-slate-700"
+                          className="text-[11px] px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 bg-white w-32 sm:w-44 text-slate-700"
                         />
 
                         {/* Status Toggle Buttons */}
@@ -555,7 +555,7 @@ export const TeacherAttendancePage: React.FC = () => {
                   type="button"
                   onClick={handleSaveAttendance}
                   disabled={saving}
-                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+                  className="px-6 py-2.5 bg-gradient-to-r from-cyan-600 via-cyan-500 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-cyan transition-all disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
                   <span>{saving ? 'Saving Records...' : 'Save & Submit Attendance'}</span>
@@ -572,7 +572,7 @@ export const TeacherAttendancePage: React.FC = () => {
               <h2 className="text-base font-bold text-slate-900">My Attendance Sessions Log</h2>
               <p className="text-xs text-slate-500">Historical records of classroom and laboratory attendance taken by you</p>
             </div>
-            <span className="text-xs font-bold bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+            <span className="text-xs font-bold bg-cyan-100 text-cyan-800 px-3 py-1 rounded-full">
               {pastSessions.length} Recorded Sessions
             </span>
           </div>

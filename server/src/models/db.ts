@@ -1,4 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
+import mysql from 'mysql2/promise';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -6,17 +7,92 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ========================================================================
+// MySQL Pool Configuration
+// ========================================================================
+export const MYSQL_CONFIG = {
+  host: process.env.MYSQL_HOST || process.env.DB_HOST || 'localhost',
+  user: process.env.MYSQL_USER || process.env.DB_USER || 'root',
+  password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || '',
+  database: process.env.MYSQL_DATABASE || process.env.DB_NAME || 'labguard_gndec',
+  port: parseInt(process.env.MYSQL_PORT || process.env.DB_PORT || '3306', 10),
+  waitForConnections: true,
+  connectionLimit: 15,
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000
+};
+
+export let mysqlPool: mysql.Pool | null = null;
+let isMySQLActive = false;
+
+if (process.env.MYSQL_HOST || process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.DB_TYPE === 'mysql') {
+  try {
+    const connectionUrl = process.env.DATABASE_URL || process.env.MYSQL_URL;
+    mysqlPool = connectionUrl
+      ? mysql.createPool(connectionUrl)
+      : mysql.createPool(MYSQL_CONFIG);
+    isMySQLActive = true;
+    console.log(`🐬 MySQL Pool configured for database '${MYSQL_CONFIG.database}' at ${MYSQL_CONFIG.host}:${MYSQL_CONFIG.port}`);
+  } catch (mysqlInitErr) {
+    console.warn('⚠️ Could not initialize MySQL pool, falling back to embedded engine:', mysqlInitErr);
+  }
+}
+
+// ========================================================================
+// Embedded SQLite Engine (Zero-configuration fallback & local dev)
+// ========================================================================
 const dbDir = path.resolve(__dirname, '../../data');
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
 }
 
 const dbPath = path.resolve(dbDir, 'labguard.sqlite');
-export const db = new DatabaseSync(dbPath);
+const sqliteDb = new DatabaseSync(dbPath);
+sqliteDb.exec('PRAGMA foreign_keys = ON;');
 
-// Enable foreign keys and WAL mode for reliability
-db.exec('PRAGMA foreign_keys = ON;');
+// ========================================================================
+// Unified Database Interface: Compatible with both MySQL & Prepared Statements
+// ========================================================================
+export const db = {
+  isMySQL: () => isMySQLActive,
+  getPool: () => mysqlPool,
 
+  prepare(sql: string) {
+    const stmt = sqliteDb.prepare(sql);
+    return {
+      get(...params: any[]) {
+        return stmt.get(...params);
+      },
+      all(...params: any[]) {
+        return stmt.all(...params);
+      },
+      run(...params: any[]) {
+        return stmt.run(...params);
+      }
+    };
+  },
+
+  exec(sql: string) {
+    return sqliteDb.exec(sql);
+  },
+
+  async queryMySQL(sql: string, params: any[] = []) {
+    if (!mysqlPool) throw new Error('MySQL pool is not active');
+    const [rows] = await mysqlPool.query(sql, params);
+    return rows;
+  },
+
+  async executeMySQL(sql: string, params: any[] = []) {
+    if (!mysqlPool) throw new Error('MySQL pool is not active');
+    const [result] = await mysqlPool.execute(sql, params);
+    return result;
+  }
+};
+
+// ========================================================================
+// Initialize Database Tables & Anti-Duplication Constraints
+// ========================================================================
 export function initDatabase() {
   const schema = `
     CREATE TABLE IF NOT EXISTS semesters (
@@ -68,8 +144,8 @@ export function initDatabase() {
       academic_year TEXT NOT NULL DEFAULT '2026-2027',
       faculty_id INTEGER REFERENCES faculty(id),
       room_number TEXT NOT NULL,
-      latitude REAL NOT NULL,
-      longitude REAL NOT NULL,
+      latitude REAL NOT NULL DEFAULT 17.9104,
+      longitude REAL NOT NULL DEFAULT 77.5199,
       geofence_radius REAL NOT NULL DEFAULT 25.0,
       status TEXT DEFAULT 'ACTIVE',
       created_at TEXT DEFAULT (datetime('now'))
@@ -113,6 +189,10 @@ export function initDatabase() {
       ended_at TEXT
     );
 
+    -- ========================================================================
+    -- ATTENDANCE TABLE WITH STRICT UNIQUE(student_id, lab_session_id)
+    -- ZERO DUPLICATE ATTENDANCE PERMITTED
+    -- ========================================================================
     CREATE TABLE IF NOT EXISTS attendance (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       student_id INTEGER NOT NULL REFERENCES students(id),
@@ -246,56 +326,9 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_logs(created_at);
   `;
 
-  db.exec(schema);
+  sqliteDb.exec(schema);
 
-  // Check if existing feedback table has legacy restrictive CHECK constraint
-  try {
-    const tableSql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='feedback'").get() as any;
-    if (tableSql && tableSql.sql && tableSql.sql.includes("teaching_basics IN ('Excellent'")) {
-      db.exec(`
-        PRAGMA foreign_keys=OFF;
-        CREATE TABLE feedback_migrated (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          student_id INTEGER NOT NULL REFERENCES students(id),
-          lab_session_id INTEGER NOT NULL REFERENCES lab_sessions(id),
-          experiment_id INTEGER NOT NULL REFERENCES experiments(id),
-          teaching_basics TEXT NOT NULL,
-          hands_on TEXT NOT NULL,
-          doubt_support TEXT,
-          reason_understanding TEXT,
-          viva_taken TEXT,
-          hardware_setup TEXT,
-          teacher_guidance TEXT,
-          lab_punctuality TEXT,
-          overall_rating INTEGER DEFAULT 5,
-          anonymous_to_teacher INTEGER DEFAULT 1,
-          viva TEXT,
-          understanding TEXT,
-          comments TEXT,
-          latitude REAL NOT NULL,
-          longitude REAL NOT NULL,
-          accuracy REAL NOT NULL,
-          distance_to_lab REAL NOT NULL,
-          qr_token_used TEXT NOT NULL,
-          submitted_at TEXT DEFAULT (datetime('now')),
-          verification_status TEXT NOT NULL DEFAULT 'PENDING' CHECK(verification_status IN ('VERIFIED', 'MISMATCH', 'SUSPICIOUS', 'INVALID', 'PENDING REVIEW')),
-          flags TEXT,
-          UNIQUE(student_id, lab_session_id)
-        );
-        INSERT OR IGNORE INTO feedback_migrated (
-          id, student_id, lab_session_id, experiment_id, teaching_basics, hands_on, viva, understanding, comments, latitude, longitude, accuracy, distance_to_lab, qr_token_used, submitted_at, verification_status, flags
-        ) SELECT id, student_id, lab_session_id, experiment_id, teaching_basics, hands_on, viva, understanding, comments, latitude, longitude, accuracy, distance_to_lab, qr_token_used, submitted_at, verification_status, flags FROM feedback;
-        DROP TABLE feedback;
-        ALTER TABLE feedback_migrated RENAME TO feedback;
-        PRAGMA foreign_keys=ON;
-      `);
-      console.log('✅ Migrated feedback table: removed legacy restrictive check constraints.');
-    }
-  } catch (migErr) {
-    console.warn('Feedback table migration note:', migErr);
-  }
-
-  // Safe migrations for expanded feedback columns on existing databases
+  // Safe migrations for expanded feedback columns
   const feedbackMigrations = [
     { name: 'doubt_support', type: 'TEXT' },
     { name: 'reason_understanding', type: 'TEXT' },
@@ -312,9 +345,9 @@ export function initDatabase() {
 
   for (const col of feedbackMigrations) {
     try {
-      db.exec(`ALTER TABLE feedback ADD COLUMN ${col.name} ${col.type}`);
+      sqliteDb.exec(`ALTER TABLE feedback ADD COLUMN ${col.name} ${col.type}`);
     } catch {
-      // Column already exists, safe to ignore
+      // Column already exists
     }
   }
 
@@ -327,50 +360,11 @@ export function initDatabase() {
 
   for (const col of attendanceMigrations) {
     try {
-      db.exec(`ALTER TABLE attendance ADD COLUMN ${col.name} ${col.type}`);
+      sqliteDb.exec(`ALTER TABLE attendance ADD COLUMN ${col.name} ${col.type}`);
     } catch {
-      // Column already exists, safe to ignore
+      // Column already exists
     }
   }
 
-  // Check if attendance table has restrictive verification_status constraint
-  try {
-    const attSql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='attendance'").get() as any;
-    if (attSql && attSql.sql && !attSql.sql.includes("'ABSENT'")) {
-      db.exec(`
-        PRAGMA foreign_keys=OFF;
-        CREATE TABLE attendance_migrated (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          student_id INTEGER NOT NULL REFERENCES students(id),
-          lab_session_id INTEGER REFERENCES lab_sessions(id),
-          experiment_id INTEGER REFERENCES experiments(id),
-          timestamp TEXT DEFAULT (datetime('now')),
-          latitude REAL DEFAULT 17.9104,
-          longitude REAL DEFAULT 77.5199,
-          accuracy REAL DEFAULT 10.0,
-          distance_to_lab REAL DEFAULT 5.0,
-          geofence_status TEXT DEFAULT 'INSIDE',
-          verification_status TEXT NOT NULL DEFAULT 'PRESENT',
-          device_fingerprint TEXT,
-          marked_by_faculty_id INTEGER REFERENCES faculty(id),
-          remarks TEXT,
-          attendance_mode TEXT DEFAULT 'ROSTER',
-          UNIQUE(student_id, lab_session_id)
-        );
-        INSERT OR IGNORE INTO attendance_migrated (
-          id, student_id, lab_session_id, experiment_id, timestamp, latitude, longitude, accuracy, distance_to_lab, geofence_status, verification_status, device_fingerprint, marked_by_faculty_id, remarks, attendance_mode
-        ) SELECT id, student_id, lab_session_id, experiment_id, timestamp, latitude, longitude, accuracy, distance_to_lab, geofence_status, verification_status, device_fingerprint, marked_by_faculty_id, remarks, attendance_mode FROM attendance;
-        DROP TABLE attendance;
-        ALTER TABLE attendance_migrated RENAME TO attendance;
-        PRAGMA foreign_keys=ON;
-      `);
-      console.log('✅ Migrated attendance table: enabled ABSENT status & roster mode.');
-    }
-  } catch (attMigErr) {
-    console.warn('Attendance migration note:', attMigErr);
-  }
-
-  console.log('✅ SQLite Database schema initialized successfully at:', dbPath);
+  console.log('✅ Database initialized successfully with strict Anti-Duplication constraints.');
 }
-
-

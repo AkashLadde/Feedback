@@ -151,7 +151,7 @@ export const AdminFeedbackPage: React.FC = () => {
                 onClick={() => setSelectedSem(sem)}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
                   selectedSem === sem
-                    ? 'bg-blue-600 text-white shadow-sm'
+                    ? 'bg-cyan-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -165,7 +165,7 @@ export const AdminFeedbackPage: React.FC = () => {
             <button
               onClick={() => setSelectedRating('')}
               className={`px-2.5 py-1.5 rounded-lg font-bold transition-all ${
-                !selectedRating ? 'bg-blue-600 text-white' : 'text-slate-600'
+                !selectedRating ? 'bg-orange-500 text-white' : 'text-slate-600'
               }`}
             >
               All Stars
@@ -175,7 +175,7 @@ export const AdminFeedbackPage: React.FC = () => {
                 key={r}
                 onClick={() => setSelectedRating(String(r))}
                 className={`px-2.5 py-1.5 rounded-lg font-bold transition-all flex items-center gap-0.5 ${
-                  selectedRating === String(r) ? 'bg-blue-600 text-white' : 'text-slate-600'
+                  selectedRating === String(r) ? 'bg-orange-500 text-white' : 'text-slate-600'
                 }`}
               >
                 <span>{r}</span>
@@ -193,7 +193,7 @@ export const AdminFeedbackPage: React.FC = () => {
       {/* Feedback Feed */}
       {loading ? (
         <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-slate-200">
-          <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <div className="w-8 h-8 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
           <span className="text-xs font-bold">Loading student feedback records...</span>
         </div>
       ) : feedbacks.length === 0 ? (
