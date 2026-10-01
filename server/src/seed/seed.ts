@@ -133,23 +133,23 @@ export function seedDatabase() {
     { sem: 1, name: 'Applied Engineering Physics Laboratory', code: '1BPHY102', room: 'Physics Lab (Room 107)', fAbbr: 'PP', desc: 'Laser Optics, Semiconductor Bandgap, Dielectric Constants & Sensor Physics' },
     { sem: 1, name: 'Professional Communication & Language Lab', code: '1BENG106', room: 'Language Lab (Room 108)', fAbbr: 'FN', desc: 'Phonetics, Technical Presentation, Soft Skills & Professional Communication Lab' },
 
-    // 3rd Semester Practical Labs
+    // 3rd Semester Practical Labs (With Effect from: 08-09-2026)
     { sem: 3, name: 'Object Oriented Programming with JAVA LAB', code: '1BCS302(P)', room: 'Java Lab (Room 205)', fAbbr: 'MK', desc: 'Core Java, OOPs, Collections, Multithreading & GUI Lab' },
     { sem: 3, name: 'Operating Systems LAB', code: '1BCS304(P)', room: 'OS Lab (Room 206)', fAbbr: 'AP', desc: 'Linux Shell Scripting, Process Scheduling, System Calls & Memory Lab' },
     { sem: 3, name: 'Data Structures Laboratory', code: '1BCSL306', room: 'Data Structures Lab (Room 207)', fAbbr: 'AP', desc: 'Arrays, Stacks, Queues, Trees, Graphs & Dynamic Memory Lab' },
-    { sem: 3, name: 'Project Management with GIT Lab', code: '1BCSL307A', room: 'Project Lab (Room 208)', fAbbr: 'FN', desc: 'Git Version Control, GitHub Actions, CI/CD & Project Workflow Lab' },
-    { sem: 3, name: 'Community Project Laboratory', code: '1BCP308', room: 'Project Center (Room 209)', fAbbr: 'ANP', desc: 'Social Innovation & Community Engineering Practical Implementation Lab' },
+    { sem: 3, name: 'Project Management (with GIT)', code: '1BCSL307A', room: 'Project Lab (Room 208)', fAbbr: 'FN', desc: 'Git Version Control, GitHub Actions, CI/CD & Project Workflow Lab' },
+    { sem: 3, name: 'Community Project', code: '1BCP308', room: 'Project Center (Room 209)', fAbbr: 'ANP', desc: 'Social Innovation & Community Engineering Practical Implementation Lab' },
 
-    // 5th Semester Practical Labs
+    // 5th Semester Practical Labs (With Effect from: 07-09-2026)
     { sem: 5, name: 'Computer Networks Laboratory', code: 'BCSL502', room: 'Networks Lab (Room 305)', fAbbr: 'MJ', desc: 'Wireshark, Cisco Packet Tracer, Socket Programming & Protocol Analysis' },
-    { sem: 5, name: 'IoT & Cyber Security Laboratory', code: 'BICL504', room: 'IoT & Cyber Lab (Room 306)', fAbbr: 'UK', desc: 'Arduino/Raspberry Pi Sensors, MQTT, Cryptography & Penetration Testing' },
-    { sem: 5, name: 'Full Stack Development Laboratory', code: 'BIC515CL', room: 'Web Tech Lab (Room 307)', fAbbr: 'IZ', desc: 'React, Node.js, Express, REST APIs & SQLite/MongoDB Practical Lab' },
-    { sem: 5, name: 'Mini Project Laboratory', code: 'BIC586', room: 'Project Center (Room 308)', fAbbr: 'HJ', desc: 'IoT, Cyber Security and Blockchain Embedded Project Development' },
+    { sem: 5, name: 'IoT Lab', code: 'BICL504', room: 'IoT & Cyber Lab (Room 306)', fAbbr: 'UK', desc: 'Arduino/Raspberry Pi Sensors, MQTT, Cryptography & Penetration Testing' },
+    { sem: 5, name: 'Full Stack Development Laboratory', code: 'BIC515C', room: 'Web Tech Lab (Room 307)', fAbbr: 'IZ', desc: 'React, Node.js, Express, REST APIs & SQLite/MongoDB Practical Lab' },
+    { sem: 5, name: 'Mini Project', code: 'BIC586', room: 'Project Center (Room 308)', fAbbr: 'HJ', desc: 'IoT, Cyber Security and Blockchain Embedded Project Development' },
 
-    // 7th Semester Practical Labs
-    { sem: 7, name: 'IoT Communication Protocols Laboratory', code: 'BCO701(P)', room: 'Protocols Lab (Room 405)', fAbbr: 'FN', desc: 'CoAP, MQTT-SN, Zigbee, LoRaWAN, BLE & Wireless Mesh Testbed' },
-    { sem: 7, name: 'Blockchain Technology Laboratory', code: 'BIC702(P)', room: 'Blockchain Lab (Room 406)', fAbbr: 'AB', desc: 'Solidity Smart Contracts, Ethereum Ganache, Web3.js & DApp Architecture' },
-    { sem: 7, name: 'Major Project Phase-II Laboratory', code: 'BIC786', room: 'Advanced Project Lab (Room 408)', fAbbr: 'AB', desc: 'Capstone Project Research, Prototype Testing & Departmental Defense' }
+    // 7th Semester Practical Labs (With Effect from: 24-08-2026)
+    { sem: 7, name: 'IOT Communication Protocols Lab', code: 'BCO701(P)', room: 'Protocols Lab (Room 405)', fAbbr: 'FN', desc: 'CoAP, MQTT-SN, Zigbee, LoRaWAN, BLE & Wireless Mesh Testbed' },
+    { sem: 7, name: 'Blockchain Technology Lab', code: 'BIC702(P)', room: 'Blockchain Lab (Room 406)', fAbbr: 'AB', desc: 'Solidity Smart Contracts, Ethereum Ganache, Web3.js & DApp Architecture' },
+    { sem: 7, name: 'Major Project Phase-II', code: 'BIC786', room: 'Advanced Project Lab (Room 408)', fAbbr: 'AB', desc: 'Capstone Project Research, Prototype Testing & Departmental Defense' }
   ];
 
   const insertLab = db.prepare(`
@@ -184,7 +184,7 @@ export function seedDatabase() {
     }
   }
 
-  // 6. Timetable Entries: ONLY Practical Laboratories (Time-Wise & Semester-Wise)
+  // 6. Timetable Entries: ONLY Practical Laboratories (Exact Time, Day & Teacher from Official Timetable)
   const insertTimetable = db.prepare(`
     INSERT INTO timetable_entries (
       semester, academic_year, day_of_week, slot_index, time_range,
@@ -235,84 +235,74 @@ export function seedDatabase() {
     ]
   };
 
-  // 3rd Sem Practical Labs Timetable Grid (Morning & Afternoon Practical Lab Blocks)
+  // 3rd Sem Practical Labs Timetable Grid (With Effect from: 08-09-2026)
   const sem3LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string }>> = {
     'MONDAY': [
-      { code: '1BCS302(P)', abbr: 'JAVA LAB', name: 'Object Oriented Programming with JAVA LAB', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'Java Lab (Room 205)' },
-      { code: '1BCS304(P)', abbr: 'OS LAB', name: 'Operating Systems LAB', fAbbr: 'AP', time: '02.00 PM - 05.00 PM', room: 'OS Lab (Room 206)' }
+      { code: '1BCSL307A', abbr: 'GIT/FN', name: 'Project Management (with GIT)', fAbbr: 'FN', time: '03.00 PM - 04.00 PM', room: 'Project Lab (Room 208)' },
+      { code: '1BCS304(P)', abbr: 'OSL/AP', name: 'Operating Systems LAB', fAbbr: 'AP', time: '04.00 PM - 05.00 PM', room: 'OS Lab (Room 206)' }
     ],
     'TUESDAY': [
-      { code: '1BCSL306', abbr: 'DS LAB', name: 'Data Structures Laboratory', fAbbr: 'HJ', time: '09.00 AM - 12.00 PM', room: 'Data Structures Lab (Room 207)' },
-      { code: '1BCSL307A', abbr: 'GIT LAB', name: 'Project Management with GIT Lab', fAbbr: 'FN', time: '02.00 PM - 05.00 PM', room: 'Project Lab (Room 208)' }
+      { code: '1BCSL306', abbr: 'DSAL/AP', name: 'Data Structures Laboratory', fAbbr: 'AP', time: '03.00 PM - 04.00 PM', room: 'Data Structures Lab (Room 207)' }
     ],
     'WEDNESDAY': [
-      { code: '1BCP308', abbr: 'CP LAB', name: 'Community Project Laboratory', fAbbr: 'ANP', time: '09.00 AM - 12.00 PM', room: 'Project Center (Room 209)' },
-      { code: '1BCS302(P)', abbr: 'JAVA LAB', name: 'Object Oriented Programming with JAVA LAB', fAbbr: 'MK', time: '02.00 PM - 05.00 PM', room: 'Java Lab (Room 205)' }
+      { code: '1BCSL306', abbr: 'DSAL/AP', name: 'Data Structures Laboratory', fAbbr: 'AP', time: '11.10 AM - 01.00 PM', room: 'Data Structures Lab (Room 207)' }
     ],
     'THURSDAY': [
-      { code: '1BCS304(P)', abbr: 'OS LAB', name: 'Operating Systems LAB', fAbbr: 'AP', time: '09.00 AM - 12.00 PM', room: 'OS Lab (Room 206)' },
-      { code: '1BCSL306', abbr: 'DS LAB', name: 'Data Structures Laboratory', fAbbr: 'HJ', time: '02.00 PM - 05.00 PM', room: 'Data Structures Lab (Room 207)' }
+      { code: '1BCS302(P)', abbr: 'JAVAL/MK', name: 'Object Oriented Programming with JAVA LAB', fAbbr: 'MK', time: '02.00 PM - 03.00 PM', room: 'Java Lab (Room 205)' },
+      { code: '1BCS304(P)', abbr: 'OSL/AP', name: 'Operating Systems LAB', fAbbr: 'AP', time: '03.00 PM - 04.00 PM', room: 'OS Lab (Room 206)' }
     ],
     'FRIDAY': [
-      { code: '1BCSL307A', abbr: 'GIT LAB', name: 'Project Management with GIT Lab', fAbbr: 'FN', time: '09.00 AM - 12.00 PM', room: 'Project Lab (Room 208)' },
-      { code: '1BCP308', abbr: 'CP LAB', name: 'Community Project Laboratory', fAbbr: 'ANP', time: '02.00 PM - 05.00 PM', room: 'Project Center (Room 209)' }
+      { code: '1BCP308', abbr: 'CP/ANP', name: 'Community Project', fAbbr: 'ANP', time: '02.00 PM - 04.00 PM', room: 'Project Center (Room 209)' }
     ],
     'SATURDAY': [
-      { code: '1BCS302(P)', abbr: 'JAVA & OS LAB', name: 'Java & OS Practical Practice Lab', fAbbr: 'MK', time: '09.00 AM - 01.00 PM', room: 'Java Lab (Room 205)' }
+      { code: '1BCSL307A', abbr: 'GIT/FN', name: 'Project Management (with GIT)', fAbbr: 'FN', time: '09.00 AM - 09.55 AM', room: 'Project Lab (Room 208)' }
     ]
   };
 
-  // 5th Sem Practical Labs Timetable Grid
+  // 5th Sem Practical Labs Timetable Grid (With Effect from: 07-09-2026)
   const sem5LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string }>> = {
     'MONDAY': [
-      { code: 'BCSL502', abbr: 'CN LAB', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '09.00 AM - 12.00 PM', room: 'Networks Lab (Room 305)' },
-      { code: 'BICL504', abbr: 'IOT/CYBER LAB', name: 'IoT & Cyber Security Laboratory', fAbbr: 'UK', time: '02.00 PM - 05.00 PM', room: 'IoT & Cyber Lab (Room 306)' }
+      { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '03.00 PM - 04.00 PM', room: 'Networks Lab (Room 305)' }
     ],
     'TUESDAY': [
-      { code: 'BIC515CL', abbr: 'FSD LAB', name: 'Full Stack Development Laboratory', fAbbr: 'IZ', time: '09.00 AM - 12.00 PM', room: 'Web Tech Lab (Room 307)' },
-      { code: 'BIC586', abbr: 'MINI PROJECT', name: 'Mini Project Laboratory', fAbbr: 'HJ', time: '02.00 PM - 05.00 PM', room: 'Project Center (Room 308)' }
+      { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '12.05 PM - 01.00 PM', room: 'Networks Lab (Room 305)' }
     ],
     'WEDNESDAY': [
-      { code: 'BCSL502', abbr: 'CN LAB', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '09.00 AM - 12.00 PM', room: 'Networks Lab (Room 305)' },
-      { code: 'BIC515CL', abbr: 'FSD LAB', name: 'Full Stack Development Laboratory', fAbbr: 'IZ', time: '02.00 PM - 05.00 PM', room: 'Web Tech Lab (Room 307)' }
+      { code: 'BIC515C', abbr: 'FSD LAB', name: 'Full Stack Development Laboratory', fAbbr: 'IZ', time: '11.10 AM - 01.00 PM', room: 'Web Tech Lab (Room 307)' },
+      { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '04.00 PM - 05.00 PM', room: 'Networks Lab (Room 305)' }
     ],
     'THURSDAY': [
-      { code: 'BICL504', abbr: 'IOT/CYBER LAB', name: 'IoT & Cyber Security Laboratory', fAbbr: 'UK', time: '09.00 AM - 12.00 PM', room: 'IoT & Cyber Lab (Room 306)' },
-      { code: 'BIC586', abbr: 'MINI PROJECT', name: 'Mini Project Laboratory', fAbbr: 'HJ', time: '02.00 PM - 05.00 PM', room: 'Project Center (Room 308)' }
+      { code: 'BICL504', abbr: 'IOT/UK/FN', name: 'IoT Lab', fAbbr: 'UK', time: '11.10 AM - 01.00 PM', room: 'IoT & Cyber Lab (Room 306)' },
+      { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '02.00 PM - 03.00 PM', room: 'Networks Lab (Room 305)' }
     ],
     'FRIDAY': [
-      { code: 'BIC515CL', abbr: 'FSD LAB', name: 'Full Stack Development Laboratory', fAbbr: 'IZ', time: '09.00 AM - 12.00 PM', room: 'Web Tech Lab (Room 307)' },
-      { code: 'BCSL502', abbr: 'CN LAB', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '02.00 PM - 05.00 PM', room: 'Networks Lab (Room 305)' }
+      { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '09.00 AM - 09.55 AM', room: 'Networks Lab (Room 305)' }
     ],
     'SATURDAY': [
-      { code: 'BIC586', abbr: 'PROJECT & INNOVATION', name: 'Mini Project & Innovation Lab', fAbbr: 'HJ', time: '09.00 AM - 01.00 PM', room: 'Project Center (Room 308)' }
+      { code: 'BIC586', abbr: 'Mini Project', name: 'Mini Project Laboratory', fAbbr: 'HJ', time: '11.10 AM - 01.00 PM', room: 'Project Center (Room 308)' }
     ]
   };
 
-  // 7th Sem Practical Labs Timetable Grid
+  // 7th Sem Practical Labs Timetable Grid (With Effect from: 24-08-2026)
   const sem7LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string }>> = {
     'MONDAY': [
-      { code: 'BCO701(P)', abbr: 'ICP LAB', name: 'IoT Communication Protocols Laboratory', fAbbr: 'FN', time: '09.00 AM - 12.00 PM', room: 'Protocols Lab (Room 405)' },
-      { code: 'BIC702(P)', abbr: 'BC LAB', name: 'Blockchain Technology Laboratory', fAbbr: 'AB', time: '02.00 PM - 05.00 PM', room: 'Blockchain Lab (Room 406)' }
+      { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', fAbbr: 'FN', time: '09.55 AM - 10.50 AM', room: 'Protocols Lab (Room 405)' },
+      { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', fAbbr: 'FN', time: '02.00 PM - 03.00 PM', room: 'Protocols Lab (Room 405)' }
     ],
     'TUESDAY': [
-      { code: 'BIC786', abbr: 'PROJ LAB-II', name: 'Major Project Phase-II Laboratory', fAbbr: 'HJ', time: '09.00 AM - 12.00 PM', room: 'Advanced Project Lab (Room 408)' },
-      { code: 'BCO701(P)', abbr: 'ICP LAB', name: 'IoT Communication Protocols Laboratory', fAbbr: 'FN', time: '02.00 PM - 05.00 PM', room: 'Protocols Lab (Room 405)' }
+      { code: 'BIC702(P)', abbr: 'BTL/AB', name: 'Blockchain Technology Lab', fAbbr: 'AB', time: '11.10 AM - 12.05 PM', room: 'Blockchain Lab (Room 406)' }
     ],
     'WEDNESDAY': [
-      { code: 'BIC702(P)', abbr: 'BC LAB', name: 'Blockchain Technology Laboratory', fAbbr: 'AB', time: '09.00 AM - 12.00 PM', room: 'Blockchain Lab (Room 406)' },
-      { code: 'BIC786', abbr: 'PROJ LAB-II', name: 'Major Project Phase-II Laboratory', fAbbr: 'HJ', time: '02.00 PM - 05.00 PM', room: 'Advanced Project Lab (Room 408)' }
+      { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', fAbbr: 'FN', time: '09.55 AM - 10.50 AM', room: 'Protocols Lab (Room 405)' },
+      { code: 'BIC786', abbr: 'PP-II/AB', name: 'Major Project Phase-II Laboratory', fAbbr: 'AB', time: '02.00 PM - 05.00 PM', room: 'Advanced Project Lab (Room 408)' }
     ],
     'THURSDAY': [
-      { code: 'BCO701(P)', abbr: 'ICP LAB', name: 'IoT Communication Protocols Laboratory', fAbbr: 'FN', time: '09.00 AM - 12.00 PM', room: 'Protocols Lab (Room 405)' },
-      { code: 'BIC702(P)', abbr: 'BC LAB', name: 'Blockchain Technology Laboratory', fAbbr: 'AB', time: '02.00 PM - 05.00 PM', room: 'Blockchain Lab (Room 406)' }
+      { code: 'BIC702(P)', abbr: 'BTL/AB (B1)', name: 'Blockchain Technology Lab (Batch 1)', fAbbr: 'AB', time: '11.10 AM - 01.00 PM', room: 'Blockchain Lab (Room 406)' },
+      { code: 'BCO701(P)', abbr: 'ICPL/FN (B2)', name: 'IOT Communication Protocols Lab (Batch 2)', fAbbr: 'FN', time: '11.10 AM - 01.00 PM', room: 'Protocols Lab (Room 405)' }
     ],
     'FRIDAY': [
-      { code: 'BIC786', abbr: 'PROJ LAB-II', name: 'Major Project Phase-II Laboratory', fAbbr: 'HJ', time: '09.00 AM - 12.00 PM', room: 'Advanced Project Lab (Room 408)' },
-      { code: 'BIC702(P)', abbr: 'BC SEC LAB', name: 'Blockchain & Security Testing Lab', fAbbr: 'AB', time: '02.00 PM - 05.00 PM', room: 'Blockchain Lab (Room 406)' }
-    ],
-    'SATURDAY': [
-      { code: 'BIC786', abbr: 'CAPSTONE DEFENSE', name: 'Major Project Capstone & Viva Lab', fAbbr: 'HJ', time: '09.00 AM - 01.00 PM', room: 'Advanced Project Lab (Room 408)' }
+      { code: 'BIC702(P)', abbr: 'BTL/AB (B2)', name: 'Blockchain Technology Lab (Batch 2)', fAbbr: 'AB', time: '11.10 AM - 01.00 PM', room: 'Blockchain Lab (Room 406)' },
+      { code: 'BCO701(P)', abbr: 'ICPL/FN (B1)', name: 'IOT Communication Protocols Lab (Batch 1)', fAbbr: 'FN', time: '11.10 AM - 01.00 PM', room: 'Protocols Lab (Room 405)' }
     ]
   };
 
