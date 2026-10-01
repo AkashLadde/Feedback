@@ -65,6 +65,7 @@ app.use('/api/alerts', alertRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/audit-logs', auditRoutes);
+app.use('/api/audit', auditRoutes);
 app.use('/api/demo', demoRoutes);
 app.use('/api/timetable', timetableRoutes);
 

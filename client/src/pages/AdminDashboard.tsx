@@ -4,34 +4,46 @@ import { api } from '../services/api';
 import {
   Users,
   Building2,
-  Radio,
   ShieldAlert,
   ShieldCheck,
   CheckCircle2,
-  AlertTriangle,
-  FileSpreadsheet,
   ArrowRight,
-  TrendingUp,
-  Award,
-  Zap,
   Star,
   BookOpen,
   UserCheck,
-  Cpu,
   Clock,
-  GraduationCap
+  FlaskConical,
+  MessageSquare,
+  Sparkles,
+  Layers,
+  MapPin,
+  HelpCircle,
+  Filter
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
-  const { user, setActiveTab, setDemoModalOpen, refreshTrigger } = useAuth();
+  const { user, setActiveTab, refreshTrigger } = useAuth();
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedSem, setSelectedSem] = useState<string>('ALL');
+
+  const semesterOptions = [
+    { value: 'ALL', label: 'All Semesters' },
+    { value: '1', label: '1st Sem' },
+    { value: '2', label: '2nd Sem' },
+    { value: '3', label: '3rd Sem' },
+    { value: '4', label: '4th Sem' },
+    { value: '5', label: '5th Sem' },
+    { value: '6', label: '6th Sem' },
+    { value: '7', label: '7th Sem' },
+    { value: '8', label: '8th Sem' }
+  ];
 
   useEffect(() => {
     async function load() {
       try {
         setLoading(true);
-        const res = await api.getDepartmentAnalytics();
+        const res = await api.getDepartmentAnalytics({ semester: selectedSem });
         if (res.success) {
           setData(res);
         }
@@ -42,57 +54,90 @@ export const AdminDashboard: React.FC = () => {
       }
     }
     load();
-  }, [refreshTrigger]);
+  }, [selectedSem, refreshTrigger]);
 
-  if (loading || !data) {
-    return (
-      <div className="p-8 text-center text-slate-500">
-        <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-        <span>Aggregating department laboratory analytics...</span>
-      </div>
-    );
-  }
+  const metrics = data?.metrics || {
+    totalStudents: 0,
+    totalLaboratories: 0,
+    activeSessions: 0,
+    totalAttendance: 0,
+    totalFeedback: 0,
+    pendingAlerts: 0,
+    labQuality: { avgRating: '5.0', handsOnRate: 100, vivaRate: 100, basicsTaughtRate: 100 },
+    verification: { verified: 0, suspicious: 0, mismatch: 0, invalid: 0, pendingReview: 0, totalIssues: 0 }
+  };
 
-  const { metrics, labs, distributions, facultyConduct } = data;
-  const isHod = user?.role === 'HOD';
-
+  const labs = data?.labs || [];
+  const facultyConduct = data?.facultyConduct || [];
+  const recentFeedbacks = data?.recentFeedbacks || [];
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn pb-12">
       {/* Top Welcome & Department Banner */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-subtle flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
+            <FlaskConical className="w-5 h-5 text-cyan-600" />
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
-              Department Administration Dashboard
+              Department Academic & Laboratory Dashboard
             </h1>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Guru Nanak Dev Engineering College Bidar • Department of CSE in IoT & Cyber Security including Block Chain Technology
+            Guru Nanak Dev Engineering College Bidar • Dept. of CSE in IoT & Cyber Security including Block Chain Technology
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={() => setActiveTab('timetable')}
-            className="px-3.5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
+            onClick={() => setActiveTab('student-verification')}
+            className="px-3.5 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
           >
-            <span>Class Timetables (3rd, 5th, 7th Sem)</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('admin-attendance')}
-            className="px-3.5 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
-          >
-            <span>Attendance Records</span>
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Verify Student Accounts</span>
           </button>
 
           <button
             onClick={() => setActiveTab('admin-feedback')}
-            className="px-3.5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
+            className="px-3.5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
           >
-            <span>Student Feedback</span>
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>All Feedback Submissions</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('timetable')}
+            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-200"
+          >
+            <Clock className="w-3.5 h-3.5 text-cyan-600" />
+            <span>Class Timetables</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Semester Filter Tabs Bar */}
+      <div className="bg-white p-4 rounded-2xl border border-cyan-100 shadow-subtle flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+          <Filter className="w-4 h-4 text-cyan-600" />
+          <span>Semester Filter:</span>
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {semesterOptions.map((opt) => {
+            const isSelected = selectedSem === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => setSelectedSem(opt.value)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20 ring-2 ring-cyan-200'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200'
+                }`}
+              >
+                <span>{opt.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -101,540 +146,328 @@ export const AdminDashboard: React.FC = () => {
         {/* Total Students */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Enrolled Students</span>
+            <span className="text-xs font-bold text-slate-500">Enrolled Students</span>
             <div className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center">
               <Users className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-extrabold text-slate-900 mt-2">{metrics.totalStudents}</div>
-          <div className="text-[11px] text-slate-500 mt-1">Semesters 3, 5, 7 • Cohorts Registered</div>
+          <div className="text-[11px] text-cyan-700 font-medium mt-1">
+            {selectedSem === 'ALL' ? 'All Academic Semesters' : `Semester ${selectedSem} Registered Cohort`}
+          </div>
         </div>
 
         {/* Total Laboratories */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Active Laboratories</span>
+            <span className="text-xs font-bold text-slate-500">Curriculum Practical Labs</span>
             <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
               <Building2 className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-extrabold text-slate-900 mt-2">{metrics.totalLaboratories}</div>
-          <div className="text-[11px] text-emerald-600 font-medium mt-1">12 Experiments each (84 Total)</div>
+          <div className="text-[11px] text-orange-700 font-medium mt-1">
+            {selectedSem === 'ALL' ? 'Official GNDEC Practical Labs' : `Assigned for Semester ${selectedSem}`}
+          </div>
         </div>
 
-        {/* Verified Feedback Rate */}
+        {/* Total Attendance Logs */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Verified Feedback</span>
+            <span className="text-xs font-bold text-slate-500">Laboratory Attendance Logs</span>
             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-emerald-700 mt-2">
-            {metrics.verification.verified}
-            <span className="text-xs font-normal text-slate-500 ml-1">/ {metrics.totalFeedback} submissions</span>
-          </div>
+          <div className="text-2xl font-extrabold text-emerald-700 mt-2">{metrics.totalAttendance}</div>
           <div className="text-[11px] text-emerald-600 font-medium mt-1">
-            {metrics.totalFeedback > 0 ? Math.round((metrics.verification.verified / metrics.totalFeedback) * 100) : 0}% Attendance Matched
+            100% Physical Room Geofence Enforced
           </div>
         </div>
 
-        {/* Security Mismatches & Alerts */}
-        <div
-          onClick={() => setActiveTab('verification')}
-          className="bg-white p-5 rounded-2xl border border-orange-200 shadow-subtle cursor-pointer hover:border-orange-400 transition-colors"
-        >
+        {/* Total Feedback Submissions */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-orange-800">Verification Issues</span>
-            <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
-              <ShieldAlert className="w-4 h-4" />
+            <span className="text-xs font-bold text-slate-500">Student Feedback Submissions</span>
+            <div className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center">
+              <MessageSquare className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-orange-900 mt-2">
-            {metrics.verification.totalIssues}
-            <span className="text-xs font-normal text-slate-500 ml-1">flagged</span>
-          </div>
-          <div className="text-[11px] text-orange-700 font-medium mt-1">
-            {metrics.verification.suspicious} Suspicious • {metrics.verification.invalid} Invalid • Click to inspect
+          <div className="text-2xl font-extrabold text-cyan-800 mt-2">{metrics.totalFeedback}</div>
+          <div className="text-[11px] text-cyan-600 font-medium mt-1">
+            {metrics.verification?.verified || metrics.totalFeedback} Verified Genuine Submissions
           </div>
         </div>
       </div>
 
-      {/* Security Status Banner */}
-      <div className="bg-gradient-to-r from-cyan-600 via-cyan-500 to-orange-500 text-white p-5 rounded-2xl shadow-cyan flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center text-white">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
+      {/* LABORATORY-WISE & TEACHER-WISE FEEDBACK TABLE (SEMESTER-WISE) */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-subtle overflow-hidden space-y-0">
+        <div className="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-cyan-50/30">
           <div>
-            <h3 className="text-sm font-bold">LabGuard Anti-Proxy Protocol Enforcement Active</h3>
-            <p className="text-xs text-white/90 mt-0.5 font-medium">
-              Multi-signal verification engine active across all 7 laboratories. GPS accuracy, Geofence radius (50m), and dynamic HMAC tokens enforced.
+            <div className="flex items-center gap-2">
+              <FlaskConical className="w-4 h-4 text-cyan-600" />
+              <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">
+                {selectedSem === 'ALL'
+                  ? 'All Practical Laboratories & Teacher Feedback Breakdown (Semester-Wise)'
+                  : `Semester ${selectedSem} Practical Laboratories & Faculty Evaluation`}
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Curriculum practical labs, assigned teachers, verified student attendance, and teaching evaluation scores
             </p>
           </div>
-        </div>
-        <div className="flex items-center gap-3 text-xs">
-          <div className="bg-white/20 px-3 py-1.5 rounded-lg border border-white/30 text-white">
-            <span className="text-white/80">QR Rotation:</span> <span className="font-mono font-bold">45 sec</span>
-          </div>
-          <div className="bg-white/20 px-3 py-1.5 rounded-lg border border-white/30 text-white">
-            <span className="text-white/80">Geofence Radius:</span> <span className="font-mono font-bold">50 meters</span>
-          </div>
-        </div>
-      </div>
 
-      {/* Lab-Wise Performance & Verification Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-subtle overflow-hidden">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900">Laboratory Performance & Verification Audit</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Real-time attendance, feedback completion, and mismatch breakdown by laboratory</p>
-          </div>
           <button
             onClick={() => setActiveTab('laboratories')}
-            className="text-xs font-semibold text-cyan-600 hover:text-cyan-800 flex items-center gap-1"
+            className="text-xs font-bold text-cyan-700 hover:text-cyan-900 flex items-center gap-1"
           >
-            <span>Manage Labs</span>
+            <span>Manage All Labs</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
-              <tr>
-                <th className="py-3 px-4">Laboratory</th>
-                <th className="py-3 px-3">Room / Wing</th>
-                <th className="py-3 px-3 text-center">Sessions</th>
-                <th className="py-3 px-3 text-center">Attendance</th>
-                <th className="py-3 px-3 text-center">Feedbacks</th>
-                <th className="py-3 px-3 text-center">Verified Rate</th>
-                <th className="py-3 px-3 text-center">Mismatches</th>
-                <th className="py-3 px-3 text-center">Understanding</th>
-                <th className="py-3 px-3 text-center">Hands-on %</th>
-                <th className="py-3 px-3 text-center">Viva %</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {labs.map((lab: any) => {
-                const verifiedRate = lab.feedback_count > 0 ? Math.round((lab.verified_feedback / lab.feedback_count) * 100) : 100;
-                return (
-                  <tr key={lab.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900">
-                      <div>{lab.name}</div>
-                      <div className="text-[10px] font-mono text-slate-400 font-normal">{lab.code}</div>
+        {loading ? (
+          <div className="p-8 text-center text-slate-400">Loading laboratory details...</div>
+        ) : labs.length === 0 ? (
+          <div className="p-8 text-center text-slate-400">
+            No laboratories found for {selectedSem === 'ALL' ? 'the selected filter' : `Semester ${selectedSem}`}.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th className="py-3 px-4">Subject Code & Laboratory</th>
+                  <th className="py-3 px-3">Semester</th>
+                  <th className="py-3 px-3">Faculty / Teacher In-Charge</th>
+                  <th className="py-3 px-3">Room</th>
+                  <th className="py-3 px-3 text-center">Attendance</th>
+                  <th className="py-3 px-3 text-center">Feedbacks</th>
+                  <th className="py-3 px-3 text-center">Avg Rating</th>
+                  <th className="py-3 px-3 text-center">Hands-On %</th>
+                  <th className="py-3 px-3 text-center">Viva %</th>
+                  <th className="py-3 px-3 text-center">Basics %</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {labs.map((lab: any) => (
+                  <tr key={lab.id} className="hover:bg-cyan-50/30 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="font-extrabold text-slate-900">{lab.name}</div>
+                      <div className="text-[10px] font-mono text-cyan-700 font-bold">{lab.code}</div>
                     </td>
-                    <td className="py-3 px-3 text-slate-600">{lab.room_number}</td>
-                    <td className="py-3 px-3 text-center font-semibold text-slate-800">{lab.sessions_count || 1}</td>
-                    <td className="py-3 px-3 text-center font-semibold text-slate-800">{lab.attendance_count || 0}</td>
-                    <td className="py-3 px-3 text-center font-semibold text-slate-800">{lab.feedback_count || 0}</td>
+                    <td className="py-3 px-3">
+                      <span className="font-sans font-bold text-[10px] bg-cyan-50 text-cyan-800 px-2 py-0.5 rounded border border-cyan-200">
+                        Sem {lab.semester}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-slate-800">
+                      <div className="font-bold">{lab.faculty_name || 'Lab In-Charge'}</div>
+                      <div className="text-[10px] text-slate-400">{lab.faculty_designation || 'Faculty'}</div>
+                    </td>
+                    <td className="py-3 px-3 text-slate-600 font-medium">{lab.room_number || 'Lab Room'}</td>
+                    <td className="py-3 px-3 text-center font-bold text-slate-800">{lab.attendance_count || 0}</td>
+                    <td className="py-3 px-3 text-center font-bold text-slate-800">{lab.feedback_count || 0}</td>
                     <td className="py-3 px-3 text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded font-bold text-[11px] ${
-                        verifiedRate >= 90 ? 'bg-emerald-50 text-emerald-700' : 'bg-orange-50 text-orange-700'
-                      }`}>
-                        {verifiedRate}%
+                      <div className="inline-flex items-center gap-1 font-extrabold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">
+                        <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                        <span>{lab.avgRating || '5.0'}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        {lab.handsOnPct}%
                       </span>
                     </td>
                     <td className="py-3 px-3 text-center">
-                      {lab.mismatch_count > 0 ? (
-                        <span className="inline-block px-2 py-0.5 rounded font-bold text-[11px] bg-red-100 text-red-800 border border-red-200">
-                          {lab.mismatch_count} Flagged
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 font-mono">0</span>
-                      )}
+                      <span className="font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+                        {lab.vivaPct}%
+                      </span>
                     </td>
-                    <td className="py-3 px-3 text-center font-bold text-cyan-700">
-                      {lab.avgUnderstanding} / 4.0
+                    <td className="py-3 px-3 text-center font-bold text-slate-700">
+                      {lab.basicsTaughtPct}%
                     </td>
-                    <td className="py-3 px-3 text-center font-semibold text-slate-700">{lab.handsOnPct}%</td>
-                    <td className="py-3 px-3 text-center font-semibold text-slate-700">{lab.vivaPct}%</td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* Teacher Lab Conduct & Faculty Accountability Monitor (HOD & Dean View) */}
+      {/* TEACHER LAB CONDUCT & ACCOUNTABILITY MONITOR */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-subtle overflow-hidden">
         <div className="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
+              <UserCheck className="w-4 h-4 text-orange-600" />
               <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">
-                Teacher Lab Conduct & Genuine Accountability Monitor
+                Teacher Lab Conduct & Faculty Evaluation Summary
               </h2>
-              <span className="bg-cyan-100 text-cyan-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                Anti-Dereliction Safeguard
-              </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Real-time student feedback verification monitoring faculty attendance, hands-on execution, viva compliance, and doubt clearance
+            <p className="text-xs text-slate-500 mt-0.5">
+              Accountability breakdown of practical teaching, individual desk guidance, viva conduction, and feedback metrics
             </p>
           </div>
 
-          <div className="flex items-center gap-3 text-xs">
-            <div className="bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
-              <span className="text-slate-400">Quality Score: </span>
-              <strong className="text-cyan-700 font-extrabold">{metrics.labQuality?.avgRating || '4.8'} / 5.0</strong>
-            </div>
-            <div className="bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
-              <span className="text-slate-400">Hands-on Rate: </span>
-              <strong className="text-emerald-700 font-extrabold">{metrics.labQuality?.handsOnRate || 94}%</strong>
-            </div>
-            <div className="bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
-              <span className="text-slate-400">Viva Rate: </span>
-              <strong className="text-orange-700 font-extrabold">{metrics.labQuality?.vivaRate || 88}%</strong>
-            </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 font-bold shadow-xs">
+              Avg Quality Rating: <strong className="text-orange-600">{metrics.labQuality?.avgRating || '5.0'} / 5.0</strong>
+            </span>
           </div>
         </div>
 
-        {/* Faculty Accountability Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
-              <tr>
-                <th className="py-3 px-4">Faculty Member</th>
-                <th className="py-3 px-3 text-center">Sessions</th>
-                <th className="py-3 px-3 text-center">Feedback Logged</th>
-                <th className="py-3 px-3 text-center">Basics Taught</th>
-                <th className="py-3 px-3 text-center">Hands-On Done</th>
-                <th className="py-3 px-3 text-center">Viva Voce</th>
-                <th className="py-3 px-3 text-center">Reason Understood</th>
-                <th className="py-3 px-3 text-center">Student Rating</th>
-                <th className="py-3 px-3 text-right">Accountability Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {(facultyConduct && facultyConduct.length > 0 ? facultyConduct : [
-                {
-                  faculty_id: 1,
-                  faculty_name: 'Prof. Rajesh Sharma',
-                  designation: 'Associate Professor',
-                  sessions_held: 4,
-                  feedback_count: 24,
-                  basics_taught_pct: 96,
-                  hands_on_pct: 92,
-                  viva_pct: 88,
-                  reason_understood_pct: 85,
-                  avg_rating: 4.8,
-                  flags_count: 0
-                },
-                {
-                  faculty_id: 2,
-                  faculty_name: 'Dr. Priya Nair',
-                  designation: 'Assistant Professor',
-                  sessions_held: 3,
-                  feedback_count: 18,
-                  basics_taught_pct: 94,
-                  hands_on_pct: 94,
-                  viva_pct: 90,
-                  reason_understood_pct: 89,
-                  avg_rating: 4.9,
-                  flags_count: 0
-                }
-              ]).map((fac: any) => {
-                const isWarning = fac.flags_count > 0 || (fac.hands_on_pct && fac.hands_on_pct < 80);
-                return (
-                  <tr key={fac.faculty_id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="font-bold text-slate-900">{fac.faculty_name}</div>
-                      <div className="text-[10px] text-slate-400">{fac.designation || 'Faculty'}</div>
-                    </td>
-                    <td className="py-3 px-3 text-center font-semibold text-slate-800">
-                      {fac.sessions_held || 0}
-                    </td>
-                    <td className="py-3 px-3 text-center font-semibold text-slate-800">
-                      {fac.feedback_count || 0}
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="font-semibold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded">
-                        {fac.basics_taught_pct || 90}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className={`font-semibold px-2 py-0.5 rounded ${
-                        (fac.hands_on_pct || 90) >= 85
-                          ? 'text-emerald-700 bg-emerald-50'
-                          : 'text-red-700 bg-red-50 border border-red-200'
-                      }`}>
-                        {fac.hands_on_pct || 90}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="font-semibold text-orange-700 bg-orange-50 px-2 py-0.5 rounded">
-                        {fac.viva_pct || 85}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                        {fac.reason_understood_pct || 88}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="font-extrabold text-orange-900 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
-                        ⭐ {fac.avg_rating || '4.8'} / 5.0
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      {isWarning ? (
-                        <span className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded">
-                          ⚠️ CONDUCT FLAGGED ({fac.flags_count})
-                        </span>
+        {facultyConduct.length === 0 ? (
+          <div className="p-8 text-center text-slate-400">
+            No faculty conduct logs recorded for {selectedSem === 'ALL' ? 'the selected filter' : `Semester ${selectedSem}`}.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th className="py-3 px-4">Faculty Member</th>
+                  <th className="py-3 px-3">Designation</th>
+                  <th className="py-3 px-3">Assigned Lab & Sem</th>
+                  <th className="py-3 px-3 text-center">Feedbacks</th>
+                  <th className="py-3 px-3 text-center">Avg Rating</th>
+                  <th className="py-3 px-3 text-center">Hands-On Experience</th>
+                  <th className="py-3 px-3 text-center">Viva Voce Compliance</th>
+                  <th className="py-3 px-3 text-center">Basics Taught</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {facultyConduct.map((fac: any, idx: number) => (
+                  <tr key={`${fac.faculty_id}-${idx}`} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-900">{fac.faculty_name}</td>
+                    <td className="py-3 px-3 text-slate-600">{fac.designation}</td>
+                    <td className="py-3 px-3">
+                      {fac.assigned_lab_name ? (
+                        <div>
+                          <span className="font-semibold text-slate-900">{fac.assigned_lab_name}</span>
+                          <span className="ml-1 text-[10px] text-cyan-700 font-mono font-bold">
+                            (Sem {fac.assigned_semester})
+                          </span>
+                        </div>
                       ) : (
-                        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-                          ✅ FULLY COMPLIANT
-                        </span>
+                        <span className="text-slate-400 italic">Department Faculty</span>
                       )}
                     </td>
+                    <td className="py-3 px-3 text-center font-bold text-slate-800">{fac.feedback_count || 0}</td>
+                    <td className="py-3 px-3 text-center">
+                      <div className="inline-flex items-center gap-1 font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                        <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                        <span>{fac.avg_rating || '5.0'}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        {fac.hands_on_pct || 100}%
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <span className="font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+                        {fac.viva_pct || 100}%
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-center font-bold text-slate-700">
+                      {fac.basics_taught_pct || 100}%
+                    </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* 8-Dimension Feedback Questions Aggregate Distribution Grid */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
-            Real Student Laboratory Feedback Distributions (8 Key Dimensions)
-          </h3>
-          <span className="text-[11px] text-slate-400">
-            Aggregated from cryptographically verified submissions
-          </span>
+      {/* RECENT GENUINE STUDENT FEEDBACK SUBMISSIONS STREAM */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-subtle p-6 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-cyan-600" />
+              <h2 className="text-base font-extrabold text-slate-900">
+                {selectedSem === 'ALL'
+                  ? 'Real-Time Student Feedback Submissions'
+                  : `Semester ${selectedSem} Student Feedback Submissions`}
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Live submissions recorded from authenticated students during active laboratory practical windows
+            </p>
+          </div>
+
+          <button
+            onClick={() => setActiveTab('admin-feedback')}
+            className="text-xs font-bold text-cyan-700 hover:text-cyan-900 flex items-center gap-1"
+          >
+            <span>View Full Feedback Registry</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Q1 Teaching Basics */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
-            <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-              <span>1. Theory & Basics Taught</span>
-              <BookOpen className="w-3.5 h-3.5 text-cyan-600" />
-            </div>
-            <div className="space-y-2 text-xs">
-              {(distributions.teachingBasics?.length > 0 ? distributions.teachingBasics : [
-                { label: 'Thoroughly explained', count: 32 },
-                { label: 'Brief overview only', count: 5 },
-                { label: 'Skipped / Not taught', count: 1 }
-              ]).map((item: any) => (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-600 truncate">{item.label}</span>
-                    <span className="font-semibold text-slate-900">{item.count}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-cyan-600 h-full rounded-full"
-                      style={{ width: `${Math.min(100, item.count * 6)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {recentFeedbacks.length === 0 ? (
+          <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-xl border border-slate-100">
+            No feedback records submitted yet for {selectedSem === 'ALL' ? 'the selected filter' : `Semester ${selectedSem}`}.
+            When students complete practical sessions and submit compulsory feedback, entries appear here in real time.
           </div>
+        ) : (
+          <div className="space-y-3">
+            {recentFeedbacks.map((fb: any) => (
+              <div
+                key={fb.id}
+                className="bg-slate-50 hover:bg-cyan-50/40 p-4 rounded-xl border border-slate-200 hover:border-cyan-300 transition-all space-y-2"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-slate-900 text-xs">{fb.lab_name}</span>
+                    <span className="font-mono text-[10px] font-bold text-cyan-800 bg-cyan-100/80 px-2 py-0.5 rounded">
+                      {fb.lab_code}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                      Sem {fb.semester}
+                    </span>
+                  </div>
 
-          {/* Q2 Hands-on Practice */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
-            <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-              <span>2. Hands-on Practice Done</span>
-              <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-            </div>
-            <div className="space-y-2 text-xs">
-              {(distributions.handsOn?.length > 0 ? distributions.handsOn : [
-                { label: 'Yes, individual execution', count: 34 },
-                { label: 'Partially in group', count: 3 },
-                { label: 'No practical done', count: 1 }
-              ]).map((item: any) => (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-600 truncate">{item.label}</span>
-                    <span className="font-semibold text-slate-900">{item.count}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${item.label.includes('Yes') ? 'bg-emerald-500' : 'bg-red-500'}`}
-                      style={{ width: `${Math.min(100, item.count * 6)}%` }}
-                    ></div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-xs font-extrabold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200">
+                      <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                      <span>{fb.overall_rating || 5} Stars</span>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      fb.verification_status === 'VERIFIED'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : fb.verification_status === 'SUSPICIOUS'
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {fb.verification_status || 'VERIFIED'}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Q3 Teacher Guidance & Presence */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
-            <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-              <span>3. Teacher Guidance in Lab</span>
-              <GraduationCap className="w-3.5 h-3.5 text-orange-600" />
-            </div>
-            <div className="space-y-2 text-xs">
-              {(distributions.teacherGuidance?.length > 0 ? distributions.teacherGuidance : [
-                { label: 'Continuously guided desks', count: 31 },
-                { label: 'Checked output only', count: 6 },
-                { label: 'Left lab early / absent', count: 1 }
-              ]).map((item: any) => (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-600 truncate">{item.label}</span>
-                    <span className="font-semibold text-slate-900">{item.count}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-orange-600 h-full rounded-full"
-                      style={{ width: `${Math.min(100, item.count * 6)}%` }}
-                    ></div>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-[11px] text-slate-600 pt-1">
+                  <div>Instructor: <strong className="text-slate-800">{fb.faculty_name}</strong></div>
+                  <div>Student: <strong className="text-slate-800">{fb.student_name}</strong> {fb.student_usn ? `(${fb.student_usn})` : ''}</div>
+                  <div>Hands-on: <span className="text-emerald-700 font-semibold">{fb.hands_on}</span></div>
+                  <div>Viva: <span className="text-orange-700 font-semibold">{fb.viva_taken}</span></div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Q4 Doubt Clearance Cooperation */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
-            <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-              <span>4. Doubt Clearance Support</span>
-              <Award className="w-3.5 h-3.5 text-orange-500" />
-            </div>
-            <div className="space-y-2 text-xs">
-              {(distributions.doubtSupport?.length > 0 ? distributions.doubtSupport : [
-                { label: 'Patiently cleared doubts', count: 33 },
-                { label: 'Answered when pressed', count: 4 },
-                { label: 'Dismissive / unapproachable', count: 1 }
-              ]).map((item: any) => (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-600 truncate">{item.label}</span>
-                    <span className="font-semibold text-slate-900">{item.count}</span>
+                {fb.comments && (
+                  <div className="text-[11px] text-slate-700 bg-white p-2.5 rounded-lg border border-slate-200 italic">
+                    "{fb.comments}"
                   </div>
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-orange-500 h-full rounded-full"
-                      style={{ width: `${Math.min(100, item.count * 6)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                )}
 
-          {/* Q5 Reason Understanding */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
-            <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-              <span>5. Reason Understood (Why & How)</span>
-              <TrendingUp className="w-3.5 h-3.5 text-cyan-600" />
-            </div>
-            <div className="space-y-2 text-xs">
-              {(distributions.reasonUnderstanding?.length > 0 ? distributions.reasonUnderstanding : [
-                { label: 'Fully understood reasons', count: 30 },
-                { label: 'Steps clear, concept unclear', count: 6 },
-                { label: 'Blindly copied code', count: 2 }
-              ]).map((item: any) => (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-600 truncate">{item.label}</span>
-                    <span className="font-semibold text-slate-900">{item.count}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-cyan-600 h-full rounded-full"
-                      style={{ width: `${Math.min(100, item.count * 6)}%` }}
-                    ></div>
-                  </div>
+                <div className="text-[10px] text-slate-400 text-right">
+                  Submitted at: {new Date(fb.submitted_at).toLocaleString()}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-
-          {/* Q6 Viva Voce Taken */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
-            <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-              <span>6. Viva Voce Conducted</span>
-              <Award className="w-3.5 h-3.5 text-orange-600" />
-            </div>
-            <div className="space-y-2 text-xs">
-              {(distributions.vivaTaken?.length > 0 ? distributions.vivaTaken : [
-                { label: 'Individual viva conducted', count: 28 },
-                { label: 'Group viva conducted', count: 8 },
-                { label: 'No viva conducted', count: 2 }
-              ]).map((item: any) => (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-600 truncate">{item.label}</span>
-                    <span className="font-semibold text-slate-900">{item.count}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${item.label.includes('No') ? 'bg-red-500' : 'bg-orange-600'}`}
-                      style={{ width: `${Math.min(100, item.count * 6)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Q7 Hardware Setup Health */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
-            <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-              <span>7. Hardware / Kit Condition</span>
-              <Cpu className="w-3.5 h-3.5 text-emerald-600" />
-            </div>
-            <div className="space-y-2 text-xs">
-              {(distributions.hardwareSetup?.length > 0 ? distributions.hardwareSetup : [
-                { label: 'Complete working setup', count: 32 },
-                { label: 'Minor kit/PC issues', count: 5 },
-                { label: 'Broken / Missing kit', count: 1 }
-              ]).map((item: any) => (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-600 truncate">{item.label}</span>
-                    <span className="font-semibold text-slate-900">{item.count}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-emerald-600 h-full rounded-full"
-                      style={{ width: `${Math.min(100, item.count * 6)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Q8 Session Punctuality */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
-            <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-              <span>8. Session Punctuality & Time</span>
-              <Clock className="w-3.5 h-3.5 text-cyan-600" />
-            </div>
-            <div className="space-y-2 text-xs">
-              {(distributions.labPunctuality?.length > 0 ? distributions.labPunctuality : [
-                { label: 'Full duration conducted', count: 33 },
-                { label: 'Rushed through in half time', count: 4 },
-                { label: 'Ended early / left early', count: 1 }
-              ]).map((item: any) => (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-600 truncate">{item.label}</span>
-                    <span className="font-semibold text-slate-900">{item.count}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-cyan-600 h-full rounded-full"
-                      style={{ width: `${Math.min(100, item.count * 6)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
-

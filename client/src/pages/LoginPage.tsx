@@ -347,7 +347,7 @@ export const LoginPage: React.FC = () => {
                           required
                           value={identifier}
                           onChange={(e) => setIdentifier(e.target.value)}
-                          placeholder="e.g. 3GN26CI005 (USN) or admin@gndec.ac.in"
+                          placeholder="e.g. 3GN26CI005 (USN) or aiml.harishjoshi@gmail.com"
                           className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white font-medium text-slate-800"
                         />
                       </div>

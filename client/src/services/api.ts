@@ -221,7 +221,11 @@ export const api = {
   getExperimentsReport: () => request<any>('/reports/experiments'),
 
   // Analytics
-  getDepartmentAnalytics: () => request<any>('/analytics/department'),
+  getDepartmentAnalytics: (params?: { semester?: number | string }) => {
+    const query = new URLSearchParams();
+    if (params?.semester && params.semester !== 'ALL') query.append('semester', String(params.semester));
+    return request<any>(`/analytics/department?${query.toString()}`);
+  },
 
   // Audit Logs
   getAuditLogs: (params?: { action?: string; search?: string; limit?: number }) => {

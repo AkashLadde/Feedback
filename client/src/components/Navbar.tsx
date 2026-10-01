@@ -88,9 +88,7 @@ export const Navbar: React.FC = () => {
           <span className="text-cyan-800 font-semibold">Dept. of CSE in IoT & Cyber Security including Block Chain Technology</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-orange-700 font-bold bg-orange-100/70 px-2 py-0.5 rounded-md border border-orange-200 text-[10px]">Sem 1, 3, 5, 7</span>
-          <span className="text-slate-300">•</span>
-          <span className="text-slate-600 font-medium">Academic Year 2026-2027</span>
+          <span className="text-slate-600 font-semibold">Academic Year 2026-2027</span>
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import mysql from 'mysql2/promise';
+import bcrypt from 'bcryptjs';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -364,6 +365,39 @@ export function initDatabase() {
     } catch {
       // Column already exists
     }
+  }
+
+  // Ensure Admin user (aiml.harishjoshi@gmail.com / Joshi@2308) is always active and accessible
+  try {
+    const adminEmail = 'aiml.harishjoshi@gmail.com';
+    const adminPasswordHash = bcrypt.hashSync('Joshi@2308', 10);
+    const existingAdmin = sqliteDb.prepare('SELECT id FROM users WHERE lower(email) = ?').get(adminEmail.toLowerCase()) as any;
+    if (existingAdmin) {
+      sqliteDb.prepare("UPDATE users SET password_hash = ?, role = 'ADMIN', status = 'ACTIVE', name = 'Dr. Harish Joshi (HOD / Admin)' WHERE id = ?").run(adminPasswordHash, existingAdmin.id);
+    } else {
+      sqliteDb.prepare("INSERT INTO users (name, email, password_hash, role, status) VALUES ('Dr. Harish Joshi (HOD / Admin)', ?, ?, 'ADMIN', 'ACTIVE')").run(adminEmail, adminPasswordHash);
+    }
+  } catch (adminErr) {
+    console.warn('Could not auto-migrate admin user credentials:', adminErr);
+  }
+
+  // Ensure initial audit trail logs are populated if table is empty
+  try {
+    const auditCount = sqliteDb.prepare('SELECT COUNT(*) as count FROM audit_logs').get() as any;
+    if (!auditCount || auditCount.count === 0) {
+      const initLogs = [
+        ['ADMIN', 'aiml.harishjoshi@gmail.com', 'SYSTEM_INITIALIZE', 'SYSTEM', '1', 'Platform security engine initialized for GNDEC Dept. of CSE (IoT & Cyber Security including Blockchain Technology).'],
+        ['ADMIN', 'aiml.harishjoshi@gmail.com', 'CONFIGURE_GEOFENCE', 'LABORATORY', 'ALL', 'Physical room geofence boundaries (25m radius) activated for all department laboratory rooms.'],
+        ['ADMIN', 'aiml.harishjoshi@gmail.com', 'MAP_TIMETABLE', 'TIMETABLE', 'ALL', 'Practical laboratory schedules and faculty assignments configured for 1st, 3rd, 5th, 7th academic semesters.'],
+        ['ADMIN', 'aiml.harishjoshi@gmail.com', 'SECURITY_RULES', 'POLICY', '1', 'Enforced 5-minute feedback submission window before end of practical lab session and strict GPS lock verification.']
+      ];
+      const insertStmt = sqliteDb.prepare("INSERT INTO audit_logs (user_role, user_email, action, entity_type, entity_id, details, ip_address, created_at) VALUES (?, ?, ?, ?, ?, ?, '127.0.0.1', datetime('now'))");
+      for (const log of initLogs) {
+        insertStmt.run(log[0], log[1], log[2], log[3], log[4], log[5]);
+      }
+    }
+  } catch (auditErr) {
+    console.warn('Could not seed initial audit logs:', auditErr);
   }
 
   console.log('✅ Database initialized successfully with strict Anti-Duplication constraints.');

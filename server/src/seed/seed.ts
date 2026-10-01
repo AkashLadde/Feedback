@@ -26,22 +26,22 @@ export function seedDatabase() {
   `);
 
   const facultyHash = bcrypt.hashSync('Faculty@123', 10);
-  const adminHash = bcrypt.hashSync('admin123', 10);
-  const hodHash = bcrypt.hashSync('hod123', 10);
+  const adminHash = bcrypt.hashSync('Joshi@2308', 10);
+  const hodHash = bcrypt.hashSync('Joshi@2308', 10);
 
-  // 1. Semesters (1st, 3rd, 5th, 7th with Batch Years)
-  // 7th Semester: Batch 2023 (Admitted in 2023 -> 2026-2027 is 7th Sem)
-  // 5th Semester: Batch 2024 (Admitted in 2024 -> 2026-2027 is 5th Sem)
-  // 3rd Semester: Batch 2025 (Admitted in 2025 -> 2026-2027 is 3rd Sem)
-  // 1st Semester: Batch 2026 (Admitted in 2026 -> 2026-2027 is 1st Sem)
+  // 1. Semesters (1st to 8th Semester with Batch Years)
   const insertSem = db.prepare(`
     INSERT INTO semesters (number, name, academic_year, status)
     VALUES (?, ?, '2026-2027', 'ACTIVE')
   `);
   insertSem.run(1, '1st Semester (Batch 2026)');
+  insertSem.run(2, '2nd Semester (Batch 2026)');
   insertSem.run(3, '3rd Semester (Batch 2025)');
+  insertSem.run(4, '4th Semester (Batch 2025)');
   insertSem.run(5, '5th Semester (Batch 2024)');
+  insertSem.run(6, '6th Semester (Batch 2024)');
   insertSem.run(7, '7th Semester (Batch 2023)');
+  insertSem.run(8, '8th Semester (Batch 2023)');
 
   // 2. User & Faculty Statements
   const insertUser = db.prepare(`
@@ -54,10 +54,10 @@ export function seedDatabase() {
     VALUES (?, ?, ?, ?)
   `);
 
-  // Seed System Administrator
+  // Seed System Administrator & HOD Account
   const adminUserId = Number(insertUser.run(
-    'Chief System Administrator (CSE-ICB)',
-    'admin@gndec.ac.in',
+    'Dr. Harish Joshi (HOD / Admin)',
+    'aiml.harishjoshi@gmail.com',
     adminHash,
     'ADMIN'
   ).lastInsertRowid);
@@ -350,9 +350,9 @@ export function seedDatabase() {
   `);
 
   insertAudit.run(
-    hodUserId,
-    'harish.joshi@gndec.ac.in',
-    'HOD',
+    adminUserId,
+    'aiml.harishjoshi@gmail.com',
+    'ADMIN',
     'SYSTEM_INITIALIZE',
     'SYSTEM',
     '1',
