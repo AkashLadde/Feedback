@@ -107,6 +107,232 @@ router.post('/:id/end', authenticateJWT, requireRoles('FACULTY', 'ADMIN'), (req:
   }
 });
 
+// Helper functions to parse timetable slot ranges (e.g. '09.00 AM - 12.00 PM')
+function parseTimeToMinutes(timeStr: string): number {
+  const clean = timeStr.trim().toUpperCase().replace(/\./g, ':');
+  const match = clean.match(/(\d+):(\d+)\s*(AM|PM)/);
+  if (!match) return 0;
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const period = match[3];
+  if (period === 'PM' && hours < 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+}
+
+function parseTimeRange(rangeStr: string): { startMin: number; endMin: number } {
+  const parts = rangeStr.split('-');
+  if (parts.length < 2) return { startMin: 0, endMin: 1440 };
+  return {
+    startMin: parseTimeToMinutes(parts[0]),
+    endMin: parseTimeToMinutes(parts[1])
+  };
+}
+
+// POST /api/sessions/:id/unlock-window - Faculty or Admin unlocks/forces open the 10-minute attendance & feedback window
+router.post('/:id/unlock-window', authenticateJWT, requireRoles('FACULTY', 'ADMIN', 'HOD'), (req: AuthenticatedRequest, res) => {
+  try {
+    const session = db.prepare('SELECT * FROM lab_sessions WHERE id = ?').get(req.params.id) as any;
+    if (!session) {
+      return res.status(404).json({ success: false, error: 'Session not found.' });
+    }
+
+    db.prepare(`
+      UPDATE lab_sessions 
+      SET status = 'ACTIVE'
+      WHERE id = ?
+    `).run(req.params.id);
+
+    logAudit(req.user!.id, req.user!.email, req.user!.role, 'UNLOCK_ATTENDANCE_WINDOW', 'LAB_SESSION', req.params.id, `Unlocked attendance and feedback window for session ${session.session_code}`);
+
+    return res.json({ success: true, message: 'Attendance & Feedback submission window is now active and unlocked.' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: 'Failed to unlock attendance window.' });
+  }
+});
+
+// GET /api/sessions/student-status - Live semester-isolated lab schedule & 10-minute window check for logged in student
+router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: AuthenticatedRequest, res) => {
+  try {
+    const student = db.prepare(`
+      SELECT s.*, u.name, u.email 
+      FROM students s 
+      JOIN users u ON s.user_id = u.id 
+      WHERE s.user_id = ?
+    `).get(req.user!.id) as any;
+
+    if (!student) {
+      return res.status(404).json({ success: false, error: 'Student record not found.' });
+    }
+
+    const semNum = student.semester || 3;
+    const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const now = new Date();
+    const currentDay = days[now.getDay()];
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentMinutesOfDay = currentHour * 60 + currentMinute;
+    const currentTimeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    // 1. Fetch Today's scheduled timetable labs for this student's semester ONLY
+    const todayLabs = db.prepare(`
+      SELECT te.*, l.id as laboratory_id, l.latitude, l.longitude, l.geofence_radius, l.room_number
+      FROM timetable_entries te
+      LEFT JOIN laboratories l ON l.code = te.subject_code
+      WHERE te.semester = ? AND upper(te.day_of_week) = ?
+      ORDER BY te.slot_index ASC
+    `).all(semNum, currentDay) as any[];
+
+    // 2. Fetch Active Faculty-Started Session for this Semester (if any)
+    const activeFacultySession = db.prepare(`
+      SELECT ls.*, 
+             l.name as lab_name, l.code as lab_code, l.room_number, l.latitude, l.longitude, l.geofence_radius,
+             e.experiment_number, e.title as experiment_title, e.description as experiment_description,
+             u.name as faculty_name, f.employee_id as faculty_emp_id
+      FROM lab_sessions ls
+      JOIN laboratories l ON ls.laboratory_id = l.id
+      JOIN experiments e ON ls.experiment_id = e.id
+      JOIN faculty f ON ls.faculty_id = f.id
+      JOIN users u ON f.user_id = u.id
+      WHERE ls.semester = ? AND ls.status = 'ACTIVE'
+      ORDER BY ls.started_at DESC LIMIT 1
+    `).get(semNum) as any;
+
+    // 3. Determine if student is currently within scheduled lab timing
+    let matchingSlot: any = null;
+    let isWithinTimetableTime = false;
+    let isLast10Minutes = false;
+    let minutesRemainingInLab = 0;
+    let minutesUntilSubmissionOpens = 0;
+
+    for (const slot of todayLabs) {
+      const { startMin, endMin } = parseTimeRange(slot.time_range || '');
+      if (currentMinutesOfDay >= startMin && currentMinutesOfDay <= endMin) {
+        matchingSlot = slot;
+        isWithinTimetableTime = true;
+        minutesRemainingInLab = Math.max(0, endMin - currentMinutesOfDay);
+        // Last 10 minutes of the lab session
+        if (currentMinutesOfDay >= (endMin - 10)) {
+          isLast10Minutes = true;
+          minutesUntilSubmissionOpens = 0;
+        } else {
+          isLast10Minutes = false;
+          minutesUntilSubmissionOpens = (endMin - 10) - currentMinutesOfDay;
+        }
+        break;
+      }
+    }
+
+    // If an active session is live from faculty/admin, allow it even if outside strict timetable clock
+    const isLabActive = !!activeFacultySession || isWithinTimetableTime;
+    
+    // If active faculty session exists, submission is open if remaining <= 10 or faculty active
+    if (activeFacultySession) {
+      // If timetable slot matches or faculty active
+      if (!isWithinTimetableTime) {
+        isLast10Minutes = true; // Faculty explicitly started session
+        minutesRemainingInLab = 30;
+      }
+    }
+
+    // 4. Find Next Upcoming Scheduled Lab if not currently in lab
+    let nextScheduledLab: any = null;
+    if (!isLabActive) {
+      // First check later today
+      for (const slot of todayLabs) {
+        const { startMin } = parseTimeRange(slot.time_range || '');
+        if (startMin > currentMinutesOfDay) {
+          nextScheduledLab = { ...slot, when: `Today at ${slot.time_range.split('-')[0].trim()}` };
+          break;
+        }
+      }
+
+      // If none later today, get next day's lab
+      if (!nextScheduledLab) {
+        const allUpcoming = db.prepare(`
+          SELECT * FROM timetable_entries 
+          WHERE semester = ? 
+          ORDER BY CASE day_of_week 
+            WHEN 'MONDAY' THEN 1 
+            WHEN 'TUESDAY' THEN 2 
+            WHEN 'WEDNESDAY' THEN 3 
+            WHEN 'THURSDAY' THEN 4 
+            WHEN 'FRIDAY' THEN 5 
+            WHEN 'SATURDAY' THEN 6 
+            ELSE 7 END, slot_index ASC
+        `).all(semNum) as any[];
+
+        if (allUpcoming.length > 0) {
+          nextScheduledLab = { ...allUpcoming[0], when: `${allUpcoming[0].day_of_week} (${allUpcoming[0].time_range})` };
+        }
+      }
+    }
+
+    // 5. Check if student has ALREADY submitted attendance & feedback for this active session
+    let hasSubmitted = false;
+    let submissionRecord: any = null;
+
+    if (activeFacultySession) {
+      const existing = db.prepare(`
+        SELECT a.id as attendance_id, a.timestamp as attendance_time, a.distance_to_lab,
+               f.id as feedback_id, f.overall_rating, f.submitted_at as feedback_time,
+               f.verification_status
+        FROM attendance a
+        LEFT JOIN feedback f ON (f.student_id = a.student_id AND f.lab_session_id = a.lab_session_id)
+        WHERE a.student_id = ? AND a.lab_session_id = ?
+      `).get(student.id, activeFacultySession.id) as any;
+
+      if (existing) {
+        hasSubmitted = true;
+        submissionRecord = existing;
+      }
+    } else if (matchingSlot) {
+      // Check if attendance already recorded today for this subject
+      const todayExisting = db.prepare(`
+        SELECT a.id as attendance_id, a.timestamp as attendance_time, a.distance_to_lab,
+               f.id as feedback_id, f.overall_rating, f.submitted_at as feedback_time,
+               f.verification_status
+        FROM attendance a
+        JOIN lab_sessions ls ON a.lab_session_id = ls.id
+        JOIN laboratories l ON ls.laboratory_id = l.id
+        LEFT JOIN feedback f ON (f.student_id = a.student_id AND f.lab_session_id = a.lab_session_id)
+        WHERE a.student_id = ? AND l.code = ? AND date(a.timestamp) = date('now')
+      `).get(student.id, matchingSlot.subject_code) as any;
+
+      if (todayExisting) {
+        hasSubmitted = true;
+        submissionRecord = todayExisting;
+      }
+    }
+
+    return res.json({
+      success: true,
+      student: {
+        id: student.id,
+        name: student.name,
+        usn: student.usn,
+        semester: semNum,
+        batch: student.batch || (semNum === 7 ? 'Batch 2023' : semNum === 5 ? 'Batch 2024' : 'Batch 2025')
+      },
+      currentDay,
+      currentTime: currentTimeFormatted,
+      isLabActive,
+      isLast10Minutes,
+      minutesRemainingInLab,
+      minutesUntilSubmissionOpens,
+      activeSession: activeFacultySession,
+      matchingSlot,
+      todayScheduledLabs: todayLabs,
+      nextScheduledLab,
+      hasSubmitted,
+      submissionRecord
+    });
+  } catch (err: any) {
+    console.error('Student status check error:', err);
+    return res.status(500).json({ success: false, error: 'Failed to retrieve student laboratory status.' });
+  }
+});
+
 // GET /api/sessions/active - get all currently active lab sessions
 router.get('/active', (req, res) => {
   try {

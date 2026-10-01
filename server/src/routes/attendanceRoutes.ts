@@ -6,6 +6,197 @@ import { logAudit } from '../services/auditService.js';
 
 const router = Router();
 
+// POST /api/attendance/submit-unified - Unified Atomic Attendance & Mandatory Feedback Submission
+router.post('/submit-unified', authenticateJWT, requireRoles('STUDENT'), (req: AuthenticatedRequest, res) => {
+  const {
+    session_id,
+    qr_token,
+    session_code,
+    latitude,
+    longitude,
+    accuracy,
+    device_fingerprint,
+    // Compulsory Feedback Parameters
+    overall_rating,
+    teaching_basics,
+    hands_on,
+    teacher_guidance,
+    doubt_support,
+    reason_understanding,
+    viva_taken,
+    hardware_setup,
+    lab_punctuality,
+    comments,
+    anonymous_to_teacher
+  } = req.body;
+
+  // 1. Mandatory Core Location & Session Verification
+  if (!session_id || latitude === undefined || longitude === undefined) {
+    return res.status(400).json({ success: false, error: 'Laboratory session and GPS location coordinates are required.' });
+  }
+
+  // 2. Strict Verification of ALL 9 Feedback Criteria (Compulsory for Attendance)
+  if (
+    !teaching_basics ||
+    !hands_on ||
+    !teacher_guidance ||
+    !doubt_support ||
+    !reason_understanding ||
+    !viva_taken ||
+    !hardware_setup ||
+    !lab_punctuality ||
+    !overall_rating
+  ) {
+    return res.status(400).json({
+      success: false,
+      error: 'Attendance cannot be recorded without mandatory laboratory feedback. All 8 teacher evaluation dimensions and star rating are compulsory.'
+    });
+  }
+
+  try {
+    // 3. Fetch Student Profile
+    const student = db.prepare('SELECT * FROM students WHERE user_id = ?').get(req.user!.id) as any;
+    if (!student) {
+      return res.status(404).json({ success: false, error: 'Student profile not found.' });
+    }
+
+    // 4. Fetch Active Lab Session
+    const session = db.prepare(`
+      SELECT ls.*, l.name as lab_name, l.code as lab_code, l.latitude as lab_lat, l.longitude as lab_lng, l.geofence_radius, l.room_number,
+             e.experiment_number, e.title as experiment_title
+      FROM lab_sessions ls
+      JOIN laboratories l ON ls.laboratory_id = l.id
+      JOIN experiments e ON ls.experiment_id = e.id
+      WHERE ls.id = ?
+    `).get(session_id) as any;
+
+    if (!session) {
+      return res.status(404).json({ success: false, error: 'Laboratory session not found.' });
+    }
+
+    if (session.status !== 'ACTIVE') {
+      return res.status(400).json({ success: false, error: 'This laboratory session has ended or is not active.' });
+    }
+
+    // 5. Semester Match Enforcement
+    if (student.semester !== session.semester) {
+      return res.status(400).json({
+        success: false,
+        error: `Semester mismatch: You are enrolled in Semester ${student.semester}, while this session is for Semester ${session.semester}.`
+      });
+    }
+
+    // 6. Anti-Duplication Check (Database Unique Key Guard)
+    const existingAttendance = db.prepare(`
+      SELECT id, timestamp FROM attendance WHERE student_id = ? AND lab_session_id = ?
+    `).get(student.id, session.id) as any;
+
+    if (existingAttendance) {
+      return res.status(409).json({
+        success: false,
+        error: `Attendance and feedback were already recorded for this session at ${existingAttendance.timestamp}. Duplicate submission is strictly prohibited.`
+      });
+    }
+
+    // 7. High-Precision Satellite GPS Geofence Evaluation (< 25m Room Boundary)
+    const geoEval = evaluateGeofence(
+      parseFloat(latitude),
+      parseFloat(longitude),
+      parseFloat(accuracy || 15.0),
+      session.lab_lat,
+      session.lab_lng,
+      session.geofence_radius || 25.0
+    );
+
+    if (geoEval.status === 'OUTSIDE') {
+      return res.status(400).json({
+        success: false,
+        geofence: geoEval,
+        error: `Geofence violation: You are outside the laboratory room boundary (${Math.round(geoEval.distance)}m away, allowable radius ${session.geofence_radius || 25}m). You must be physically inside the lab to submit attendance & feedback.`
+      });
+    }
+
+    // 8. Atomic Database Transaction: Insert Attendance Record & Mandatory Feedback Record Together
+    const ratingNum = parseInt(overall_rating, 10) || 5;
+
+    // Insert Attendance
+    const attendanceResult = db.prepare(`
+      INSERT INTO attendance (
+        student_id, lab_session_id, experiment_id,
+        latitude, longitude, accuracy, distance_to_lab,
+        geofence_status, verification_status, device_fingerprint, timestamp
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PRESENT', ?, datetime('now'))
+    `).run(
+      student.id,
+      session.id,
+      session.experiment_id,
+      latitude,
+      longitude,
+      accuracy || 15.0,
+      geoEval.distance,
+      geoEval.status,
+      device_fingerprint || null
+    );
+
+    const attendanceId = Number(attendanceResult.lastInsertRowid);
+
+    // Insert Feedback Linked to Attendance
+    const feedbackResult = db.prepare(`
+      INSERT INTO feedback (
+        student_id, lab_session_id, experiment_id,
+        teaching_basics, hands_on, doubt_support, reason_understanding,
+        viva_taken, hardware_setup, teacher_guidance, lab_punctuality,
+        overall_rating, comments, anonymous_to_teacher,
+        attendance_id, verification_status, flags, submitted_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'VERIFIED', 'NONE', datetime('now'))
+    `).run(
+      student.id,
+      session.id,
+      session.experiment_id,
+      teaching_basics,
+      hands_on,
+      doubt_support,
+      reason_understanding,
+      viva_taken,
+      hardware_setup,
+      teacher_guidance,
+      lab_punctuality,
+      ratingNum,
+      comments ? comments.trim() : '',
+      anonymous_to_teacher !== undefined ? (anonymous_to_teacher ? 1 : 0) : 1,
+      attendanceId
+    );
+
+    const feedbackId = Number(feedbackResult.lastInsertRowid);
+
+    // Log Audit Event
+    logAudit(
+      req.user!.id,
+      req.user!.email,
+      req.user!.role,
+      'SUBMIT_UNIFIED_ATTENDANCE_FEEDBACK',
+      'ATTENDANCE',
+      String(attendanceId),
+      `Unified attendance and mandatory feedback recorded for session ${session.session_code} (Dist: ${Math.round(geoEval.distance)}m, Rating: ${ratingNum}/5)`
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'Attendance & Mandatory Laboratory Feedback recorded successfully.',
+      attendanceId,
+      feedbackId,
+      sessionCode: session.session_code,
+      labName: session.lab_name,
+      experimentTitle: `Exp #${session.experiment_number}: ${session.experiment_title}`,
+      geofence: geoEval,
+      submittedAt: new Date().toISOString()
+    });
+  } catch (err: any) {
+    console.error('Unified attendance submission error:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Failed to record attendance and feedback.' });
+  }
+});
+
 // POST /api/attendance/check-in - Student marks attendance with Geofence verification
 router.post('/check-in', authenticateJWT, requireRoles('STUDENT'), (req: AuthenticatedRequest, res) => {
   const { session_id, latitude, longitude, accuracy, device_fingerprint } = req.body;

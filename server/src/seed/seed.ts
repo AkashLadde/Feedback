@@ -26,15 +26,22 @@ export function seedDatabase() {
   `);
 
   const facultyHash = bcrypt.hashSync('Faculty@123', 10);
+  const adminHash = bcrypt.hashSync('admin123', 10);
+  const hodHash = bcrypt.hashSync('hod123', 10);
 
-  // 1. Semesters (3rd, 5th, 7th)
+  // 1. Semesters (1st, 3rd, 5th, 7th with Batch Years)
+  // 7th Semester: Batch 2023 (Admitted in 2023 -> 2026-2027 is 7th Sem)
+  // 5th Semester: Batch 2024 (Admitted in 2024 -> 2026-2027 is 5th Sem)
+  // 3rd Semester: Batch 2025 (Admitted in 2025 -> 2026-2027 is 3rd Sem)
+  // 1st Semester: Batch 2026 (Admitted in 2026 -> 2026-2027 is 1st Sem)
   const insertSem = db.prepare(`
     INSERT INTO semesters (number, name, academic_year, status)
     VALUES (?, ?, '2026-2027', 'ACTIVE')
   `);
-  insertSem.run(3, '3rd Semester');
-  insertSem.run(5, '5th Semester');
-  insertSem.run(7, '7th Semester');
+  insertSem.run(1, '1st Semester (Batch 2026)');
+  insertSem.run(3, '3rd Semester (Batch 2025)');
+  insertSem.run(5, '5th Semester (Batch 2024)');
+  insertSem.run(7, '7th Semester (Batch 2023)');
 
   // 2. User & Faculty Statements
   const insertUser = db.prepare(`
@@ -46,6 +53,23 @@ export function seedDatabase() {
     INSERT INTO faculty (user_id, employee_id, designation, specialization)
     VALUES (?, ?, ?, ?)
   `);
+
+  // Seed System Administrator
+  const adminUserId = Number(insertUser.run(
+    'Chief System Administrator (CSE-ICB)',
+    'admin@gndec.ac.in',
+    adminHash,
+    'ADMIN'
+  ).lastInsertRowid);
+
+  // Seed HOD Alias Account
+  const hodAliasUserId = Number(insertUser.run(
+    'Head of Department (CSE-ICB)',
+    'hod.cse@gndec.ac.in',
+    hodHash,
+    'HOD'
+  ).lastInsertRowid);
+  insertFaculty.run(hodAliasUserId, 'GNDEC-HOD-01', 'Head of Department & Professor', 'Department Administration & IoT-Blockchain Curriculum');
 
   // 3. Faculty Members (Official faculty from CSE-ICB with Dr. Harish Joshi as Head of Department)
   const facultyData = [
@@ -66,7 +90,7 @@ export function seedDatabase() {
 
   const facultyMap: Record<string, number> = {};
   const facultyUserMap: Record<string, number> = {};
-  let hodUserId = 1;
+  let hodUserId = hodAliasUserId;
 
   for (const f of facultyData) {
     const fUserId = Number(insertUser.run(f.name, f.email, facultyHash, f.role || 'FACULTY').lastInsertRowid);
@@ -76,6 +100,24 @@ export function seedDatabase() {
     if (f.abbr === 'HJ') {
       hodUserId = fUserId;
     }
+  }
+
+  // 4. Seed Verified Demo Students for 3rd, 5th, and 7th Semesters
+  const studentHash = bcrypt.hashSync('Student@123', 10);
+  const insertStudent = db.prepare(`
+    INSERT INTO students (user_id, usn, semester, section, batch_year, current_academic_year, admission_year, status)
+    VALUES (?, ?, ?, 'A', ?, '2026-2027', ?, 'VERIFIED')
+  `);
+
+  const demoStudents = [
+    { name: 'Pooja Patil (7th Sem)', email: 'pooja.7th@gndec.ac.in', usn: '3GN23CI045', sem: 7, batch: '2023-2027', admissionYear: 2023 },
+    { name: 'Rahul Sharma (5th Sem)', email: 'rahul.5th@gndec.ac.in', usn: '3GN24CI028', sem: 5, batch: '2024-2028', admissionYear: 2024 },
+    { name: 'Sneha Biradar (3rd Sem)', email: 'sneha.3rd@gndec.ac.in', usn: '3GN25CI012', sem: 3, batch: '2025-2029', admissionYear: 2025 }
+  ];
+
+  for (const s of demoStudents) {
+    const sUserId = Number(insertUser.run(s.name, s.email, studentHash, 'STUDENT').lastInsertRowid);
+    insertStudent.run(sUserId, s.usn, s.sem, s.batch, s.admissionYear);
   }
 
   // 4. Zero Pre-seeded Students (Real students self-register, then Admin/HOD verifies them)

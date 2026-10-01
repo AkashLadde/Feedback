@@ -223,13 +223,31 @@ export const LiveSessionPage: React.FC = () => {
                 </button>
 
                 {isStaff && (
-                  <button
-                    onClick={() => handleEndSession(liveData.session.id)}
-                    className="px-3 py-2 bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
-                  >
-                    <StopCircle className="w-4 h-4" />
-                    <span>End Session</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await api.unlockAttendanceWindow(liveData.session.id);
+                          alert('Attendance & Compulsory Feedback portal has been forcefully unlocked for this session.');
+                        } catch (e: any) {
+                          alert(e.message || 'Failed to unlock window.');
+                        }
+                      }}
+                      className="px-3 py-2 bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                      title="Force open attendance and feedback window for students right now"
+                    >
+                      <Clock className="w-4 h-4 text-orange-600" />
+                      <span>Unlock 10-Min Portal Now</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleEndSession(liveData.session.id)}
+                      className="px-3 py-2 bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                    >
+                      <StopCircle className="w-4 h-4" />
+                      <span>End Session</span>
+                    </button>
+                  </>
                 )}
               </div>
             </div>

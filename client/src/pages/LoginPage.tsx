@@ -40,25 +40,25 @@ export const LoginPage: React.FC = () => {
   const [serverStatus, setServerStatus] = useState<'UNTESTED' | 'ONLINE' | 'ERROR'>('UNTESTED');
 
   // Login States
-  const [roleTab, setRoleTab] = useState<'STUDENT' | 'TEACHER'>('STUDENT');
+  const [roleTab, setRoleTab] = useState<'STUDENT' | 'TEACHER' | 'ADMIN'>('STUDENT');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Student Registration States
+  // Student Registration States (Batch 2023 -> 7th Sem, Batch 2024 -> 5th Sem, Batch 2025 -> 3rd Sem)
   const [regName, setRegName] = useState('');
   const [regUsn, setRegUsn] = useState('');
   const [regEmail, setRegEmail] = useState('');
-  const [regSemester, setRegSemester] = useState<number>(3);
-  const [regBatch, setRegBatch] = useState('2024-2028');
+  const [regSemester, setRegSemester] = useState<number>(7);
+  const [regBatch, setRegBatch] = useState('2023-2027');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regDepartment] = useState('CSE in IoT & Cyber Security including Block Chain Technology');
 
-  const handleRoleTabChange = (role: 'STUDENT' | 'TEACHER') => {
+  const handleRoleTabChange = (role: 'STUDENT' | 'TEACHER' | 'ADMIN') => {
     setRoleTab(role);
     setError(null);
     setIdentifier('');
@@ -67,9 +67,18 @@ export const LoginPage: React.FC = () => {
 
   const handleSemesterChangeInReg = (sem: number) => {
     setRegSemester(sem);
-    if (sem === 3) setRegBatch('2024-2028');
-    else if (sem === 5) setRegBatch('2023-2027');
-    else if (sem === 7) setRegBatch('2022-2026');
+    if (sem === 7) setRegBatch('2023-2027 (Batch 2023)');
+    else if (sem === 5) setRegBatch('2024-2028 (Batch 2024)');
+    else if (sem === 3) setRegBatch('2025-2029 (Batch 2025)');
+    else if (sem === 1) setRegBatch('2026-2030 (Batch 2026)');
+  };
+
+  const handleFillDemo = (id: string, pass: string, role: 'STUDENT' | 'TEACHER' | 'ADMIN') => {
+    setAuthMode('LOGIN');
+    setRoleTab(role);
+    setIdentifier(id);
+    setPassword(pass);
+    setError(null);
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -354,8 +363,8 @@ export const LoginPage: React.FC = () => {
                     <p className="text-xs text-slate-500 mt-0.5">Choose your role to access your portal</p>
                   </div>
 
-                  {/* Role Selector: Student vs Teacher */}
-                  <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 mb-4">
+                  {/* Role Selector: Student vs Teacher vs Admin */}
+                  <div className="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 mb-4">
                     <button
                       type="button"
                       onClick={() => handleRoleTabChange('STUDENT')}
@@ -379,7 +388,20 @@ export const LoginPage: React.FC = () => {
                       }`}
                     >
                       <UserCheck className="w-3.5 h-3.5" />
-                      <span>Teacher / Staff</span>
+                      <span>Faculty</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRoleTabChange('ADMIN')}
+                      className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                        roleTab === 'ADMIN'
+                          ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-md shadow-slate-900/20'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <Shield className="w-3.5 h-3.5" />
+                      <span>Admin</span>
                     </button>
                   </div>
 
@@ -387,8 +409,10 @@ export const LoginPage: React.FC = () => {
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
                         {roleTab === 'STUDENT'
-                          ? 'Student USN (e.g. 3GN24CB001) or Email'
-                          : 'Institutional Email Address'}
+                          ? 'Student USN (e.g. 3GN23CI045, 3GN25CI012) or Email'
+                          : roleTab === 'ADMIN'
+                          ? 'Administrator Institutional Email'
+                          : 'Faculty / Staff Institutional Email'}
                       </label>
                       <div className="relative">
                         <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -399,8 +423,10 @@ export const LoginPage: React.FC = () => {
                           onChange={(e) => setIdentifier(e.target.value)}
                           placeholder={
                             roleTab === 'STUDENT'
-                              ? 'e.g. 3GN24CB001 or student@gndec.ac.in'
-                              : 'e.g. harish.joshi@gndec.ac.in, aarti.pawar@gndec.ac.in'
+                              ? 'e.g. 3GN23CI045 (7th Sem) or 3GN25CI012 (3rd Sem)'
+                              : roleTab === 'ADMIN'
+                              ? 'admin@gndec.ac.in'
+                              : 'e.g. hod.cse@gndec.ac.in, harish.joshi@gndec.ac.in'
                           }
                           className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white font-medium text-slate-800"
                         />
@@ -432,7 +458,7 @@ export const LoginPage: React.FC = () => {
                       ) : (
                         <>
                           <span>
-                            Sign In to Portal
+                            {roleTab === 'ADMIN' ? 'Sign In as System Administrator' : roleTab === 'TEACHER' ? 'Sign In as Faculty' : 'Sign In as Student'}
                           </span>
                           <ArrowRight className="w-4 h-4" />
                         </>
@@ -440,19 +466,69 @@ export const LoginPage: React.FC = () => {
                     </button>
                   </form>
 
-                  {/* Student Register Callout if on student tab */}
-                  {roleTab === 'STUDENT' && (
-                    <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-xl text-xs text-cyan-900 flex items-center justify-between gap-2 mt-2">
-                      <span className="text-[11px] font-medium">New student? Create your account first.</span>
+                  {/* Quick Demo Access Login Badges */}
+                  <div className="pt-3 border-t border-slate-200/80 space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+                        <span>Quick Access Logins (One-Click):</span>
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      {/* Admin Credentials */}
                       <button
                         type="button"
-                        onClick={() => setAuthMode('REGISTER')}
-                        className="text-cyan-700 font-extrabold hover:underline text-[11px]"
+                        onClick={() => handleFillDemo('admin@gndec.ac.in', 'admin123', 'ADMIN')}
+                        className="p-2 bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-left border border-slate-700 transition-all flex flex-col justify-between"
                       >
-                        Register Now →
+                        <div className="font-extrabold flex items-center gap-1">
+                          <Shield className="w-3 h-3 text-cyan-400" />
+                          <span>Admin Login</span>
+                        </div>
+                        <div className="text-[10px] text-slate-300 font-mono mt-0.5">admin@gndec.ac.in</div>
+                      </button>
+
+                      {/* HOD Credentials */}
+                      <button
+                        type="button"
+                        onClick={() => handleFillDemo('hod.cse@gndec.ac.in', 'hod123', 'TEACHER')}
+                        className="p-2 bg-orange-50 hover:bg-orange-100 text-orange-900 rounded-xl text-left border border-orange-200 transition-all flex flex-col justify-between"
+                      >
+                        <div className="font-extrabold flex items-center gap-1 text-orange-950">
+                          <UserCheck className="w-3 h-3 text-orange-600" />
+                          <span>HOD Dr. Harish Joshi</span>
+                        </div>
+                        <div className="text-[10px] text-orange-700 font-mono mt-0.5">hod.cse@gndec.ac.in</div>
+                      </button>
+
+                      {/* 7th Sem Student (Batch 2023) */}
+                      <button
+                        type="button"
+                        onClick={() => handleFillDemo('3GN23CI045', 'Student@123', 'STUDENT')}
+                        className="p-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-950 rounded-xl text-left border border-cyan-200 transition-all flex flex-col justify-between"
+                      >
+                        <div className="font-extrabold flex items-center gap-1 text-cyan-900">
+                          <GraduationCap className="w-3 h-3 text-cyan-600" />
+                          <span>7th Sem Student (Batch 2023)</span>
+                        </div>
+                        <div className="text-[10px] text-cyan-700 font-mono mt-0.5">3GN23CI045</div>
+                      </button>
+
+                      {/* 3rd Sem Student (Batch 2025) */}
+                      <button
+                        type="button"
+                        onClick={() => handleFillDemo('3GN25CI012', 'Student@123', 'STUDENT')}
+                        className="p-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-950 rounded-xl text-left border border-cyan-200 transition-all flex flex-col justify-between"
+                      >
+                        <div className="font-extrabold flex items-center gap-1 text-cyan-900">
+                          <GraduationCap className="w-3 h-3 text-cyan-600" />
+                          <span>3rd Sem Student (Batch 2025)</span>
+                        </div>
+                        <div className="text-[10px] text-cyan-700 font-mono mt-0.5">3GN25CI012</div>
                       </button>
                     </div>
-                  )}
+                  </div>
                 </div>
               ) : (
                 /* ================= STUDENT SELF-REGISTRATION FORM ================= */
@@ -505,9 +581,10 @@ export const LoginPage: React.FC = () => {
                           onChange={(e) => handleSemesterChangeInReg(parseInt(e.target.value, 10))}
                           className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-cyan-500 outline-none"
                         >
-                          <option value={3}>3rd Semester (2024-2028)</option>
-                          <option value={5}>5th Semester (2023-2027)</option>
-                          <option value={7}>7th Semester (2022-2026)</option>
+                          <option value={7}>7th Semester (Batch 2023 - 2027)</option>
+                          <option value={5}>5th Semester (Batch 2024 - 2028)</option>
+                          <option value={3}>3rd Semester (Batch 2025 - 2029)</option>
+                          <option value={1}>1st Semester (Batch 2026 - 2030)</option>
                         </select>
                       </div>
                     </div>

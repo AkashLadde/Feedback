@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+import confetti from 'canvas-confetti';
 import {
   MapPin,
   ShieldCheck,
@@ -14,18 +15,26 @@ import {
   Satellite,
   Compass,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Clock,
+  Sparkles,
+  Star,
+  BookOpen,
+  Cpu,
+  UserCheck,
+  MessageSquare,
+  FlaskConical,
+  Unlock,
+  AlertCircle
 } from 'lucide-react';
 
 export const StudentAttendancePage: React.FC = () => {
   const { user, setActiveTab, triggerRefresh } = useAuth();
-  const [activeSession, setActiveSession] = useState<any | null>(null);
+  const [scheduleStatus, setScheduleStatus] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
-  const [alreadyCheckedIn, setAlreadyCheckedIn] = useState<boolean>(false);
-  const [existingRecord, setExistingRecord] = useState<any | null>(null);
 
   // Strong GPS Geolocation State
   const [latitude, setLatitude] = useState<number>(17.9104);
@@ -33,41 +42,60 @@ export const StudentAttendancePage: React.FC = () => {
   const [accuracy, setAccuracy] = useState<number>(8.0);
   const [locating, setLocating] = useState<boolean>(false);
   const [gpsLocked, setGpsLocked] = useState<boolean>(false);
+  const [qrToken, setQrToken] = useState<string>('');
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        const [sessRes, myAttRes] = await Promise.all([
-          api.getActiveSessions(),
-          api.getStudentAttendance('me').catch(() => ({ records: [] }))
-        ]);
+  // 8 Mandatory Feedback Evaluation Fields (Compulsory for Attendance)
+  const [teachingBasics, setTeachingBasics] = useState<string>('Thoroughly explained on board/slides with clear objectives');
+  const [handsOn, setHandsOn] = useState<string>('Yes, performed hands-on individually on my PC/Kit');
+  const [teacherGuidance, setTeacherGuidance] = useState<string>('Continuously guided and inspected each student desk');
+  const [doubtSupport, setDoubtSupport] = useState<string>('Extremely cooperative, patiently cleared every doubt');
+  const [reasonUnderstanding, setReasonUnderstanding] = useState<string>('Yes, fully understand the working principle & reasons');
+  const [vivaTaken, setVivaTaken] = useState<string>('Yes, detailed one-on-one individual viva conducted');
+  const [hardwareSetup, setHardwareSetup] = useState<string>('Complete working setup (all kits, PCs & software working)');
+  const [labPunctuality, setLabPunctuality] = useState<string>('Full scheduled lab duration conducted properly');
+  const [overallRating, setOverallRating] = useState<number>(5);
+  const [hoverRating, setHoverRating] = useState<number>(0);
+  const [comments, setComments] = useState<string>('');
 
-        if (sessRes.success && sessRes.sessions?.length > 0) {
-          const sess = sessRes.sessions[0];
-          setActiveSession(sess);
+  const [testingUnlock, setTestingUnlock] = useState<boolean>(false);
 
-          // Check if student has already recorded attendance for this session (Strict Zero Duplication)
-          if (myAttRes.records && myAttRes.records.length > 0) {
-            const found = myAttRes.records.find((r: any) => r.lab_session_id === sess.id);
-            if (found) {
-              setAlreadyCheckedIn(true);
-              setExistingRecord(found);
+  const fetchStatus = async () => {
+    try {
+      setLoading(true);
+      const res = await api.getStudentLabScheduleStatus();
+      if (res.success) {
+        setScheduleStatus(res);
+        if (res.activeSession?.latitude && res.activeSession?.longitude) {
+          setLatitude(res.activeSession.latitude + 0.00004);
+          setLongitude(res.activeSession.longitude + 0.00004);
+        } else if (res.matchingSlot?.latitude && res.matchingSlot?.longitude) {
+          setLatitude(res.matchingSlot.latitude + 0.00004);
+          setLongitude(res.matchingSlot.longitude + 0.00004);
+        }
+
+        // Check if active live session has a QR token to auto-populate
+        if (res.activeSession?.id) {
+          try {
+            const liveRes = await api.getLiveSession(res.activeSession.id);
+            if (liveRes.success && liveRes.activeQR?.token) {
+              setQrToken(liveRes.activeQR.token);
             }
-          }
-
-          if (sess.latitude && sess.longitude) {
-            setLatitude(sess.latitude + 0.00004);
-            setLongitude(sess.longitude + 0.00004);
+          } catch (e) {
+            // Ignore if live session QR not active
           }
         }
-      } catch (err) {
-        console.error('Error loading session attendance state:', err);
-      } finally {
-        setLoading(false);
       }
+    } catch (err) {
+      console.error('Failed to load schedule status:', err);
+    } finally {
+      setLoading(false);
     }
-    loadData();
+  };
+
+  useEffect(() => {
+    fetchStatus();
+    const timer = setInterval(fetchStatus, 30000);
+    return () => clearInterval(timer);
   }, []);
 
   // Strong High-Accuracy Device GPS Capture
@@ -89,7 +117,7 @@ export const StudentAttendancePage: React.FC = () => {
       },
       (err) => {
         setLocating(false);
-        alert('GPS capture note: ' + err.message + '. Ensure location permissions are granted.');
+        alert('GPS notice: ' + err.message + '. Please allow location access.');
       },
       {
         enableHighAccuracy: true,
@@ -101,9 +129,8 @@ export const StudentAttendancePage: React.FC = () => {
 
   // Preset location simulations for laboratory testing
   const setPreset = (type: 'INSIDE' | 'DOORWAY' | 'CAFETERIA' | 'LOW_ACCURACY') => {
-    if (!activeSession) return;
-    const baseLat = activeSession.latitude || 17.9104;
-    const baseLng = activeSession.longitude || 77.5199;
+    const baseLat = scheduleStatus?.activeSession?.latitude || scheduleStatus?.matchingSlot?.latitude || 17.9104;
+    const baseLng = scheduleStatus?.activeSession?.longitude || scheduleStatus?.matchingSlot?.longitude || 77.5199;
 
     if (type === 'INSIDE') {
       setLatitude(baseLat + 0.00004);
@@ -125,19 +152,16 @@ export const StudentAttendancePage: React.FC = () => {
     setResultMessage(null);
   };
 
-  // Distance computation via Haversine
+  // Distance computation via Haversine formula
   const calculateDistance = () => {
-    if (!activeSession) return 0;
-    const lat1 = latitude;
-    const lon1 = longitude;
-    const lat2 = activeSession.latitude || 17.9104;
-    const lon2 = activeSession.longitude || 77.5199;
+    const targetLat = scheduleStatus?.activeSession?.latitude || scheduleStatus?.matchingSlot?.latitude || 17.9104;
+    const targetLng = scheduleStatus?.activeSession?.longitude || scheduleStatus?.matchingSlot?.longitude || 77.5199;
 
     const R = 6371e3;
-    const phi1 = (lat1 * Math.PI) / 180;
-    const phi2 = (lat2 * Math.PI) / 180;
-    const deltaPhi = ((lat2 - lat1) * Math.PI) / 180;
-    const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
+    const phi1 = (latitude * Math.PI) / 180;
+    const phi2 = (targetLat * Math.PI) / 180;
+    const deltaPhi = ((targetLat - latitude) * Math.PI) / 180;
+    const deltaLambda = ((targetLng - longitude) * Math.PI) / 180;
 
     const a =
       Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
@@ -147,286 +171,712 @@ export const StudentAttendancePage: React.FC = () => {
   };
 
   const distance = calculateDistance();
-  const radius = activeSession?.geofence_radius || 25;
+  const radius = scheduleStatus?.activeSession?.geofence_radius || scheduleStatus?.matchingSlot?.geofence_radius || 25;
 
-  // Signal Strength Classification
   const isGpsStrong = accuracy <= 15.0;
   const isGpsModerate = accuracy > 15.0 && accuracy <= 25.0;
 
-  // Determine Geofence State Banner
   let geoState: 'GREEN' | 'YELLOW' | 'RED' = 'GREEN';
-  let geoMessage = 'Strong GPS Lock Verified — You are within the laboratory perimeter.';
+  let geoMessage = 'Strong GPS Lock Verified — You are inside the laboratory room perimeter.';
 
   if (accuracy > 30) {
     geoState = 'YELLOW';
-    geoMessage = 'Location accuracy is low. Move closer to a window or allow high-precision GPS.';
+    geoMessage = 'Location accuracy margin is wide. Move near window or refresh GPS.';
   } else if (distance > radius + 5) {
     geoState = 'RED';
     geoMessage = `Outside laboratory boundary (Displacement: ${distance}m, Permitted: ${radius}m).`;
   }
 
-  const handleSubmitAttendance = async () => {
-    if (!activeSession || alreadyCheckedIn) return;
+  // Handle Testing Override to unlock the 10-minute window
+  const handleTestingUnlock = async () => {
+    if (scheduleStatus?.activeSession?.id) {
+      try {
+        setTestingUnlock(true);
+        await api.unlockAttendanceWindow(scheduleStatus.activeSession.id);
+        await fetchStatus();
+      } catch (err: any) {
+        alert(err.message || 'Could not unlock session window.');
+      } finally {
+        setTestingUnlock(false);
+      }
+    }
+  };
+
+  // Submit Unified Attendance & Compulsory Feedback
+  const handleUnifiedSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!scheduleStatus || scheduleStatus.hasSubmitted) return;
+
+    // Validate feedback completeness (Compulsory Feedback Requirement)
+    if (!teachingBasics || !handsOn || !teacherGuidance || !doubtSupport || !reasonUnderstanding || !vivaTaken || !hardwareSetup || !labPunctuality || !overallRating) {
+      alert('Feedback is strictly COMPULSORY! Please answer all 8 evaluation criteria before marking attendance.');
+      return;
+    }
+
     try {
       setSubmitting(true);
       setResultMessage(null);
-      const res = await api.checkInAttendance({
-        session_id: activeSession.id,
+
+      const targetSessionId = scheduleStatus.activeSession?.id;
+      const targetLabId = scheduleStatus.matchingSlot?.laboratory_id || scheduleStatus.activeSession?.laboratory_id;
+
+      const res = await api.submitUnifiedAttendanceFeedback({
+        session_id: targetSessionId,
+        laboratory_id: targetLabId,
+        qr_token: qrToken.trim() || undefined,
         latitude,
         longitude,
-        accuracy
+        accuracy,
+        teaching_basics: teachingBasics,
+        hands_on: handsOn,
+        teacher_guidance: teacherGuidance,
+        doubt_support: doubtSupport,
+        reason_understanding: reasonUnderstanding,
+        viva_taken: vivaTaken,
+        hardware_setup: hardwareSetup,
+        lab_punctuality: labPunctuality,
+        overall_rating: overallRating,
+        comments: comments.trim() || undefined
       });
 
       if (res.success) {
+        confetti({
+          particleCount: 100,
+          spread: 80,
+          origin: { y: 0.6 }
+        });
         setIsSuccess(true);
-        setAlreadyCheckedIn(true);
-        setResultMessage(res.message || 'Attendance verified and recorded successfully!');
+        setResultMessage(res.message || 'Attendance & Compulsory Feedback logged and verified successfully!');
+        await fetchStatus();
         triggerRefresh();
       }
     } catch (err: any) {
       setIsSuccess(false);
-      setResultMessage(err.message || 'Attendance verification failed.');
+      setResultMessage(err.message || 'Attendance & feedback submission failed.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) {
+  if (loading && !scheduleStatus) {
     return (
       <div className="p-12 text-center text-slate-600 space-y-3">
-        <div className="w-9 h-9 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-        <span className="text-xs font-bold text-slate-700">Locking strong GPS signal and checking active laboratory sessions...</span>
+        <div className="w-10 h-10 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <span className="text-xs font-bold text-slate-700">
+          Checking Semester {user?.semester || 3} Laboratory Timetable & Geofence Status...
+        </span>
       </div>
     );
   }
 
-  if (!activeSession) {
-    return (
-      <div className="bg-white p-8 rounded-3xl border border-cyan-100 text-center space-y-3 shadow-card max-w-xl mx-auto">
-        <div className="w-12 h-12 rounded-2xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-600 mx-auto">
-          <Radio className="w-6 h-6" />
-        </div>
-        <h2 className="text-base font-extrabold text-slate-900">No Active Laboratory Session Available</h2>
-        <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-          Attendance check-in requires an active session initiated by your faculty instructor. Please check back when your practical laboratory starts.
-        </p>
-      </div>
-    );
-  }
+  const studentSem = scheduleStatus?.student?.semester || user?.semester || 7;
+  const isLabActive = scheduleStatus?.isLabActive;
+  const isLast10Minutes = scheduleStatus?.isLast10Minutes;
+  const hasSubmitted = scheduleStatus?.hasSubmitted;
+  const activeLab = scheduleStatus?.activeSession || scheduleStatus?.matchingSlot;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-fadeIn">
-      {/* Session Header Card: Clean White with Cyan & Orange Accents */}
+    <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+      {/* Top Academic Header Banner */}
       <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
-            <h1 className="text-lg font-black text-slate-900">Laboratory Presence & Strong GPS Check-in</h1>
+            <h1 className="text-xl font-black text-slate-900 tracking-tight">
+              Laboratory Attendance & Compulsory Feedback Portal
+            </h1>
           </div>
           <p className="text-xs text-slate-600 mt-1 font-medium">
-            {activeSession.lab_name} ({activeSession.lab_code}) • Experiment {activeSession.experiment_number}: {activeSession.experiment_title}
+            Strict Semester {studentSem} Isolation • Batch {user?.batch || (studentSem === 7 ? '2023' : studentSem === 5 ? '2024' : '2025')} • Guru Nanak Dev Engineering College
           </p>
         </div>
 
-        <div className="bg-gradient-to-r from-cyan-50 to-orange-50 border border-cyan-200 px-3.5 py-1.5 rounded-2xl text-xs font-bold text-cyan-900 flex items-center gap-1.5">
-          <MapPin className="w-4 h-4 text-orange-500" />
-          <span>Room {activeSession.room_number} • Perimeter: {radius}m</span>
+        <div className="flex items-center gap-2">
+          <div className="bg-gradient-to-r from-cyan-50 to-orange-50 border border-cyan-200 px-3.5 py-1.5 rounded-2xl text-xs font-bold text-cyan-900 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-orange-500" />
+            <span>{scheduleStatus?.currentDay || 'Today'} • {scheduleStatus?.currentTime}</span>
+          </div>
+          <button
+            onClick={fetchStatus}
+            title="Refresh Status"
+            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-all"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* STRICT ZERO DUPLICATION: Already Verified Banner */}
-      {alreadyCheckedIn && (
-        <div className="p-5 rounded-3xl bg-emerald-50 border-2 border-emerald-300 shadow-sm text-emerald-950 space-y-2">
-          <div className="flex items-center gap-2 font-black text-sm text-emerald-800">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            <span>Attendance Already Recorded (Zero Duplicates Policy)</span>
+      {/* ================= SCENARIO 1: ALREADY SUBMITTED (ZERO DUPLICATES) ================= */}
+      {hasSubmitted && (
+        <div className="p-6 rounded-3xl bg-emerald-50 border-2 border-emerald-300 shadow-card text-emerald-950 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/30">
+              <CheckCircle2 className="w-7 h-7" />
+            </div>
+            <div>
+              <div className="text-base font-extrabold text-emerald-900">
+                Attendance & Feedback Verified & Locked (Zero Duplicates Policy)
+              </div>
+              <p className="text-xs text-emerald-800 mt-0.5 font-medium">
+                Your presence in the laboratory has been confirmed via GPS, and your confidential feedback has been recorded.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-emerald-800 leading-relaxed">
-            Your attendance has already been successfully verified and logged for this session
-            {existingRecord?.timestamp ? ` at ${existingRecord.timestamp}` : ''}. You may now proceed directly to submit your laboratory feedback.
-          </p>
-          <div className="pt-2">
-            <button
-              onClick={() => setActiveTab('student-feedback')}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white rounded-xl text-xs font-bold shadow-cyan flex items-center gap-1.5"
-            >
-              <span>Proceed to Laboratory Feedback</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white/80 p-4 rounded-2xl border border-emerald-200 text-xs">
+            <div>
+              <span className="text-slate-500 block text-[11px] font-semibold">Student USN</span>
+              <span className="font-mono font-bold text-slate-900 text-sm">{scheduleStatus?.student?.usn || user?.usn}</span>
+            </div>
+            <div>
+              <span className="text-slate-500 block text-[11px] font-semibold">Attendance Logged At</span>
+              <span className="font-mono font-bold text-slate-900 text-sm">
+                {scheduleStatus?.submissionRecord?.attendance_time || 'Today'}
+              </span>
+            </div>
+            <div>
+              <span className="text-slate-500 block text-[11px] font-semibold">Feedback Given</span>
+              <span className="font-bold text-emerald-800 text-sm flex items-center gap-1">
+                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                <span>{scheduleStatus?.submissionRecord?.overall_rating || 5} / 5 Stars Verified</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="text-[11px] text-emerald-800 font-medium">
+            🛡️ In compliance with academic integrity guidelines, attendance can only be recorded once per practical session.
           </div>
         </div>
       )}
 
-      {/* Geofence & GPS Signal Status Indicator */}
-      {!alreadyCheckedIn && (
-        <div
-          className={`p-5 rounded-3xl border-2 shadow-sm transition-all ${
-            geoState === 'GREEN'
-              ? 'bg-cyan-50/90 border-cyan-400 text-cyan-950'
-              : geoState === 'YELLOW'
-              ? 'bg-orange-50/90 border-orange-300 text-orange-950'
-              : 'bg-red-50/90 border-red-300 text-red-950'
-          }`}
-        >
-          <div className="flex items-start gap-3">
-            {geoState === 'GREEN' && <ShieldCheck className="w-6 h-6 text-cyan-600 shrink-0 mt-0.5" />}
-            {geoState === 'YELLOW' && <AlertTriangle className="w-6 h-6 text-orange-600 shrink-0 mt-0.5" />}
-            {geoState === 'RED' && <XCircle className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />}
+      {/* ================= SCENARIO 2: OUTSIDE SCHEDULED LAB TIMING ================= */}
+      {!hasSubmitted && !isLabActive && (
+        <div className="bg-white p-8 rounded-3xl border border-cyan-100 shadow-card text-center space-y-6">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-cyan-100 to-orange-100 text-cyan-800 flex items-center justify-center mx-auto border border-cyan-200 shadow-inner">
+            <Lock className="w-8 h-8 text-cyan-700" />
+          </div>
 
-            <div className="flex-1">
-              <div className="text-xs font-extrabold uppercase tracking-wider text-cyan-900 flex items-center justify-between">
-                <span>{geoState === 'GREEN' ? 'GEOFENCE STATUS: VERIFIED (INSIDE LAB)' : geoState === 'YELLOW' ? 'GPS STATUS: LOW ACCURACY' : 'GEOFENCE STATUS: OUTSIDE BOUNDARY'}</span>
-                <span className="text-[10px] bg-white px-2 py-0.5 rounded-full font-bold border border-cyan-200">
-                  {distance}m to Lab Center
+          <div className="space-y-2">
+            <h2 className="text-xl font-extrabold text-slate-900">
+              Laboratory Portal Closed — Outside Scheduled Lab Hours
+            </h2>
+            <p className="text-xs text-slate-600 max-w-lg mx-auto leading-relaxed">
+              As per department policy, laboratory attendance and evaluation portals for <strong>Semester {studentSem}</strong> are strictly accessible only during scheduled practical laboratory periods.
+            </p>
+          </div>
+
+          {scheduleStatus?.nextScheduledLab && (
+            <div className="bg-gradient-to-r from-cyan-50/70 via-white to-orange-50/70 p-5 rounded-2xl border border-cyan-200 max-w-md mx-auto text-left space-y-2">
+              <div className="text-[11px] font-bold text-orange-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-orange-600" />
+                <span>Next Scheduled Practical Lab:</span>
+              </div>
+              <div className="text-sm font-extrabold text-slate-900">
+                {scheduleStatus.nextScheduledLab.subject_name} ({scheduleStatus.nextScheduledLab.subject_code})
+              </div>
+              <div className="text-xs text-cyan-800 font-bold flex items-center justify-between">
+                <span>{scheduleStatus.nextScheduledLab.when}</span>
+                <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-cyan-200">
+                  Room {scheduleStatus.nextScheduledLab.room || 'Lab'}
                 </span>
               </div>
-              <div className="text-sm font-extrabold mt-1 text-slate-900">{geoMessage}</div>
-              <div className="text-xs text-slate-600 mt-1">
-                Max Allowed Radius: <strong>{radius} meters</strong> • GPS Margin: <strong>±{accuracy}m</strong>
+            </div>
+          )}
+
+          <div className="text-xs text-slate-500">
+            Current time: <span className="font-bold text-slate-700">{scheduleStatus?.currentTime}</span>. The portal will automatically open at your scheduled laboratory time slot.
+          </div>
+        </div>
+      )}
+
+      {/* ================= SCENARIO 3: LAB ACTIVE BUT BEFORE LAST 10 MINUTES ================= */}
+      {!hasSubmitted && isLabActive && !isLast10Minutes && (
+        <div className="bg-white p-8 rounded-3xl border-2 border-cyan-300 shadow-card space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-cyan-100">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-cyan-500 animate-ping"></span>
+                <span className="text-xs font-black text-cyan-800 uppercase tracking-wider">
+                  Laboratory Practicals in Progress
+                </span>
+              </div>
+              <h2 className="text-lg font-black text-slate-900 mt-1">
+                {activeLab?.lab_name || activeLab?.subject_name} ({activeLab?.lab_code || activeLab?.subject_code})
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Room {activeLab?.room_number || activeLab?.room} • Instructor: {activeLab?.faculty_name}
+              </p>
+            </div>
+
+            <div className="bg-orange-50 border border-orange-200 px-4 py-2 rounded-2xl text-right">
+              <div className="text-[10px] text-orange-800 uppercase font-bold tracking-wider">Portal Opening In</div>
+              <div className="text-base font-black text-orange-950 font-mono">
+                ~{scheduleStatus?.minutesUntilSubmissionOpens || 10} minutes
               </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Strong GPS Position Diagnostics Card */}
-      <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-cyan-50">
-          <span className="text-xs font-bold text-slate-900 flex items-center gap-2">
-            <Satellite className="w-4 h-4 text-cyan-600" />
-            <span>High-Precision GPS Diagnostics</span>
-          </span>
-
-          <button
-            type="button"
-            onClick={getRealGPS}
-            disabled={locating}
-            className="text-xs font-bold text-cyan-700 hover:text-cyan-900 bg-cyan-50 hover:bg-cyan-100 px-3 py-1.5 rounded-xl border border-cyan-200 flex items-center gap-1.5 transition-colors"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
-            <span>{locating ? 'Locking Satellites...' : 'Refresh Device GPS'}</span>
-          </button>
-        </div>
-
-        {/* Live GPS Lock Indicator */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-          <div className="bg-gradient-to-br from-cyan-50/70 to-white p-3.5 rounded-2xl border border-cyan-200/70">
-            <div className="text-slate-500 text-[10px] font-semibold">Signal Precision</div>
-            <div className="font-extrabold text-slate-900 text-sm mt-0.5 flex items-center gap-1.5">
-              <span className={`w-2.5 h-2.5 rounded-full ${isGpsStrong ? 'bg-cyan-500 animate-pulse' : isGpsModerate ? 'bg-orange-400' : 'bg-red-500'}`}></span>
-              <span>{isGpsStrong ? 'Strong Lock' : isGpsModerate ? 'Moderate' : 'Weak Signal'}</span>
+          <div className="p-5 bg-gradient-to-r from-cyan-50/80 via-white to-orange-50/80 rounded-2xl border border-cyan-200 flex items-start gap-3">
+            <Info className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
+            <div className="text-xs text-slate-700 leading-relaxed space-y-1">
+              <div className="font-bold text-slate-900 text-sm">
+                Attendance & Feedback Unlocks in the Final 10 Minutes
+              </div>
+              <p>
+                Students must first perform hands-on experimentation, understand the concepts, and receive faculty guidance.
+                The attendance verification and compulsory feedback evaluation form will unlock automatically in the last 10 minutes of the lab session.
+              </p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-cyan-50/70 to-white p-3.5 rounded-2xl border border-cyan-200/70">
-            <div className="text-slate-500 text-[10px] font-semibold">Accuracy Margin</div>
-            <div className="font-mono font-extrabold text-cyan-900 text-sm mt-0.5">±{accuracy}m</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-orange-50/70 to-white p-3.5 rounded-2xl border border-orange-200/70">
-            <div className="text-slate-500 text-[10px] font-semibold">Latitude</div>
-            <div className="font-mono font-bold text-slate-800 text-xs mt-0.5">{latitude.toFixed(6)}</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-orange-50/70 to-white p-3.5 rounded-2xl border border-orange-200/70">
-            <div className="text-slate-500 text-[10px] font-semibold">Longitude</div>
-            <div className="font-mono font-bold text-slate-800 text-xs mt-0.5">{longitude.toFixed(6)}</div>
-          </div>
-        </div>
-
-        {/* Location Simulation Quick Presets */}
-        <div className="pt-2">
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Compass className="w-3.5 h-3.5 text-orange-500" />
-            <span>Campus Testing Presets (Simulation Engine):</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          {/* Testing / Faculty Override */}
+          <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
+            <span>Faculty or Testing Fast-Track:</span>
             <button
               type="button"
-              onClick={() => setPreset('INSIDE')}
-              className="p-2.5 bg-cyan-50 hover:bg-cyan-100/80 border border-cyan-200 text-cyan-900 rounded-2xl font-bold text-left transition-colors"
+              onClick={handleTestingUnlock}
+              disabled={testingUnlock}
+              className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-cyan-600 text-white rounded-xl font-bold flex items-center gap-1.5 shadow-xs hover:opacity-90 disabled:opacity-50"
             >
-              <div className="text-xs">Inside Lab Room</div>
-              <div className="text-[10px] text-cyan-600 font-semibold">~4m (Verified)</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset('DOORWAY')}
-              className="p-2.5 bg-orange-50 hover:bg-orange-100/80 border border-orange-200 text-orange-900 rounded-2xl font-bold text-left transition-colors"
-            >
-              <div className="text-xs">Lab Doorway</div>
-              <div className="text-[10px] text-orange-600 font-semibold">~18m (Verified)</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset('CAFETERIA')}
-              className="p-2.5 bg-red-50 hover:bg-red-100/80 border border-red-200 text-red-900 rounded-2xl font-bold text-left transition-colors"
-            >
-              <div className="text-xs">College Canteen</div>
-              <div className="text-[10px] text-red-600 font-semibold">~320m (Outside)</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset('LOW_ACCURACY')}
-              className="p-2.5 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-900 rounded-2xl font-bold text-left transition-colors"
-            >
-              <div className="text-xs">Low GPS Margin</div>
-              <div className="text-[10px] text-amber-600 font-semibold">±120m (Uncertain)</div>
+              <Unlock className="w-3.5 h-3.5" />
+              <span>{testingUnlock ? 'Unlocking...' : 'Unlock Submission Window (Teacher / Test Mode)'}</span>
             </button>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Submission Feedback Message */}
-      {resultMessage && (
-        <div
-          className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-2 border animate-fadeIn ${
-            isSuccess
-              ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-              : 'bg-red-50 border-red-300 text-red-900'
-          }`}
-        >
-          {isSuccess ? <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" /> : <AlertTriangle className="w-5 h-5 shrink-0 text-red-600" />}
-          <div className="flex-1">{resultMessage}</div>
-          {isSuccess && (
-            <button
-              onClick={() => setActiveTab('student-feedback')}
-              className="px-3.5 py-1.5 bg-gradient-to-r from-cyan-600 to-orange-500 text-white rounded-xl text-xs font-bold shadow-cyan"
+      {/* ================= SCENARIO 4: SUBMISSION WINDOW OPEN (LAST 10 MINS / UNLOCKED) ================= */}
+      {!hasSubmitted && isLabActive && isLast10Minutes && (
+        <form onSubmit={handleUnifiedSubmit} className="space-y-6">
+          {/* Active Session Info Card */}
+          <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                  Attendance & Feedback Window Open (Last 10 Mins)
+                </span>
+              </div>
+              <h2 className="text-lg font-black text-slate-900 mt-0.5">
+                {activeLab?.lab_name || activeLab?.subject_name} ({activeLab?.lab_code || activeLab?.subject_code})
+              </h2>
+              <div className="text-xs text-slate-500 mt-0.5">
+                Room {activeLab?.room_number || activeLab?.room} • Instructor: {activeLab?.faculty_name}
+              </div>
+            </div>
+
+            <div className="bg-emerald-50 border border-emerald-300 px-3.5 py-1.5 rounded-2xl text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>Ready for Submission</span>
+            </div>
+          </div>
+
+          {/* Section 1: Geofence & Strong GPS Check */}
+          <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-cyan-50">
+              <span className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                <Satellite className="w-4 h-4 text-cyan-600" />
+                <span>Step 1: Strong Satellite GPS Verification (&lt; 25m Room Geofence)</span>
+              </span>
+
+              <button
+                type="button"
+                onClick={getRealGPS}
+                disabled={locating}
+                className="text-xs font-bold text-cyan-700 hover:text-cyan-900 bg-cyan-50 hover:bg-cyan-100 px-3 py-1.5 rounded-xl border border-cyan-200 flex items-center gap-1.5 transition-colors"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
+                <span>{locating ? 'Acquiring GPS...' : 'Refresh Device GPS'}</span>
+              </button>
+            </div>
+
+            {/* Geofence Status Banner */}
+            <div
+              className={`p-4 rounded-2xl border-2 transition-all ${
+                geoState === 'GREEN'
+                  ? 'bg-cyan-50/90 border-cyan-400 text-cyan-950'
+                  : geoState === 'YELLOW'
+                  ? 'bg-orange-50/90 border-orange-300 text-orange-950'
+                  : 'bg-red-50/90 border-red-300 text-red-950'
+              }`}
             >
-              Go to Feedback →
-            </button>
+              <div className="flex items-start gap-3">
+                {geoState === 'GREEN' && <ShieldCheck className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />}
+                {geoState === 'YELLOW' && <AlertTriangle className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />}
+                {geoState === 'RED' && <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />}
+
+                <div className="flex-1 text-xs">
+                  <div className="font-extrabold uppercase tracking-wider flex items-center justify-between">
+                    <span>{geoState === 'GREEN' ? 'GEOFENCE STATUS: INSIDE LAB' : 'GEOFENCE STATUS: OUTSIDE BOUNDARY'}</span>
+                    <span className="bg-white px-2 py-0.5 rounded-full font-bold border border-cyan-200">
+                      {distance}m to Lab Center
+                    </span>
+                  </div>
+                  <div className="font-bold mt-1 text-slate-900">{geoMessage}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* GPS Metrics */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-500 font-semibold block">Precision</span>
+                <span className="font-bold text-slate-900 flex items-center gap-1 mt-0.5">
+                  <span className={`w-2 h-2 rounded-full ${isGpsStrong ? 'bg-cyan-500' : 'bg-orange-400'}`}></span>
+                  <span>{isGpsStrong ? 'Strong' : 'Moderate'}</span>
+                </span>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-500 font-semibold block">Accuracy Margin</span>
+                <span className="font-mono font-bold text-cyan-900 mt-0.5 block">±{accuracy}m</span>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-500 font-semibold block">Displacement</span>
+                <span className="font-mono font-bold text-slate-900 mt-0.5 block">{distance}m (Max {radius}m)</span>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-500 font-semibold block">Room</span>
+                <span className="font-bold text-slate-900 mt-0.5 block">Room {activeLab?.room_number || activeLab?.room || '204'}</span>
+              </div>
+            </div>
+
+            {/* Simulation Engine for Lab Testing */}
+            <div className="pt-1">
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <Compass className="w-3 h-3 text-orange-500" />
+                <span>Test Simulation Coordinates:</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setPreset('INSIDE')}
+                  className="p-2 bg-cyan-50 hover:bg-cyan-100/80 border border-cyan-200 text-cyan-900 rounded-xl font-bold text-left"
+                >
+                  <div>Inside Lab Room</div>
+                  <div className="text-[10px] text-cyan-600">~4m (Valid)</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreset('DOORWAY')}
+                  className="p-2 bg-orange-50 hover:bg-orange-100/80 border border-orange-200 text-orange-900 rounded-xl font-bold text-left"
+                >
+                  <div>Lab Doorway</div>
+                  <div className="text-[10px] text-orange-600">~18m (Valid)</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreset('CAFETERIA')}
+                  className="p-2 bg-red-50 hover:bg-red-100/80 border border-red-200 text-red-900 rounded-xl font-bold text-left"
+                >
+                  <div>Canteen / Outside</div>
+                  <div className="text-[10px] text-red-600">~320m (Rejected)</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreset('LOW_ACCURACY')}
+                  className="p-2 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-900 rounded-xl font-bold text-left"
+                >
+                  <div>Low GPS Margin</div>
+                  <div className="text-[10px] text-amber-600">±120m</div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Compulsory Laboratory Feedback Evaluation */}
+          <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-cyan-50">
+              <span className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                <Star className="w-4 h-4 text-orange-500" />
+                <span>Step 2: Mandatory Laboratory Feedback (All 8 Fields Compulsory)</span>
+              </span>
+              <span className="text-[10px] bg-orange-100 text-orange-800 font-bold px-2 py-0.5 rounded-full border border-orange-200">
+                Compulsory to Record Attendance
+              </span>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              {/* 1. Teaching Basics */}
+              <div>
+                <label className="block font-extrabold text-slate-800 mb-1.5">
+                  1. Laboratory Experiment Basics & Concepts Explanation *
+                </label>
+                <select
+                  required
+                  value={teachingBasics}
+                  onChange={(e) => setTeachingBasics(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                >
+                  <option value="Thoroughly explained on board/slides with clear objectives">
+                    Thoroughly explained on board/slides with clear objectives (Excellent)
+                  </option>
+                  <option value="Briefly explained the steps before starting">
+                    Briefly explained the steps before starting (Satisfactory)
+                  </option>
+                  <option value="Asked to directly start without explaining concepts">
+                    Asked to directly start without explaining concepts (Needs Improvement)
+                  </option>
+                </select>
+              </div>
+
+              {/* 2. Hands-on Experimentation */}
+              <div>
+                <label className="block font-extrabold text-slate-800 mb-1.5">
+                  2. Hands-On Practical Execution by Students *
+                </label>
+                <select
+                  required
+                  value={handsOn}
+                  onChange={(e) => setHandsOn(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                >
+                  <option value="Yes, performed hands-on individually on my PC/Kit">
+                    Yes, performed hands-on individually on my PC/Kit (Individual Execution)
+                  </option>
+                  <option value="Performed in a group of 2-3 students">
+                    Performed in a group of 2-3 students (Group Execution)
+                  </option>
+                  <option value="Only observed teacher demo, did not get PC/Kit">
+                    Only observed teacher demo, did not get PC/Kit (No Hands-on)
+                  </option>
+                </select>
+              </div>
+
+              {/* 3. Teacher Desk-to-Desk Guidance */}
+              <div>
+                <label className="block font-extrabold text-slate-800 mb-1.5">
+                  3. Teacher Desk-to-Desk Monitoring & Active Guidance *
+                </label>
+                <select
+                  required
+                  value={teacherGuidance}
+                  onChange={(e) => setTeacherGuidance(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                >
+                  <option value="Continuously guided and inspected each student desk">
+                    Continuously guided and inspected each student desk (Active Continuous Guidance)
+                  </option>
+                  <option value="Available at faculty table when approached">
+                    Available at faculty table when approached (Available on Request)
+                  </option>
+                  <option value="Teacher was not attentive or busy elsewhere">
+                    Teacher was not attentive or busy elsewhere (Minimal Guidance)
+                  </option>
+                </select>
+              </div>
+
+              {/* 4. Doubt Clearing Support */}
+              <div>
+                <label className="block font-extrabold text-slate-800 mb-1.5">
+                  4. Doubt Clearance & Cooperative Attitude *
+                </label>
+                <select
+                  required
+                  value={doubtSupport}
+                  onChange={(e) => setDoubtSupport(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                >
+                  <option value="Extremely cooperative, patiently cleared every doubt">
+                    Extremely cooperative, patiently cleared every doubt (Excellent Support)
+                  </option>
+                  <option value="Cleared basic syntax/kit errors">
+                    Cleared basic syntax/kit errors (Moderate Support)
+                  </option>
+                  <option value="Did not address questions or doubts">
+                    Did not address questions or doubts (Unsupportive)
+                  </option>
+                </select>
+              </div>
+
+              {/* 5. Working Principle & Reason Understanding */}
+              <div>
+                <label className="block font-extrabold text-slate-800 mb-1.5">
+                  5. Conceptual Understanding & Working Principle Learned *
+                </label>
+                <select
+                  required
+                  value={reasonUnderstanding}
+                  onChange={(e) => setReasonUnderstanding(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                >
+                  <option value="Yes, fully understand the working principle & reasons">
+                    Yes, fully understand the working principle & reasons (100% Clarity)
+                  </option>
+                  <option value="Understood practical output, but theory needs revision">
+                    Understood practical output, but theory needs revision (Partial Clarity)
+                  </option>
+                  <option value="Could not understand the underlying logic">
+                    Could not understand the underlying logic (Need Remedial Help)
+                  </option>
+                </select>
+              </div>
+
+              {/* 6. Individual Viva Examination */}
+              <div>
+                <label className="block font-extrabold text-slate-800 mb-1.5">
+                  6. Individual Viva Examination Conducted During Lab *
+                </label>
+                <select
+                  required
+                  value={vivaTaken}
+                  onChange={(e) => setVivaTaken(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                >
+                  <option value="Yes, detailed one-on-one individual viva conducted">
+                    Yes, detailed one-on-one individual viva conducted
+                  </option>
+                  <option value="Brief oral questions asked at the desk">
+                    Brief oral questions asked at the desk
+                  </option>
+                  <option value="No viva conducted for today's experiment">
+                    No viva conducted for today's experiment
+                  </option>
+                </select>
+              </div>
+
+              {/* 7. Hardware & Software Working Setup */}
+              <div>
+                <label className="block font-extrabold text-slate-800 mb-1.5">
+                  7. Laboratory Hardware, Kit & Software Availability *
+                </label>
+                <select
+                  required
+                  value={hardwareSetup}
+                  onChange={(e) => setHardwareSetup(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                >
+                  <option value="Complete working setup (all kits, PCs & software working)">
+                    Complete working setup (all kits, PCs & software working smoothly)
+                  </option>
+                  <option value="Minor issues (had to share kit/restart PC)">
+                    Minor issues (had to share kit/restart PC)
+                  </option>
+                  <option value="Frequent equipment failure or software missing">
+                    Frequent equipment failure or software missing
+                  </option>
+                </select>
+              </div>
+
+              {/* 8. Laboratory Punctuality & Duration */}
+              <div>
+                <label className="block font-extrabold text-slate-800 mb-1.5">
+                  8. Laboratory Punctuality & Full Duration Utilization *
+                </label>
+                <select
+                  required
+                  value={labPunctuality}
+                  onChange={(e) => setLabPunctuality(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                >
+                  <option value="Full scheduled lab duration conducted properly">
+                    Full scheduled lab duration conducted properly (Full Session)
+                  </option>
+                  <option value="Conducted for 1.5 - 2 hours">
+                    Conducted for 1.5 - 2 hours
+                  </option>
+                  <option value="Session ended very early">
+                    Session ended very early
+                  </option>
+                </select>
+              </div>
+
+              {/* Overall Star Rating */}
+              <div className="pt-2">
+                <label className="block font-extrabold text-slate-800 mb-1">
+                  Overall Laboratory & Faculty Rating (1 to 5 Stars) *
+                </label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      onClick={() => setOverallRating(star)}
+                      className="p-1 focus:outline-none transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`w-7 h-7 ${
+                          (hoverRating || overallRating) >= star
+                            ? 'text-amber-500 fill-amber-500'
+                            : 'text-slate-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  <span className="ml-2 font-extrabold text-slate-800 text-sm">
+                    {overallRating === 5
+                      ? '5/5 (Outstanding)'
+                      : overallRating === 4
+                      ? '4/5 (Very Good)'
+                      : overallRating === 3
+                      ? '3/5 (Satisfactory)'
+                      : overallRating === 2
+                      ? '2/5 (Needs Improvement)'
+                      : '1/5 (Poor)'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Comments */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Constructive Observations / Suggestions (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  placeholder="Share any constructive notes on the experiment, kit quality, or teacher guidance..."
+                  className="w-full p-3 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none text-xs"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          {/* Result Alert Message */}
+          {resultMessage && (
+            <div
+              className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-2 border animate-fadeIn ${
+                isSuccess
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                  : 'bg-red-50 border-red-300 text-red-900'
+              }`}
+            >
+              {isSuccess ? <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" /> : <AlertTriangle className="w-5 h-5 shrink-0 text-red-600" />}
+              <div className="flex-1">{resultMessage}</div>
+            </div>
           )}
-        </div>
-      )}
 
-      {/* Check-In Action Button */}
-      {!alreadyCheckedIn && (
-        <div className="bg-white p-5 rounded-3xl border border-cyan-100 shadow-card flex items-center justify-between">
-          <div className="text-xs text-slate-600 font-medium">
-            Student: <strong className="text-slate-900 font-bold">{user?.name}</strong> (<span className="font-mono">{user?.usn}</span>)
+          {/* Unified Submission Footer Card */}
+          <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card flex flex-wrap items-center justify-between gap-4">
+            <div className="text-xs text-slate-600 font-medium">
+              Student: <strong className="text-slate-900 font-bold">{user?.name}</strong> (<span className="font-mono">{user?.usn}</span>) • Semester {studentSem}
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting || geoState !== 'GREEN'}
+              className="px-8 py-3 bg-gradient-to-r from-cyan-600 via-cyan-500 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white font-extrabold text-xs rounded-2xl shadow-cyan flex items-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {submitting ? (
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Submit Attendance & Mandatory Feedback</span>
+                </>
+              )}
+            </button>
           </div>
-
-          <button
-            onClick={handleSubmitAttendance}
-            disabled={submitting || geoState !== 'GREEN'}
-            className="px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white font-bold text-xs rounded-2xl shadow-cyan flex items-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {submitting ? (
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-            ) : (
-              <>
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Verify & Check-In Attendance</span>
-              </>
-            )}
-          </button>
-        </div>
+        </form>
       )}
 
+      {/* Institutional Attendance Rule Callout */}
       <div className="p-4 bg-gradient-to-r from-cyan-50/60 via-white to-orange-50/60 rounded-2xl border border-cyan-100 text-slate-600 text-[11px] leading-relaxed flex items-start gap-2">
         <Info className="w-4 h-4 shrink-0 text-cyan-600 mt-0.5" />
         <span>
-          <strong>Strict Attendance Policy:</strong> Each student is permitted exactly one verified check-in per laboratory session. Duplicate submissions are automatically rejected.
+          <strong>Academic Feedback & Zero-Duplication Rule:</strong> Feedback is strictly compulsory. Attendance will not be recorded unless the comprehensive 8-point laboratory evaluation is completed. Duplicate check-ins are automatically rejected.
         </span>
       </div>
     </div>

@@ -130,8 +130,10 @@ export const api = {
   // Lab Sessions
   startSession: (data: any) => request<any>('/sessions/start', { method: 'POST', body: JSON.stringify(data) }),
   endSession: (id: number | string) => request<any>(`/sessions/${id}/end`, { method: 'POST' }),
+  unlockAttendanceWindow: (id: number | string) => request<any>(`/sessions/${id}/unlock-window`, { method: 'POST' }),
   getActiveSessions: () => request<any>('/sessions/active'),
   getLiveSession: (id: number | string) => request<any>(`/sessions/${id}/live`),
+  getStudentLabScheduleStatus: () => request<any>('/sessions/student-status'),
 
   // Dynamic QR
   generateQR: (data: { session_id: number; duration_seconds?: number }) =>
@@ -139,7 +141,9 @@ export const api = {
   validateQR: (token: string) =>
     request<any>('/qr/validate', { method: 'POST', body: JSON.stringify({ token }) }),
 
-  // Attendance
+  // Attendance & Unified Submission
+  submitUnifiedAttendanceFeedback: (data: any) =>
+    request<any>('/attendance/submit-unified', { method: 'POST', body: JSON.stringify(data) }),
   checkInAttendance: (data: { session_id: number; latitude: number; longitude: number; accuracy?: number; device_fingerprint?: string }) =>
     request<any>('/attendance/check-in', { method: 'POST', body: JSON.stringify(data) }),
   takeAttendance: (data: { laboratory_id: number; semester: number; date?: string; time_slot?: string; attendance: Array<{ student_id: number; status: string; remarks?: string }> }) =>

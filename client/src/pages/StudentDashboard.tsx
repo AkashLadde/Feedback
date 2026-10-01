@@ -116,7 +116,7 @@ export const StudentDashboard: React.FC = () => {
                 )}
               </div>
               <p className="text-xs text-white/90 font-medium mt-1">
-                Semester {studentSem} • Batch {user?.batch || (studentSem === 3 ? '2024-2028' : studentSem === 5 ? '2023-2027' : '2022-2026')}
+                Semester {studentSem} • Batch {user?.batch || (studentSem === 7 ? '2023-2027 (Batch 2023)' : studentSem === 5 ? '2024-2028 (Batch 2024)' : '2025-2029 (Batch 2025)')}
               </p>
               <p className="text-[11px] text-white/80 font-medium">
                 Guru Nanak Dev Engineering College, Bidar • Dept. of CSE (IoT & Cyber Security including Blockchain Technology)
