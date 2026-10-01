@@ -60,16 +60,16 @@ export const StudentFeedbackPage: React.FC = () => {
           }
         }
 
-        // Also check if any live session is active
+        // Also check if any live session is active for this semester
         const res = await api.getActiveSessions();
         if (res.success && res.sessions?.length > 0) {
-          const sess = res.sessions[0];
-          setActiveSession(sess);
-
-          // Fetch the live QR token for this session automatically
-          const liveRes = await api.getLiveSession(sess.id);
-          if (liveRes.success && liveRes.activeQR) {
-            setQrToken(liveRes.activeQR.token);
+          const semSess = res.sessions.find((s: any) => s.semester === sem);
+          if (semSess) {
+            setActiveSession(semSess);
+            const liveRes = await api.getLiveSession(semSess.id);
+            if (liveRes.success && liveRes.activeQR) {
+              setQrToken(liveRes.activeQR.token);
+            }
           }
         }
       } catch (err) {
