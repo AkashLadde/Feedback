@@ -97,14 +97,16 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   });
 });
 
-const PORT = CONFIG.PORT;
-app.listen(PORT, () => {
+const PORT = Number(process.env.PORT) || CONFIG.PORT || 5000;
+const HOST = '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
   console.log(`
 ========================================================================
 🛡️  ${CONFIG.APP_NAME} - ${CONFIG.APP_SUBTITLE}
 🏛️  ${CONFIG.DEPARTMENT_NAME}
-🚀  Backend API server listening on http://localhost:${PORT}
-🔗  Health endpoint: http://localhost:${PORT}/api/health
+🚀  Backend API server listening on http://${HOST}:${PORT}
+🔗  Health endpoint: http://${HOST}:${PORT}/api/health
 ========================================================================
   `);
 });
