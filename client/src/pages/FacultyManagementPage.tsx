@@ -7,20 +7,63 @@ import {
   Trash2,
   Edit2,
   Mail,
-  BadgeAlert,
   Building2,
   Search,
   Key,
   GraduationCap,
   Shield,
-  Layers
+  Layers,
+  FlaskConical,
+  Clock,
+  MapPin,
+  Filter,
+  CheckCircle2,
+  Award,
+  Sparkles
 } from 'lucide-react';
+
+interface AssignedLab {
+  id: number;
+  name: string;
+  code: string;
+  semester: number;
+  room_number: string;
+  status: string;
+}
+
+interface TimetableSlot {
+  id: number;
+  semester: number;
+  day_of_week: string;
+  time_range: string;
+  subject_code: string;
+  subject_abbr: string;
+  subject_name: string;
+  room: string;
+}
+
+interface FacultyMember {
+  id: number;
+  user_id: number;
+  name: string;
+  email: string;
+  employee_id: string;
+  designation: string;
+  specialization?: string;
+  status: string;
+  assigned_labs_count: number;
+  conducted_sessions_count: number;
+  assigned_labs?: AssignedLab[];
+  timetable_slots?: TimetableSlot[];
+  semesters_handled?: number[];
+}
 
 export const FacultyManagementPage: React.FC = () => {
   const { user, refreshTrigger } = useAuth();
-  const [faculty, setFaculty] = useState<any[]>([]);
+  const [faculty, setFaculty] = useState<FacultyMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedSemFilter, setSelectedSemFilter] = useState<string>('ALL');
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editFaculty, setEditFaculty] = useState<any | null>(null);
 
@@ -120,34 +163,61 @@ export const FacultyManagementPage: React.FC = () => {
 
   const filteredFaculty = faculty.filter((f) => {
     const s = search.toLowerCase();
-    return (
+    const matchesSearch =
       f.name?.toLowerCase().includes(s) ||
       f.email?.toLowerCase().includes(s) ||
       f.employee_id?.toLowerCase().includes(s) ||
-      f.designation?.toLowerCase().includes(s)
-    );
+      f.designation?.toLowerCase().includes(s) ||
+      f.assigned_labs?.some(l => l.name.toLowerCase().includes(s) || l.code.toLowerCase().includes(s));
+
+    if (!matchesSearch) return false;
+
+    if (selectedSemFilter !== 'ALL') {
+      const semNum = parseInt(selectedSemFilter, 10);
+      return f.assigned_labs?.some(l => l.semester === semNum) || f.semesters_handled?.includes(semNum);
+    }
+
+    return true;
   });
 
+  const getSemOrdinal = (sem: number) => {
+    if (sem === 1) return '1st Sem';
+    if (sem === 3) return '3rd Sem';
+    if (sem === 5) return '5th Sem';
+    if (sem === 7) return '7th Sem';
+    return `${sem}th Sem`;
+  };
+
+  // Group labs by semester for a given faculty member
+  const groupLabsBySemester = (labs: AssignedLab[] = []) => {
+    const grouped: Record<number, AssignedLab[]> = {};
+    labs.forEach(lab => {
+      if (!grouped[lab.semester]) grouped[lab.semester] = [];
+      grouped[lab.semester].push(lab);
+    });
+    return grouped;
+  };
+
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn pb-12">
       {/* Header Banner */}
-      <div className="bg-white p-6 rounded-2xl border border-cyan-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <UserCheck className="w-5 h-5 text-cyan-600" />
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
-              Teachers & Faculty Registry
+              Teachers & Faculty Directory
             </h1>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Department of IoT and Cybersecurity Including Blockchain Technology • Register teachers, manage designations & lab assignments
+            Guru Nanak Dev Engineering College Bidar • Dept. of CSE (IoT & Cyber Security including Blockchain Technology) • Verified Faculty & Semester-Wise Assigned Practical Laboratories
           </p>
         </div>
 
         {isAdmin && (
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-cyan-500/20 transition-all"
+            className="px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-cyan-500/20 transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>Add New Teacher</span>
@@ -155,41 +225,72 @@ export const FacultyManagementPage: React.FC = () => {
         )}
       </div>
 
-      {/* Search Bar & Summary */}
-      <div className="bg-white p-4 rounded-2xl border border-cyan-100 shadow-sm flex flex-wrap items-center justify-between gap-3">
-        <div className="relative flex-1 min-w-[240px]">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+      {/* Filter Tabs & Search Bar */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-4">
+        {/* Semester Filter Tabs */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mr-1">
+            <Filter className="w-3.5 h-3.5 text-cyan-600" />
+            <span>Filter by Lab Semester:</span>
+          </div>
+          {[
+            { label: 'All Semesters', value: 'ALL' },
+            { label: '1st Sem Labs', value: '1' },
+            { label: '3rd Sem Labs', value: '3' },
+            { label: '5th Sem Labs', value: '5' },
+            { label: '7th Sem Labs', value: '7' }
+          ].map((tab) => {
+            const isSelected = selectedSemFilter === tab.value;
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setSelectedSemFilter(tab.value)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20 ring-2 ring-cyan-200'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search Input */}
+        <div className="relative flex-1 min-w-[260px] max-w-md">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           <input
             type="text"
-            placeholder="Search by teacher name, email, employee ID, or designation..."
+            placeholder="Search teacher name, designation, or handled lab..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-cyan-500 outline-none"
           />
         </div>
-
-        <div className="text-xs font-semibold text-slate-600 bg-cyan-50/50 px-3 py-1.5 rounded-xl border border-cyan-100">
-          Total Registered Teachers: <strong className="text-cyan-900">{filteredFaculty.length}</strong>
-        </div>
       </div>
 
-      {/* Teachers Grid */}
+      {/* Teachers & Handled Labs Grid */}
       {loading ? (
-        <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-cyan-100 shadow-sm">
+        <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">
           <div className="w-8 h-8 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <span>Loading teachers directory...</span>
+          <span className="text-xs font-semibold">Loading teachers directory and assigned laboratories...</span>
         </div>
       ) : filteredFaculty.length === 0 ? (
-        <div className="bg-white p-12 rounded-2xl border border-cyan-100 shadow-sm text-center space-y-4">
+        <div className="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center space-y-4">
           <UserCheck className="w-12 h-12 text-slate-300 mx-auto" />
           <h2 className="text-base font-bold text-slate-800">No Teachers Found</h2>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
-            {search ? 'No teachers match your search query.' : 'Click "Add New Teacher" to register faculty members and assign them to laboratory sessions.'}
+            {search
+              ? 'No teachers match your search query.'
+              : selectedSemFilter !== 'ALL'
+              ? `No teachers currently assigned to laboratories for Semester ${selectedSemFilter}.`
+              : 'Click "Add New Teacher" to register faculty members and configure their practical lab assignments.'}
           </p>
-          {isAdmin && !search && (
+          {isAdmin && !search && selectedSemFilter === 'ALL' && (
             <button
               onClick={() => setCreateModalOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow"
+              className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow"
             >
               <Plus className="w-4 h-4" />
               <span>Register First Teacher</span>
@@ -197,96 +298,183 @@ export const FacultyManagementPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredFaculty.map((f) => (
-            <div
-              key={f.id}
-              className="bg-white rounded-2xl border border-cyan-100 shadow-sm p-5 flex flex-col justify-between hover:border-cyan-300 hover:shadow-md transition-all group"
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500 to-orange-500 text-white font-extrabold flex items-center justify-center text-base shadow-sm">
-                      {f.name?.charAt(0) || 'T'}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredFaculty.map((f) => {
+            const groupedLabs = groupLabsBySemester(f.assigned_labs || []);
+            const semKeys = Object.keys(groupedLabs)
+              .map(Number)
+              .sort((a, b) => a - b);
+
+            const isHOD = f.designation?.toLowerCase().includes('head of department') || f.name?.toLowerCase().includes('harish joshi');
+
+            return (
+              <div
+                key={f.id}
+                className="bg-white rounded-3xl border border-slate-200 shadow-card hover:border-cyan-400/80 transition-all p-6 flex flex-col justify-between space-y-5"
+              >
+                <div className="space-y-4">
+                  {/* Top Profile Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3.5">
+                      <div
+                        className={`w-13 h-13 rounded-2xl ${
+                          isHOD
+                            ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white'
+                            : 'bg-gradient-to-br from-cyan-600 to-cyan-500 text-white'
+                        } font-black flex items-center justify-center text-lg shadow-md`}
+                      >
+                        {f.name?.charAt(0) || 'T'}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-base font-extrabold text-slate-900 leading-tight">
+                            {f.name}
+                          </h2>
+                          {isHOD && (
+                            <span className="bg-orange-100 text-orange-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-orange-200 flex items-center gap-1">
+                              <Award className="w-3 h-3 text-orange-600" />
+                              HOD
+                            </span>
+                          )}
+                        </div>
+                        {/* Designation */}
+                        <div className="text-xs font-bold text-cyan-800 flex items-center gap-1.5 mt-0.5">
+                          <Shield className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
+                          <span>{f.designation}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                            {f.employee_id}
+                          </span>
+                          <span className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
+                            <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span>{f.email}</span>
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-sm font-extrabold text-slate-900 group-hover:text-cyan-600 transition-colors">
-                        {f.name}
-                      </h2>
-                      <span className="text-[10px] font-mono font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200 inline-block mt-0.5">
-                        {f.employee_id}
-                      </span>
-                    </div>
+
+                    {isAdmin && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => setEditFaculty({ ...f, new_password: '' })}
+                          className="p-2 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-colors"
+                          title="Edit Teacher"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteFaculty(f.id, f.name)}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                          title="Remove Teacher"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  {isAdmin && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => setEditFaculty({ ...f, new_password: '' })}
-                        className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
-                        title="Edit Teacher"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteFaculty(f.id, f.name)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                        title="Remove Teacher"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                  {/* Specialization Badge */}
+                  {f.specialization && (
+                    <div className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between">
+                      <span>Domain Specialization:</span>
+                      <strong className="text-slate-800">{f.specialization}</strong>
                     </div>
                   )}
+
+                  {/* Respected Handled Practical Laboratories (Semester-Wise) */}
+                  <div className="pt-2 border-t border-slate-100 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <FlaskConical className="w-4 h-4 text-cyan-600" />
+                        <span>Respected Handled Practical Laboratories</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-cyan-800 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">
+                        {f.assigned_labs?.length || 0} Total Lab{f.assigned_labs?.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+
+                    {semKeys.length === 0 ? (
+                      <div className="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-300 text-center text-xs text-slate-400 italic">
+                        No practical laboratories assigned currently.
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {semKeys.map((sem) => {
+                          const semLabs = groupedLabs[sem];
+                          return (
+                            <div
+                              key={sem}
+                              className="bg-slate-50/90 rounded-2xl p-3 border border-slate-200 space-y-1.5"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-extrabold text-cyan-900 bg-cyan-100/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                                  <Layers className="w-3 h-3 text-cyan-700" />
+                                  <span>{getSemOrdinal(sem)} Practical Labs</span>
+                                </span>
+                                <span className="text-[10px] text-slate-500 font-semibold">
+                                  {semLabs.length} Course{semLabs.length === 1 ? '' : 's'}
+                                </span>
+                              </div>
+
+                              <div className="space-y-1.5 pt-1">
+                                {semLabs.map((lab) => (
+                                  <div
+                                    key={lab.id}
+                                    className="bg-white rounded-xl p-2.5 border border-slate-200/90 shadow-xs flex items-center justify-between gap-2"
+                                  >
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="font-mono font-bold text-orange-800 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded text-[10px]">
+                                          {lab.code}
+                                        </span>
+                                        <span className="font-bold text-slate-900 text-xs truncate">
+                                          {lab.name}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    <div className="shrink-0 flex items-center gap-1 text-[10px] text-slate-500 font-medium bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">
+                                      <MapPin className="w-3 h-3 text-slate-400" />
+                                      <span className="truncate max-w-[120px]">{lab.room_number}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="text-xs text-slate-600 space-y-1.5 pt-1">
-                  <div className="font-semibold text-slate-800 flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5 text-cyan-600" />
-                    <span>{f.designation}</span>
+                {/* Bottom Card Footer */}
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Status: <strong className="text-emerald-700">{f.status || 'ACTIVE'}</strong></span>
                   </div>
-                  <div className="text-[11px] text-slate-500 truncate flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="font-mono">{f.email}</span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 truncate">
-                    Specialization: <strong className="text-slate-700">{f.specialization || 'IoT & Cybersecurity'}</strong>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-xs">
-                  <div className="bg-cyan-50/50 p-2 rounded-xl border border-cyan-100 text-center">
-                    <div className="text-[10px] text-slate-500">Assigned Labs</div>
-                    <div className="text-sm font-extrabold text-cyan-700 mt-0.5">
-                      {f.assigned_labs_count || 0}
-                    </div>
-                  </div>
-                  <div className="bg-orange-50/50 p-2 rounded-xl border border-orange-100 text-center">
-                    <div className="text-[10px] text-slate-500">Live Sessions</div>
-                    <div className="text-sm font-extrabold text-orange-700 mt-0.5">
-                      {f.conducted_sessions_count || 0}
-                    </div>
+                  <div className="text-[11px] font-semibold text-slate-500">
+                    Sessions Conducted: <strong className="text-slate-800">{f.conducted_sessions_count || 0}</strong>
                   </div>
                 </div>
               </div>
-
-              <div className="pt-3 border-t border-slate-100 mt-3 flex items-center justify-between text-[11px] text-slate-400">
-                <span>Account Status:</span>
-                <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                  {f.status || 'ACTIVE'}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Add New Teacher Modal */}
       {createModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-cyan-100 space-y-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-base">Register New Faculty Member</h3>
-              <button onClick={() => setCreateModalOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <div className="flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-cyan-600" />
+                <h3 className="font-extrabold text-slate-900 text-base">Register New Faculty Member</h3>
+              </div>
+              <button onClick={() => setCreateModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
             </div>
 
             {errorMsg && (
@@ -297,11 +485,11 @@ export const FacultyManagementPage: React.FC = () => {
 
             <form onSubmit={handleCreateFaculty} className="space-y-3 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Full Name</label>
+                <label className="block font-bold text-slate-700 mb-1">Teacher Full Name</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Prof. Arvind Sharma"
+                  placeholder="e.g. Prof. Mahesh Kanjikar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-cyan-500 outline-none"
@@ -310,18 +498,18 @@ export const FacultyManagementPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Employee ID</label>
+                  <label className="block font-bold text-slate-700 mb-1">Employee ID</label>
                   <input
                     type="text"
                     required
-                    placeholder="FAC-IOT-106"
+                    placeholder="GNDEC-ICB-014"
                     value={employeeId}
                     onChange={(e) => setEmployeeId(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-slate-300 font-mono uppercase focus:ring-2 focus:ring-cyan-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Designation</label>
+                  <label className="block font-bold text-slate-700 mb-1">Academic Designation</label>
                   <select
                     value={designation}
                     onChange={(e) => setDesignation(e.target.value)}
@@ -338,11 +526,11 @@ export const FacultyManagementPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Institutional Email (Login ID)</label>
+                <label className="block font-bold text-slate-700 mb-1">Institutional Email (Login ID)</label>
                 <input
                   type="email"
                   required
-                  placeholder="e.g. teacher.name@gndec.ac.in"
+                  placeholder="e.g. mahesh.kanjikar@gndec.ac.in"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
@@ -350,10 +538,10 @@ export const FacultyManagementPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Domain Specialization</label>
+                <label className="block font-bold text-slate-700 mb-1">Domain Specialization</label>
                 <input
                   type="text"
-                  placeholder="e.g. Embedded Security & Hardware Cryptography"
+                  placeholder="e.g. Object Oriented Programming with Java"
                   value={specialization}
                   onChange={(e) => setSpecialization(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-cyan-500 outline-none"
@@ -361,7 +549,7 @@ export const FacultyManagementPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Initial Password</label>
+                <label className="block font-bold text-slate-700 mb-1">Initial Password</label>
                 <input
                   type="text"
                   required
@@ -369,23 +557,23 @@ export const FacultyManagementPage: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">Teacher will use their email and this password to log in.</p>
+                <p className="text-[10px] text-slate-400 mt-1">Teacher will use this password to sign in to GNDEC LabGuard.</p>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setCreateModalOpen(false)}
-                  className="px-3 py-1.5 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white rounded-lg font-bold shadow"
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white rounded-xl font-bold shadow-md shadow-cyan-500/20 transition-all"
                 >
-                  {submitting ? 'Registering...' : 'Register Teacher & Assign Credentials'}
+                  {submitting ? 'Registering...' : 'Register Teacher'}
                 </button>
               </div>
             </form>
@@ -396,15 +584,18 @@ export const FacultyManagementPage: React.FC = () => {
       {/* Edit Teacher Modal */}
       {editFaculty && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-cyan-100 space-y-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-base">Edit Faculty Profile & Login Password</h3>
-              <button onClick={() => setEditFaculty(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <div className="flex items-center gap-2">
+                <Edit2 className="w-5 h-5 text-cyan-600" />
+                <h3 className="font-extrabold text-slate-900 text-base">Edit Teacher Profile & Designation</h3>
+              </div>
+              <button onClick={() => setEditFaculty(null)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
             </div>
 
             <form onSubmit={handleUpdateFaculty} className="space-y-3 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Full Name</label>
+                <label className="block font-bold text-slate-700 mb-1">Full Name</label>
                 <input
                   type="text"
                   required
@@ -415,7 +606,7 @@ export const FacultyManagementPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Designation</label>
+                <label className="block font-bold text-slate-700 mb-1">Academic Designation</label>
                 <select
                   value={editFaculty.designation}
                   onChange={(e) => setEditFaculty({ ...editFaculty, designation: e.target.value })}
@@ -431,7 +622,7 @@ export const FacultyManagementPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Specialization</label>
+                <label className="block font-bold text-slate-700 mb-1">Domain Specialization</label>
                 <input
                   type="text"
                   value={editFaculty.specialization || ''}
@@ -441,7 +632,7 @@ export const FacultyManagementPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Reset Password (leave empty to keep current)</label>
+                <label className="block font-bold text-slate-700 mb-1">Reset Password (leave empty to keep current)</label>
                 <input
                   type="text"
                   placeholder="New password (optional)"
@@ -451,18 +642,18 @@ export const FacultyManagementPage: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditFaculty(null)}
-                  className="px-3 py-1.5 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white rounded-lg font-bold shadow"
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white rounded-xl font-bold shadow-md shadow-cyan-500/20 transition-all"
                 >
                   {submitting ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -474,3 +665,4 @@ export const FacultyManagementPage: React.FC = () => {
     </div>
   );
 };
+

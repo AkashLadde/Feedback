@@ -30,10 +30,10 @@ export const Sidebar: React.FC = () => {
   const adminNav = [
     { id: 'dashboard', label: 'Department Dashboard', icon: LayoutDashboard, subtitle: 'Overview & Analytics' },
     { id: 'students', label: 'Student Verification', icon: GraduationCap, subtitle: 'Approve New Registrations', highlight: true },
-    { id: 'timetable', label: 'Class Timetables', icon: Calendar, subtitle: '1st, 3rd, 5th, 7th Sem' },
+    { id: 'timetable', label: 'Lab Timetables', icon: Calendar, subtitle: '1st, 3rd, 5th, 7th Sem' },
     { id: 'admin-attendance', label: 'Attendance Records', icon: CheckCircle2, subtitle: 'Session Logs & Zero Dupes' },
     { id: 'admin-feedback', label: 'Student Feedback', icon: FileText, subtitle: 'Ratings & Evaluations' },
-    { id: 'faculty', label: 'Teachers / Faculty', icon: UserCheck, subtitle: 'Faculty Directory' },
+    { id: 'faculty', label: 'Teachers / Faculty', icon: UserCheck, subtitle: 'Faculty Directory & Labs' },
     { id: 'laboratories', label: 'Subjects & Labs', icon: Building2, subtitle: 'Curriculum & 25m Geofences' },
     { id: 'semesters', label: 'Academic Semesters', icon: Layers, subtitle: '1st, 3rd, 5th, 7th Sem' },
     { id: 'live-sessions', label: 'Live Lab Sessions', icon: Radio, subtitle: 'Dynamic 1-Min QR' },
@@ -44,7 +44,7 @@ export const Sidebar: React.FC = () => {
   // Teachers ONLY take attendance & view timetable
   const facultyNav = [
     { id: 'teacher-attendance', label: 'Take Attendance', icon: UserCheck, subtitle: 'Roll-Call & Session Marking', highlight: true },
-    { id: 'timetable', label: 'Class Timetable', icon: Calendar, subtitle: 'Semester Practical Schedule' }
+    { id: 'timetable', label: 'Lab Timetable', icon: Calendar, subtitle: 'Semester Practical Schedule' }
   ];
 
   // Students submit attendance & feedback, view attendance & timetable
@@ -53,7 +53,7 @@ export const Sidebar: React.FC = () => {
     { id: 'student-attendance', label: 'Attendance & Feedback', icon: CheckCircle2, subtitle: '5-Min Window & GPS Lock', highlight: true },
     { id: 'student-feedback-history', label: 'My Feedback History', icon: History, subtitle: 'Submission Records' },
     { id: 'student-attendance-history', label: 'My Attendance Log', icon: CheckCircle2, subtitle: 'Class Attendance Records' },
-    { id: 'timetable', label: 'Semester Timetable', icon: Calendar, subtitle: 'Practical Lab Schedule' }
+    { id: 'timetable', label: 'Lab Timetable', icon: Calendar, subtitle: 'Practical Lab Schedule' }
   ];
 
   const navItems = isStudent ? studentNav : isFaculty ? facultyNav : adminNav;

@@ -335,7 +335,7 @@ export const TimetablePage: React.FC = () => {
             Department of CSE in IoT & Cyber Security including Block Chain Technology
           </h3>
           <div className="text-sm font-extrabold text-cyan-800 uppercase tracking-wider pt-1">
-            {getSemOrdinal(activeSem)} SEMESTER CLASS TIME TABLE (PRACTICAL LABORATORIES)
+            {getSemOrdinal(activeSem)} SEMESTER LAB TIME TABLE (PRACTICAL LABORATORIES)
           </div>
           <div className="flex flex-wrap items-center justify-between text-xs font-semibold text-slate-600 pt-2 px-2 gap-2">
             <span>Academic Year 2026-27</span>

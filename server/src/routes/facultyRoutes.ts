@@ -6,7 +6,7 @@ import { logAudit } from '../services/auditService.js';
 
 const router = Router();
 
-// GET /api/faculty - list all teachers/faculty
+// GET /api/faculty - list all teachers/faculty with their semester-wise assigned labs
 router.get('/', (_req, res) => {
   try {
     const faculty = db.prepare(`
@@ -16,9 +16,52 @@ router.get('/', (_req, res) => {
       FROM faculty f
       JOIN users u ON f.user_id = u.id
       ORDER BY u.name ASC
-    `).all();
+    `).all() as any[];
 
-    return res.json({ success: true, faculty });
+    // Fetch assigned practical labs and timetable slots for each faculty member
+    const labStmt = db.prepare(`
+      SELECT l.id, l.name, l.code, l.semester, l.room_number, l.status
+      FROM laboratories l
+      WHERE l.faculty_id = ?
+      ORDER BY l.semester ASC, l.name ASC
+    `);
+
+    const ttStmt = db.prepare(`
+      SELECT te.id, te.semester, te.day_of_week, te.slot_index, te.time_range, te.subject_code, te.subject_abbr, te.subject_name, te.room
+      FROM timetable_entries te
+      WHERE lower(te.faculty_name) LIKE lower(?) OR upper(te.faculty_abbr) = upper(?)
+      ORDER BY te.semester ASC, CASE te.day_of_week 
+        WHEN 'MONDAY' THEN 1 
+        WHEN 'TUESDAY' THEN 2 
+        WHEN 'WEDNESDAY' THEN 3 
+        WHEN 'THURSDAY' THEN 4 
+        WHEN 'FRIDAY' THEN 5 
+        WHEN 'SATURDAY' THEN 6 
+        ELSE 7 END, te.slot_index ASC
+    `);
+
+    const enrichedFaculty = faculty.map((f) => {
+      const assignedLabs = labStmt.all(f.id) as any[];
+      const facultyNamePattern = `%${f.name.replace(/^Prof\.\s*|^Dr\.\s*|^Mr\.\s*/i, '').trim()}%`;
+      const facultyAbbr = f.employee_id || '';
+      const timetableSlots = ttStmt.all(facultyNamePattern, facultyAbbr) as any[];
+
+      // Calculate unique semesters handled
+      const semSet = new Set<number>();
+      assignedLabs.forEach((l) => semSet.add(l.semester));
+      timetableSlots.forEach((t) => semSet.add(t.semester));
+      const semestersHandled = Array.from(semSet).sort((a, b) => a - b);
+
+      return {
+        ...f,
+        assigned_labs: assignedLabs,
+        assigned_labs_count: assignedLabs.length,
+        timetable_slots: timetableSlots,
+        semesters_handled: semestersHandled
+      };
+    });
+
+    return res.json({ success: true, faculty: enrichedFaculty });
   } catch (err) {
     console.error('Error fetching faculty:', err);
     return res.status(500).json({ success: false, error: 'Failed to fetch faculty list.' });
