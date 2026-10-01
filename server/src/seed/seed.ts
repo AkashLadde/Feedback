@@ -25,7 +25,6 @@ export function seedDatabase() {
     DELETE FROM semesters;
   `);
 
-  const adminHash = bcrypt.hashSync('Admin@123', 10);
   const facultyHash = bcrypt.hashSync('Faculty@123', 10);
 
   // 1. Semesters (3rd, 5th, 7th)
@@ -37,48 +36,46 @@ export function seedDatabase() {
   insertSem.run(5, '5th Semester');
   insertSem.run(7, '7th Semester');
 
-  // 2. Department Administrator
+  // 2. User & Faculty Statements
   const insertUser = db.prepare(`
     INSERT INTO users (name, email, password_hash, role, status)
     VALUES (?, ?, ?, ?, 'ACTIVE')
   `);
-  const adminUserId = Number(insertUser.run(
-    'Admin GNDEC ICB',
-    'admin@gndec.ac.in',
-    adminHash,
-    'ADMIN'
-  ).lastInsertRowid);
-
-  // 3. Faculty Members (Official faculty from CSE-ICB with Dr. Harish Joshi as Head of Department)
-  const facultyData = [
-    { name: 'Dr. Harish Joshi', email: 'harish.joshi@gndec.ac.in', empId: 'GNDEC-ICB-004', abbr: 'HJ', desig: 'Associate Professor & Head of Department', spec: 'Data Structures, AI & Dept Administration' },
-    { name: 'Prof. Aarti Pawar', email: 'aarti.pawar@gndec.ac.in', empId: 'GNDEC-ICB-001', abbr: 'AP', desig: 'Assistant Professor', spec: 'Operating Systems & Software Engineering' },
-    { name: 'Prof. Mahesh Kanjikar', email: 'mahesh.kanjikar@gndec.ac.in', empId: 'GNDEC-ICB-002', abbr: 'MK', desig: 'Assistant Professor', spec: 'Object Oriented Programming with Java' },
-    { name: 'Dr. Pandit Patil', email: 'pandit.patil@gndec.ac.in', empId: 'GNDEC-ICB-003', abbr: 'PP', desig: 'Professor', spec: 'Digital Design & Computer Organization' },
-    { name: 'Prof. Farhanaz', email: 'farhanaz@gndec.ac.in', empId: 'GNDEC-ICB-005', abbr: 'FN', desig: 'Assistant Professor', spec: 'IoT Communication Protocols & Git' },
-    { name: 'Prof. Shrinidhi Dixit', email: 'shrinidhi.dixit@gndec.ac.in', empId: 'GNDEC-ICB-006', abbr: 'SD', desig: 'Assistant Professor', spec: 'Probability, Distributions & Statistics' },
-    { name: 'Mr. Anand Patil', email: 'anand.patil@gndec.ac.in', empId: 'GNDEC-ICB-007', abbr: 'ANP', desig: 'Assistant Professor', spec: 'Project Management & Community Engineering' },
-    { name: 'Prof. Madhuri Joshi', email: 'madhuri.joshi@gndec.ac.in', empId: 'GNDEC-ICB-008', abbr: 'MJ', desig: 'Assistant Professor', spec: 'Computer Networks & Network Security' },
-    { name: 'Prof. Uzma Kausar', email: 'uzma.kausar@gndec.ac.in', empId: 'GNDEC-ICB-009', abbr: 'UK', desig: 'Assistant Professor', spec: 'Theory of Computation & Cyber Security' },
-    { name: 'Prof. Ibtesham Zarrine', email: 'ibtesham.zarrine@gndec.ac.in', empId: 'GNDEC-ICB-010', abbr: 'IZ', desig: 'Assistant Professor', spec: 'Full Stack Development & Machine Learning' },
-    { name: 'Prof. Ashok Bawge', email: 'ashok.bawge@gndec.ac.in', empId: 'GNDEC-ICB-011', abbr: 'AB', desig: 'Associate Professor', spec: 'Blockchain Technology & Research Methodology' },
-    { name: 'Prof. Sangeeta K', email: 'sangeeta.k@gndec.ac.in', empId: 'GNDEC-ICB-012', abbr: 'SK', desig: 'Assistant Professor', spec: 'Environmental Studies & E-waste Management' },
-    { name: 'Prof. Puneeth Kumar', email: 'puneeth.kumar@gndec.ac.in', empId: 'GNDEC-ICB-013', abbr: 'PK', desig: 'Assistant Professor', spec: 'Road Safety Engineering' }
-  ];
 
   const insertFaculty = db.prepare(`
     INSERT INTO faculty (user_id, employee_id, designation, specialization)
     VALUES (?, ?, ?, ?)
   `);
 
+  // 3. Faculty Members (Official faculty from CSE-ICB with Dr. Harish Joshi as Head of Department)
+  const facultyData = [
+    { name: 'Dr. Harish Joshi', email: 'harish.joshi@gndec.ac.in', empId: 'GNDEC-ICB-004', abbr: 'HJ', desig: 'Associate Professor & Head of Department', spec: 'Data Structures, AI & Dept Administration', role: 'HOD' },
+    { name: 'Prof. Aarti Pawar', email: 'aarti.pawar@gndec.ac.in', empId: 'GNDEC-ICB-001', abbr: 'AP', desig: 'Assistant Professor', spec: 'Operating Systems & Software Engineering', role: 'FACULTY' },
+    { name: 'Prof. Mahesh Kanjikar', email: 'mahesh.kanjikar@gndec.ac.in', empId: 'GNDEC-ICB-002', abbr: 'MK', desig: 'Assistant Professor', spec: 'Object Oriented Programming with Java', role: 'FACULTY' },
+    { name: 'Dr. Pandit Patil', email: 'pandit.patil@gndec.ac.in', empId: 'GNDEC-ICB-003', abbr: 'PP', desig: 'Professor', spec: 'Digital Design & Computer Organization', role: 'FACULTY' },
+    { name: 'Prof. Farhanaz', email: 'farhanaz@gndec.ac.in', empId: 'GNDEC-ICB-005', abbr: 'FN', desig: 'Assistant Professor', spec: 'IoT Communication Protocols & Git', role: 'FACULTY' },
+    { name: 'Prof. Shrinidhi Dixit', email: 'shrinidhi.dixit@gndec.ac.in', empId: 'GNDEC-ICB-006', abbr: 'SD', desig: 'Assistant Professor', spec: 'Probability, Distributions & Statistics', role: 'FACULTY' },
+    { name: 'Mr. Anand Patil', email: 'anand.patil@gndec.ac.in', empId: 'GNDEC-ICB-007', abbr: 'ANP', desig: 'Assistant Professor', spec: 'Project Management & Community Engineering', role: 'FACULTY' },
+    { name: 'Prof. Madhuri Joshi', email: 'madhuri.joshi@gndec.ac.in', empId: 'GNDEC-ICB-008', abbr: 'MJ', desig: 'Assistant Professor', spec: 'Computer Networks & Network Security', role: 'FACULTY' },
+    { name: 'Prof. Uzma Kausar', email: 'uzma.kausar@gndec.ac.in', empId: 'GNDEC-ICB-009', abbr: 'UK', desig: 'Assistant Professor', spec: 'Theory of Computation & Cyber Security', role: 'FACULTY' },
+    { name: 'Prof. Ibtesham Zarrine', email: 'ibtesham.zarrine@gndec.ac.in', empId: 'GNDEC-ICB-010', abbr: 'IZ', desig: 'Assistant Professor', spec: 'Full Stack Development & Machine Learning', role: 'FACULTY' },
+    { name: 'Prof. Ashok Bawge', email: 'ashok.bawge@gndec.ac.in', empId: 'GNDEC-ICB-011', abbr: 'AB', desig: 'Associate Professor', spec: 'Blockchain Technology & Research Methodology', role: 'FACULTY' },
+    { name: 'Prof. Sangeeta K', email: 'sangeeta.k@gndec.ac.in', empId: 'GNDEC-ICB-012', abbr: 'SK', desig: 'Assistant Professor', spec: 'Environmental Studies & E-waste Management', role: 'FACULTY' },
+    { name: 'Prof. Puneeth Kumar', email: 'puneeth.kumar@gndec.ac.in', empId: 'GNDEC-ICB-013', abbr: 'PK', desig: 'Assistant Professor', spec: 'Road Safety Engineering', role: 'FACULTY' }
+  ];
+
   const facultyMap: Record<string, number> = {};
   const facultyUserMap: Record<string, number> = {};
+  let hodUserId = 1;
 
   for (const f of facultyData) {
-    const fUserId = Number(insertUser.run(f.name, f.email, facultyHash, 'FACULTY').lastInsertRowid);
+    const fUserId = Number(insertUser.run(f.name, f.email, facultyHash, f.role || 'FACULTY').lastInsertRowid);
     const fId = Number(insertFaculty.run(fUserId, f.empId, f.desig, f.spec).lastInsertRowid);
     facultyMap[f.abbr] = fId;
     facultyUserMap[f.abbr] = fUserId;
+    if (f.abbr === 'HJ') {
+      hodUserId = fUserId;
+    }
   }
 
   // 4. Zero Pre-seeded Students (Real students self-register, then Admin/HOD verifies them)
@@ -278,9 +275,9 @@ export function seedDatabase() {
   `);
 
   insertAudit.run(
-    adminUserId,
-    'admin@gndec.ac.in',
-    'ADMIN',
+    hodUserId,
+    'harish.joshi@gndec.ac.in',
+    'HOD',
     'SYSTEM_INITIALIZE',
     'SYSTEM',
     '1',

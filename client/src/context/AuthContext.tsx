@@ -68,16 +68,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const quickLogin = async (identifierOrEmail: string) => {
-    let password = 'Password@123';
-    if (identifierOrEmail.startsWith('admin')) password = 'Admin@123';
-    else if (identifierOrEmail.startsWith('3GN') || identifierOrEmail.includes('@gndec') && identifierOrEmail.includes('.')) {
-      // Check if it's faculty or student
-      password = identifierOrEmail.startsWith('3GN') ? 'Student@123' : 'Faculty@123';
-    } else {
-      password = 'Faculty@123';
-    }
-
+    let password = 'Faculty@123';
     if (identifierOrEmail.startsWith('3GN')) {
+      password = 'Student@123';
       await login({ usn: identifierOrEmail, password });
     } else {
       await login({ email: identifierOrEmail, password });

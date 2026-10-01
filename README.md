@@ -99,19 +99,13 @@ An interactive demonstration suite is accessible via the top **⚡ Run Fraud Sce
 
 ---
 
-## 6. User Roles & Default Demo Credentials
+## 6. User Roles & Academic Authentication
 
-You can instantly switch personas using the **Demo Switcher Bar** at the top of the interface:
-
-| Persona | Name | Role | Email | Password |
-| :--- | :--- | :--- | :--- | :--- |
-| **System Admin** | Dr. Ramesh Rao | `ADMIN` | `admin.iot@labguard.edu` | `Admin@123` |
-| **Head of Department** | Dr. Anita Sharma | `HOD` | `hod.cyber@labguard.edu` | `Hod@123` |
-| **VAPT Instructor** | Prof. Vikram Patil | `FACULTY` | `vikram.patil@labguard.edu` | `Faculty@123` |
-| **Student A (Valid)** | Rahul Verma | `STUDENT` | `rahul.verma@student.edu` (or `1RV23CY001`) | `Student@123` |
-| **Student B (Proxy Test)**| Pooja Kulkarni | `STUDENT` | `pooja.kulkarni@student.edu` (or `1RV23CY002`) | `Student@123` |
-| **Student C (Expired QR)**| Amit Shah | `STUDENT` | `amit.shah@student.edu` (or `1RV23CY003`) | `Student@123` |
-| **Student D (Outside Geo)**| Sneha Reddy | `STUDENT` | `sneha.reddy@student.edu` (or `1RV23CY004`) | `Student@123` |
+| Role | Description | Access Method |
+| :--- | :--- | :--- |
+| **Head of Department (HOD)** | Departmental administration, syllabus verification, lab sessions oversight | Institutional Email (`harish.joshi@gndec.ac.in`) |
+| **Faculty / Instructor** | Session control, manual/roster attendance taking, timetable review | Institutional Email (`aarti.pawar@gndec.ac.in`, etc.) |
+| **Enrolled Students** | Physical geofence check-in, dynamic QR scanning, verified feedback submission | Self-registration with USN (`3GN...`) & Email |
 
 ---
 

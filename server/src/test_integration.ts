@@ -103,14 +103,14 @@ async function runTests() {
   const feedbackData = await feedbackRes.json();
   console.log('Feedback Submission Response:', feedbackData);
 
-  console.log('\n--- 8. Testing Admin Login (admin@gndec.ac.in) ---');
+  console.log('\n--- 8. Testing HOD Login (harish.joshi@gndec.ac.in) ---');
   const adminLoginRes = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'admin@gndec.ac.in', password: 'Admin@123' })
+    body: JSON.stringify({ email: 'harish.joshi@gndec.ac.in', password: 'Faculty@123' })
   });
   const adminLogin = await adminLoginRes.json();
-  console.log('Admin Login Success:', adminLogin.success, '| Role:', adminLogin.user?.role, '| Name:', adminLogin.user?.name);
+  console.log('HOD Login Success:', adminLogin.success, '| Role:', adminLogin.user?.role, '| Name:', adminLogin.user?.name);
   const adminToken = adminLogin.token;
 
   console.log('\n--- 9. Testing Admin Viewing All Attendance Records ---');

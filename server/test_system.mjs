@@ -21,12 +21,12 @@ async function req(endpoint, options = {}) {
 async function runTests() {
   console.log('🚀 Running System Verification Tests (Node Native Fetch)...\n');
 
-  // 1. Admin Login
+  // 1. HOD Login
   const adminLogin = await req('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email: 'admin@gndec.ac.in', password: 'Admin@123' })
+    body: JSON.stringify({ email: 'harish.joshi@gndec.ac.in', password: 'Faculty@123' })
   });
-  console.log('✅ 1. Admin Login Successful:', adminLogin.user.name);
+  console.log('✅ 1. HOD Login Successful:', adminLogin.user.name);
   const adminToken = adminLogin.token;
 
   // 2. Student Registration & Pending Verification Status

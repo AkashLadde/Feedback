@@ -57,7 +57,6 @@ If you prefer using Vercel for the frontend:
 
 ---
 
-## 🔑 Default Production Credentials
-* **Administrator**: `admin@gndec.ac.in` | Password: `Admin@123`
-* **Faculty Login**: Institutional Email (e.g. `harish.joshi@gndec.ac.in`, `aarti.pawar@gndec.ac.in`, `ashok.bawge@gndec.ac.in`) | Password: `Faculty@123`
-* **Students**: Self-register via the **"Create Student Account"** tab on the login screen.
+## 🔑 Production Credentials
+* **Head of Department (HOD) & Faculty**: Official Institutional Email (e.g. `harish.joshi@gndec.ac.in`, `aarti.pawar@gndec.ac.in`, `ashok.bawge@gndec.ac.in`) | Password: `Faculty@123`
+* **Students**: Self-register directly via the **"Create Student Account"** tab on the login screen.
