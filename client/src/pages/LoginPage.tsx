@@ -42,7 +42,7 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Student Registration States (1st, 3rd, 5th, 7th Semesters)
+  // Student Registration States (1st to 8th Semesters)
   const [regName, setRegName] = useState('');
   const [regUsn, setRegUsn] = useState('');
   const [regEmail, setRegEmail] = useState('');
@@ -55,10 +55,11 @@ export const LoginPage: React.FC = () => {
 
   const handleSemesterChangeInReg = (sem: number) => {
     setRegSemester(sem);
-    if (sem === 1) setRegBatch('2026-2030 (Batch 2026)');
-    else if (sem === 3) setRegBatch('2025-2029 (Batch 2025)');
-    else if (sem === 5) setRegBatch('2024-2028 (Batch 2024)');
-    else if (sem === 7) setRegBatch('2023-2027 (Batch 2023)');
+    if (sem === 1 || sem === 2) setRegBatch('2026-2030 (Batch 2026)');
+    else if (sem === 3 || sem === 4) setRegBatch('2025-2029 (Batch 2025)');
+    else if (sem === 5 || sem === 6) setRegBatch('2024-2028 (Batch 2024)');
+    else if (sem === 7 || sem === 8) setRegBatch('2023-2027 (Batch 2023)');
+    else setRegBatch('2026-2030 (Batch 2026)');
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -113,15 +114,19 @@ export const LoginPage: React.FC = () => {
         password: regPassword
       });
 
-      if (res.success && res.token) {
+      if (res.success) {
         confetti({
           particleCount: 90,
           spread: 75,
           origin: { y: 0.6 }
         });
 
-        localStorage.setItem('labguard_token', res.token);
-        window.location.reload();
+        setSuccessMsg(res.message || 'Account registered successfully! Your account is pending verification by the Administrator. You can sign in once verified.');
+        setIdentifier(regUsn.trim().toUpperCase() || regEmail.trim().toLowerCase());
+        setPassword('');
+        setRegPassword('');
+        setRegConfirmPassword('');
+        setAuthMode('LOGIN');
       }
     } catch (err: any) {
       setError(err.message || 'Account registration failed. Please check your credentials.');
@@ -442,9 +447,13 @@ export const LoginPage: React.FC = () => {
                           className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-cyan-500 outline-none"
                         >
                           <option value={1}>1st Semester (Batch 2026 - 2030)</option>
+                          <option value={2}>2nd Semester (Batch 2026 - 2030)</option>
                           <option value={3}>3rd Semester (Batch 2025 - 2029)</option>
+                          <option value={4}>4th Semester (Batch 2025 - 2029)</option>
                           <option value={5}>5th Semester (Batch 2024 - 2028)</option>
+                          <option value={6}>6th Semester (Batch 2024 - 2028)</option>
                           <option value={7}>7th Semester (Batch 2023 - 2027)</option>
+                          <option value={8}>8th Semester (Batch 2023 - 2027)</option>
                         </select>
                       </div>
                     </div>
@@ -518,10 +527,13 @@ export const LoginPage: React.FC = () => {
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4" />
-                          <span>Register & Open Student Dashboard</span>
+                          <span>Submit Registration (Pending Admin Approval)</span>
                         </>
                       )}
                     </button>
+                    <p className="text-[10px] text-center text-slate-400 mt-1">
+                      Note: Your account must be approved & verified by the Administrator before you can sign in.
+                    </p>
                   </form>
                 </div>
               )}

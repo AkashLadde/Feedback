@@ -29,7 +29,18 @@ export const StudentDashboard: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<string>('MONDAY');
   const [loading, setLoading] = useState(true);
 
-  const studentSem = user?.semester || 1;
+  const studentSem = Number(user?.semester || user?.profile?.semester || 1);
+  const studentUsn = user?.usn || user?.profile?.usn || '';
+
+  const getBatchLabel = (sem: number) => {
+    if (sem === 1 || sem === 2) return '2026-2030 (Batch 2026)';
+    if (sem === 3 || sem === 4) return '2025-2029 (Batch 2025)';
+    if (sem === 5 || sem === 6) return '2024-2028 (Batch 2024)';
+    if (sem === 7 || sem === 8) return '2023-2027 (Batch 2023)';
+    return '2026-2030 (Batch 2026)';
+  };
+
+  const studentBatch = user?.batch || user?.profile?.batch || getBatchLabel(studentSem);
 
   useEffect(() => {
     async function loadData() {
@@ -104,9 +115,11 @@ export const StudentDashboard: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-extrabold tracking-tight">{user?.name}</h1>
-                <span className="bg-white text-cyan-900 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-xs">
-                  USN: {user?.usn || '3GN24CB001'}
-                </span>
+                {studentUsn ? (
+                  <span className="bg-white text-cyan-900 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-xs">
+                    USN: {studentUsn}
+                  </span>
+                ) : null}
                 {isPendingVerification ? (
                   <span className="bg-amber-300 text-amber-950 font-bold text-[10px] px-2 py-0.5 rounded-full">
                     Pending Verification
@@ -119,7 +132,7 @@ export const StudentDashboard: React.FC = () => {
                 )}
               </div>
               <p className="text-xs text-white/90 font-medium mt-1">
-                Semester {studentSem} • Batch {user?.batch || (studentSem === 1 ? '2026-2030 (Batch 2026)' : studentSem === 3 ? '2025-2029 (Batch 2025)' : studentSem === 5 ? '2024-2028 (Batch 2024)' : '2023-2027 (Batch 2023)')}
+                Semester {studentSem} • Batch {studentBatch}
               </p>
               <p className="text-[11px] text-white/80 font-medium">
                 Guru Nanak Dev Engineering College, Bidar • Dept. of CSE (IoT & Cyber Security including Blockchain Technology)

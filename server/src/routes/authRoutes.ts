@@ -60,8 +60,17 @@ router.post('/register-student', (req, res) => {
 
     const userId = Number(userResult.lastInsertRowid);
 
-    // 2. Create student profile in students table (no section)
-    const computedBatch = batch || (semNum === 3 ? '2024-2028' : semNum === 5 ? '2023-2027' : '2022-2026');
+    // 2. Compute correct batch according to semester (1st to 8th sem)
+    let computedBatch = batch;
+    if (!computedBatch) {
+      if (semNum === 1 || semNum === 2) computedBatch = '2026-2030 (Batch 2026)';
+      else if (semNum === 3 || semNum === 4) computedBatch = '2025-2029 (Batch 2025)';
+      else if (semNum === 5 || semNum === 6) computedBatch = '2024-2028 (Batch 2024)';
+      else if (semNum === 7 || semNum === 8) computedBatch = '2023-2027 (Batch 2023)';
+      else computedBatch = '2026-2030 (Batch 2026)';
+    }
+
+    // Create student profile in students table
     const studentResult = db.prepare(`
       INSERT INTO students (
         user_id, usn, semester, section, batch, department, academic_year, phone
@@ -77,32 +86,16 @@ router.post('/register-student', (req, res) => {
 
     const studentId = Number(studentResult.lastInsertRowid);
 
-    const studentProfile = db.prepare('SELECT * FROM students WHERE id = ?').get(studentId) as any;
+    logAudit(userId, cleanEmail, 'STUDENT', 'REGISTER', 'USER', String(userId), `Student ${cleanName} (${cleanUsn}) registered (pending admin verification) for Semester ${semNum}`);
 
-    // 3. Generate JWT Token so student is immediately authenticated
-    const payload = {
-      id: userId,
-      email: cleanEmail,
-      name: cleanName,
-      role: 'STUDENT',
-      status: 'PENDING_VERIFICATION',
+    // NOTE: Student is NOT authenticated until verified by Admin.
+    return res.status(201).json({
+      success: true,
+      message: `Your student account has been registered successfully for Semester ${semNum}! Your account is pending verification by the Administrator. You will be able to sign in once approved.`,
+      requiresVerification: true,
       studentId,
       usn: cleanUsn,
       semester: semNum
-    };
-
-    const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: '12h' });
-
-    logAudit(userId, cleanEmail, 'STUDENT', 'REGISTER', 'USER', String(userId), `Student ${cleanName} (${cleanUsn}) registered (pending admin verification) for Semester ${semNum}`);
-
-    return res.status(201).json({
-      success: true,
-      token,
-      message: `Account created successfully! Welcome, ${cleanName}. Your account is registered for Semester ${semNum}.`,
-      user: {
-        ...payload,
-        profile: studentProfile
-      }
     });
   } catch (err: any) {
     console.error('Student registration error:', err);
@@ -138,8 +131,26 @@ router.post('/login', (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid email, USN, or password.' });
     }
 
+    // Check student verification status: Must be verified by Admin before logging in
+    if (user.status === 'PENDING_VERIFICATION') {
+      return res.status(403).json({
+        success: false,
+        error: 'Your student account is pending verification by the Administrator. Please wait for approval before signing in.'
+      });
+    }
+
+    if (user.status === 'REJECTED') {
+      return res.status(403).json({
+        success: false,
+        error: 'Your student registration was rejected by the Administrator. Please contact the department office.'
+      });
+    }
+
     if (user.status === 'SUSPENDED' || user.status === 'DEACTIVATED' || user.status === 'INACTIVE') {
-      return res.status(403).json({ success: false, error: 'This account has been deactivated or suspended.' });
+      return res.status(403).json({
+        success: false,
+        error: 'This account has been deactivated or suspended.'
+      });
     }
 
     const isMatch = bcrypt.compareSync(password, user.password_hash);
@@ -156,6 +167,10 @@ router.post('/login', (req, res) => {
       facultyProfile = db.prepare('SELECT * FROM faculty WHERE user_id = ?').get(user.id);
     }
 
+    const semNumber = studentProfile?.semester !== undefined && studentProfile?.semester !== null 
+      ? Number(studentProfile.semester) 
+      : undefined;
+
     const payload = {
       id: user.id,
       email: user.email,
@@ -165,7 +180,10 @@ router.post('/login', (req, res) => {
       studentId: studentProfile?.id,
       facultyId: facultyProfile?.id,
       usn: studentProfile?.usn,
-      semester: studentProfile?.semester
+      semester: semNumber,
+      batch: studentProfile?.batch,
+      department: studentProfile?.department,
+      phone: studentProfile?.phone
     };
 
     const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: '12h' });
@@ -194,18 +212,31 @@ router.get('/me', authenticateJWT, (req: AuthenticatedRequest, res) => {
       return res.status(404).json({ success: false, error: 'User not found.' });
     }
 
-    let profile: any = null;
+    let studentProfile: any = null;
+    let facultyProfile: any = null;
+
     if (user.role === 'STUDENT') {
-      profile = db.prepare('SELECT * FROM students WHERE user_id = ?').get(user.id);
+      studentProfile = db.prepare('SELECT * FROM students WHERE user_id = ?').get(user.id);
     } else if (user.role === 'FACULTY') {
-      profile = db.prepare('SELECT * FROM faculty WHERE user_id = ?').get(user.id);
+      facultyProfile = db.prepare('SELECT * FROM faculty WHERE user_id = ?').get(user.id);
     }
+
+    const semNumber = studentProfile?.semester !== undefined && studentProfile?.semester !== null 
+      ? Number(studentProfile.semester) 
+      : undefined;
 
     return res.json({
       success: true,
       user: {
         ...user,
-        profile
+        studentId: studentProfile?.id,
+        facultyId: facultyProfile?.id,
+        usn: studentProfile?.usn,
+        semester: semNumber,
+        batch: studentProfile?.batch,
+        department: studentProfile?.department,
+        phone: studentProfile?.phone,
+        profile: studentProfile || facultyProfile
       }
     });
   } catch (err) {

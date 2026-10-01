@@ -46,12 +46,15 @@ export const StudentFeedbackPage: React.FC = () => {
   const [semesterLabs, setSemesterLabs] = useState<any[]>([]);
   const [selectedLabId, setSelectedLabId] = useState<number | null>(null);
 
+  const studentSem = Number(user?.semester || user?.profile?.semester || 1);
+  const studentUsn = user?.usn || user?.profile?.usn || '';
+
   useEffect(() => {
     async function init() {
       try {
         setLoading(true);
         // Load subjects for the student's semester
-        const sem = user?.semester || 7;
+        const sem = studentSem;
         const labsRes = await api.getLabs({ semester: sem });
         if (labsRes.success && labsRes.labs) {
           setSemesterLabs(labsRes.labs);
@@ -79,7 +82,7 @@ export const StudentFeedbackPage: React.FC = () => {
       }
     }
     init();
-  }, [user]);
+  }, [user, studentSem]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,7 +208,7 @@ export const StudentFeedbackPage: React.FC = () => {
           </div>
 
           <span className="text-xs font-semibold text-slate-500">
-            Student: <strong className="text-slate-900">{user?.name}</strong> ({user?.usn}) • Sem <strong className="text-cyan-700">{user?.semester || 7}</strong>
+            Student: <strong className="text-slate-900">{user?.name}</strong> {studentUsn ? `(${studentUsn})` : ''} • Sem <strong className="text-cyan-700">{studentSem}</strong>
           </span>
         </div>
 
@@ -213,7 +216,7 @@ export const StudentFeedbackPage: React.FC = () => {
           /* Subject Selector */
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-700">
-              Select Semester {user?.semester || 7} Subject / Laboratory to Evaluate:
+              Select Semester {studentSem} Subject / Laboratory to Evaluate:
             </label>
             <select
               value={selectedLabId || ''}
@@ -244,7 +247,7 @@ export const StudentFeedbackPage: React.FC = () => {
 
             <div className="flex items-center gap-2">
               <span className="bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-mono font-semibold text-slate-700">
-                Semester {activeSession?.semester || user?.semester || 3}
+                Semester {activeSession?.semester || studentSem}
               </span>
               <span className="bg-cyan-50 text-cyan-800 px-3 py-1.5 rounded-xl border border-cyan-200 text-xs font-semibold">
                 Room {activeSession?.room_number || 'Lab'}

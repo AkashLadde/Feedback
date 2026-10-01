@@ -263,13 +263,13 @@ export const StudentAttendancePage: React.FC = () => {
       <div className="p-12 text-center text-slate-600 space-y-3">
         <div className="w-10 h-10 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
         <span className="text-xs font-bold text-slate-700">
-          Checking Semester {user?.semester || 1} Laboratory Timetable & Geofence Status...
+          Checking Semester {user?.semester || user?.profile?.semester || 1} Laboratory Timetable & Geofence Status...
         </span>
       </div>
     );
   }
 
-  const studentSem = scheduleStatus?.student?.semester || user?.semester || 1;
+  const studentSem = Number(scheduleStatus?.student?.semester || user?.semester || user?.profile?.semester || 1);
   const isLabActive = scheduleStatus?.isLabActive;
   const is5MinWindowActive = scheduleStatus?.is5MinWindowActive;
   const isBeforeWindow = scheduleStatus?.isBeforeWindow;
