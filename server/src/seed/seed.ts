@@ -102,25 +102,24 @@ export function seedDatabase() {
     }
   }
 
-  // 4. Seed Verified Demo Students for 3rd, 5th, and 7th Semesters
+  // 4. Seed Verified Demo Students for 1st, 3rd, 5th, and 7th Semesters
   const studentHash = bcrypt.hashSync('Student@123', 10);
   const insertStudent = db.prepare(`
-    INSERT INTO students (user_id, usn, semester, section, batch_year, current_academic_year, admission_year, status)
-    VALUES (?, ?, ?, 'A', ?, '2026-2027', ?, 'VERIFIED')
+    INSERT INTO students (user_id, usn, semester, section, batch, department, academic_year)
+    VALUES (?, ?, ?, 'A', ?, 'CSE in IoT & Cyber Security including Block Chain Technology', '2026-2027')
   `);
 
   const demoStudents = [
-    { name: 'Pooja Patil (7th Sem)', email: 'pooja.7th@gndec.ac.in', usn: '3GN23CI045', sem: 7, batch: '2023-2027', admissionYear: 2023 },
-    { name: 'Rahul Sharma (5th Sem)', email: 'rahul.5th@gndec.ac.in', usn: '3GN24CI028', sem: 5, batch: '2024-2028', admissionYear: 2024 },
-    { name: 'Sneha Biradar (3rd Sem)', email: 'sneha.3rd@gndec.ac.in', usn: '3GN25CI012', sem: 3, batch: '2025-2029', admissionYear: 2025 }
+    { name: 'Arun Kulkarni (1st Sem)', email: 'arun.1st@gndec.ac.in', usn: '3GN26CI005', sem: 1, batch: '2026-2030 (Batch 2026)' },
+    { name: 'Sneha Biradar (3rd Sem)', email: 'sneha.3rd@gndec.ac.in', usn: '3GN25CI012', sem: 3, batch: '2025-2029 (Batch 2025)' },
+    { name: 'Rahul Sharma (5th Sem)', email: 'rahul.5th@gndec.ac.in', usn: '3GN24CI028', sem: 5, batch: '2024-2028 (Batch 2024)' },
+    { name: 'Pooja Patil (7th Sem)', email: 'pooja.7th@gndec.ac.in', usn: '3GN23CI045', sem: 7, batch: '2023-2027 (Batch 2023)' }
   ];
 
   for (const s of demoStudents) {
     const sUserId = Number(insertUser.run(s.name, s.email, studentHash, 'STUDENT').lastInsertRowid);
-    insertStudent.run(sUserId, s.usn, s.sem, s.batch, s.admissionYear);
+    insertStudent.run(sUserId, s.usn, s.sem, s.batch);
   }
-
-  // 4. Zero Pre-seeded Students (Real students self-register, then Admin/HOD verifies them)
 
   // 5. Practical Laboratories ONLY (No Theory Classes)
   // Campus coordinates: Guru Nanak Dev Engineering College, Mailoor Road, Bidar (17.9104, 77.5199)
@@ -128,6 +127,12 @@ export function seedDatabase() {
   const baseLng = 77.5199;
 
   const practicalLabsData = [
+    // 1st Semester Practical Labs
+    { sem: 1, name: 'Principles of Programming using C Lab', code: '1BPOPS103', room: 'C Programming Lab (Room 105)', fAbbr: 'MK', desc: 'C Syntax, Control Structures, Arrays, Pointers, Functions & Algorithms Lab' },
+    { sem: 1, name: 'Computer Aided Engineering Drawing Lab', code: '1BCSL107', room: 'CAED Lab (Room 106)', fAbbr: 'AP', desc: 'CAD 2D/3D Projections, Isometric Views & Computer Modeling Lab' },
+    { sem: 1, name: 'Applied Engineering Physics Laboratory', code: '1BPHY102', room: 'Physics Lab (Room 107)', fAbbr: 'PP', desc: 'Laser Optics, Semiconductor Bandgap, Dielectric Constants & Sensor Physics' },
+    { sem: 1, name: 'Professional Communication & Language Lab', code: '1BENG106', room: 'Language Lab (Room 108)', fAbbr: 'FN', desc: 'Phonetics, Technical Presentation, Soft Skills & Professional Communication Lab' },
+
     // 3rd Semester Practical Labs
     { sem: 3, name: 'Object Oriented Programming with JAVA LAB', code: '1BCS302(P)', room: 'Java Lab (Room 205)', fAbbr: 'MK', desc: 'Core Java, OOPs, Collections, Multithreading & GUI Lab' },
     { sem: 3, name: 'Operating Systems LAB', code: '1BCS304(P)', room: 'OS Lab (Room 206)', fAbbr: 'AP', desc: 'Linux Shell Scripting, Process Scheduling, System Calls & Memory Lab' },
@@ -201,6 +206,33 @@ export function seedDatabase() {
     'AB': 'Prof. Ashok Bawge',
     'SK': 'Prof. Sangeeta K',
     'PK': 'Prof. Puneeth Kumar'
+  };
+
+  // 1st Sem Practical Labs Timetable Grid
+  const sem1LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string }>> = {
+    'MONDAY': [
+      { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)' },
+      { code: '1BCSL107', abbr: 'CAED LAB', name: 'Computer Aided Engineering Drawing Lab', fAbbr: 'AP', time: '02.00 PM - 05.00 PM', room: 'CAED Lab (Room 106)' }
+    ],
+    'TUESDAY': [
+      { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '09.00 AM - 12.00 PM', room: 'Physics Lab (Room 107)' },
+      { code: '1BENG106', abbr: 'LANG LAB', name: 'Professional Communication & Language Lab', fAbbr: 'FN', time: '02.00 PM - 05.00 PM', room: 'Language Lab (Room 108)' }
+    ],
+    'WEDNESDAY': [
+      { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)' },
+      { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '02.00 PM - 05.00 PM', room: 'Physics Lab (Room 107)' }
+    ],
+    'THURSDAY': [
+      { code: '1BCSL107', abbr: 'CAED LAB', name: 'Computer Aided Engineering Drawing Lab', fAbbr: 'AP', time: '09.00 AM - 12.00 PM', room: 'CAED Lab (Room 106)' },
+      { code: '1BENG106', abbr: 'LANG LAB', name: 'Professional Communication & Language Lab', fAbbr: 'FN', time: '02.00 PM - 05.00 PM', room: 'Language Lab (Room 108)' }
+    ],
+    'FRIDAY': [
+      { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)' },
+      { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '02.00 PM - 05.00 PM', room: 'Physics Lab (Room 107)' }
+    ],
+    'SATURDAY': [
+      { code: '1BPOPS103', abbr: 'C & CAED LAB', name: 'C Programming & CAED Practical Practice Lab', fAbbr: 'MK', time: '09.00 AM - 01.00 PM', room: 'C Programming Lab (Room 105)' }
+    ]
   };
 
   // 3rd Sem Practical Labs Timetable Grid (Morning & Afternoon Practical Lab Blocks)
@@ -306,6 +338,7 @@ export function seedDatabase() {
     }
   };
 
+  insertGridEntries(1, sem1LabGrid);
   insertGridEntries(3, sem3LabGrid);
   insertGridEntries(5, sem5LabGrid);
   insertGridEntries(7, sem7LabGrid);

@@ -29,7 +29,7 @@ export const StudentDashboard: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<string>('MONDAY');
   const [loading, setLoading] = useState(true);
 
-  const studentSem = user?.semester || 3;
+  const studentSem = user?.semester || 1;
 
   useEffect(() => {
     async function loadData() {
@@ -46,7 +46,10 @@ export const StudentDashboard: React.FC = () => {
         if (attRes.success) setAttendanceHistory(attRes.records || []);
         if (fbRes.success) setFeedbackHistory(fbRes.feedbacks || []);
         if (sessRes.success && sessRes.sessions?.length > 0) {
-          setActiveSession(sessRes.sessions[0]);
+          const semSession = sessRes.sessions.find((s: any) => s.semester === studentSem);
+          setActiveSession(semSession || null);
+        } else {
+          setActiveSession(null);
         }
         if (labsRes.success) setLabs(labsRes.labs || []);
         if (ttRes.success) setTimetable(ttRes.entries || []);
@@ -116,7 +119,7 @@ export const StudentDashboard: React.FC = () => {
                 )}
               </div>
               <p className="text-xs text-white/90 font-medium mt-1">
-                Semester {studentSem} • Batch {user?.batch || (studentSem === 7 ? '2023-2027 (Batch 2023)' : studentSem === 5 ? '2024-2028 (Batch 2024)' : '2025-2029 (Batch 2025)')}
+                Semester {studentSem} • Batch {user?.batch || (studentSem === 1 ? '2026-2030 (Batch 2026)' : studentSem === 3 ? '2025-2029 (Batch 2025)' : studentSem === 5 ? '2024-2028 (Batch 2024)' : '2023-2027 (Batch 2023)')}
               </p>
               <p className="text-[11px] text-white/80 font-medium">
                 Guru Nanak Dev Engineering College, Bidar • Dept. of CSE (IoT & Cyber Security including Blockchain Technology)

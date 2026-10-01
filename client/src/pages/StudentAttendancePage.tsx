@@ -25,7 +25,8 @@ import {
   MessageSquare,
   FlaskConical,
   Unlock,
-  AlertCircle
+  AlertCircle,
+  Timer
 } from 'lucide-react';
 
 export const StudentAttendancePage: React.FC = () => {
@@ -36,7 +37,7 @@ export const StudentAttendancePage: React.FC = () => {
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-  // Strong GPS Geolocation State
+  // Strong GPS Geolocation State (< 25m geofencing inside lab)
   const [latitude, setLatitude] = useState<number>(17.9104);
   const [longitude, setLongitude] = useState<number>(77.5199);
   const [accuracy, setAccuracy] = useState<number>(8.0);
@@ -73,7 +74,6 @@ export const StudentAttendancePage: React.FC = () => {
           setLongitude(res.matchingSlot.longitude + 0.00004);
         }
 
-        // Check if active live session has a QR token to auto-populate
         if (res.activeSession?.id) {
           try {
             const liveRes = await api.getLiveSession(res.activeSession.id);
@@ -81,12 +81,12 @@ export const StudentAttendancePage: React.FC = () => {
               setQrToken(liveRes.activeQR.token);
             }
           } catch (e) {
-            // Ignore if live session QR not active
+            // Live session token optional
           }
         }
       }
     } catch (err) {
-      console.error('Failed to load schedule status:', err);
+      console.error('Failed to load student status:', err);
     } finally {
       setLoading(false);
     }
@@ -94,11 +94,11 @@ export const StudentAttendancePage: React.FC = () => {
 
   useEffect(() => {
     fetchStatus();
-    const timer = setInterval(fetchStatus, 30000);
+    const timer = setInterval(fetchStatus, 20000);
     return () => clearInterval(timer);
   }, []);
 
-  // Strong High-Accuracy Device GPS Capture
+  // High-Accuracy GPS Capture
   const getRealGPS = () => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
@@ -152,7 +152,7 @@ export const StudentAttendancePage: React.FC = () => {
     setResultMessage(null);
   };
 
-  // Distance computation via Haversine formula
+  // Haversine Distance computation
   const calculateDistance = () => {
     const targetLat = scheduleStatus?.activeSession?.latitude || scheduleStatus?.matchingSlot?.latitude || 17.9104;
     const targetLng = scheduleStatus?.activeSession?.longitude || scheduleStatus?.matchingSlot?.longitude || 77.5199;
@@ -177,17 +177,17 @@ export const StudentAttendancePage: React.FC = () => {
   const isGpsModerate = accuracy > 15.0 && accuracy <= 25.0;
 
   let geoState: 'GREEN' | 'YELLOW' | 'RED' = 'GREEN';
-  let geoMessage = 'Strong GPS Lock Verified — You are inside the laboratory room perimeter.';
+  let geoMessage = 'Strong GPS Lock Verified — You are inside the designated laboratory perimeter.';
 
   if (accuracy > 30) {
     geoState = 'YELLOW';
-    geoMessage = 'Location accuracy margin is wide. Move near window or refresh GPS.';
+    geoMessage = 'Location accuracy margin is wide. Move near a window or refresh GPS.';
   } else if (distance > radius + 5) {
     geoState = 'RED';
     geoMessage = `Outside laboratory boundary (Displacement: ${distance}m, Permitted: ${radius}m).`;
   }
 
-  // Handle Testing Override to unlock the 10-minute window
+  // Handle Testing Override to unlock the 5-minute window
   const handleTestingUnlock = async () => {
     if (scheduleStatus?.activeSession?.id) {
       try {
@@ -202,12 +202,12 @@ export const StudentAttendancePage: React.FC = () => {
     }
   };
 
-  // Submit Unified Attendance & Compulsory Feedback
+  // Unified Attendance & Compulsory Feedback Submission
   const handleUnifiedSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!scheduleStatus || scheduleStatus.hasSubmitted) return;
 
-    // Validate feedback completeness (Compulsory Feedback Requirement)
+    // Validate feedback completeness (Compulsory feedback check)
     if (!teachingBasics || !handsOn || !teacherGuidance || !doubtSupport || !reasonUnderstanding || !vivaTaken || !hardwareSetup || !labPunctuality || !overallRating) {
       alert('Feedback is strictly COMPULSORY! Please answer all 8 evaluation criteria before marking attendance.');
       return;
@@ -263,15 +263,17 @@ export const StudentAttendancePage: React.FC = () => {
       <div className="p-12 text-center text-slate-600 space-y-3">
         <div className="w-10 h-10 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
         <span className="text-xs font-bold text-slate-700">
-          Checking Semester {user?.semester || 3} Laboratory Timetable & Geofence Status...
+          Checking Semester {user?.semester || 1} Laboratory Timetable & Geofence Status...
         </span>
       </div>
     );
   }
 
-  const studentSem = scheduleStatus?.student?.semester || user?.semester || 7;
+  const studentSem = scheduleStatus?.student?.semester || user?.semester || 1;
   const isLabActive = scheduleStatus?.isLabActive;
-  const isLast10Minutes = scheduleStatus?.isLast10Minutes;
+  const is5MinWindowActive = scheduleStatus?.is5MinWindowActive;
+  const isBeforeWindow = scheduleStatus?.isBeforeWindow;
+  const isWindowExpired = scheduleStatus?.isWindowExpired;
   const hasSubmitted = scheduleStatus?.hasSubmitted;
   const activeLab = scheduleStatus?.activeSession || scheduleStatus?.matchingSlot;
 
@@ -283,11 +285,11 @@ export const StudentAttendancePage: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
             <h1 className="text-xl font-black text-slate-900 tracking-tight">
-              Laboratory Attendance & Compulsory Feedback Portal
+              Laboratory Attendance & Feedback Portal
             </h1>
           </div>
           <p className="text-xs text-slate-600 mt-1 font-medium">
-            Strict Semester {studentSem} Isolation • Batch {user?.batch || (studentSem === 7 ? '2023' : studentSem === 5 ? '2024' : '2025')} • Guru Nanak Dev Engineering College
+            Semester {studentSem} • Batch {user?.batch || (studentSem === 1 ? '2026' : studentSem === 3 ? '2025' : studentSem === 5 ? '2024' : '2023')} • Guru Nanak Dev Engineering College
           </p>
         </div>
 
@@ -344,7 +346,7 @@ export const StudentAttendancePage: React.FC = () => {
           </div>
 
           <div className="text-[11px] text-emerald-800 font-medium">
-            🛡️ In compliance with academic integrity guidelines, attendance can only be recorded once per practical session.
+            🛡️ Attendance can only be recorded once per practical session. Duplicate submissions are prevented.
           </div>
         </div>
       )}
@@ -361,7 +363,7 @@ export const StudentAttendancePage: React.FC = () => {
               Laboratory Portal Closed — Outside Scheduled Lab Hours
             </h2>
             <p className="text-xs text-slate-600 max-w-lg mx-auto leading-relaxed">
-              As per department policy, laboratory attendance and evaluation portals for <strong>Semester {studentSem}</strong> are strictly accessible only during scheduled practical laboratory periods.
+              Laboratory details, attendance, and evaluation for <strong>Semester {studentSem}</strong> are strictly accessible only during scheduled practical laboratory periods.
             </p>
           </div>
 
@@ -369,7 +371,7 @@ export const StudentAttendancePage: React.FC = () => {
             <div className="bg-gradient-to-r from-cyan-50/70 via-white to-orange-50/70 p-5 rounded-2xl border border-cyan-200 max-w-md mx-auto text-left space-y-2">
               <div className="text-[11px] font-bold text-orange-800 uppercase tracking-wider flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-orange-600" />
-                <span>Next Scheduled Practical Lab:</span>
+                <span>Next Scheduled Semester {studentSem} Practical Lab:</span>
               </div>
               <div className="text-sm font-extrabold text-slate-900">
                 {scheduleStatus.nextScheduledLab.subject_name} ({scheduleStatus.nextScheduledLab.subject_code})
@@ -384,20 +386,20 @@ export const StudentAttendancePage: React.FC = () => {
           )}
 
           <div className="text-xs text-slate-500">
-            Current time: <span className="font-bold text-slate-700">{scheduleStatus?.currentTime}</span>. The portal will automatically open at your scheduled laboratory time slot.
+            Current time: <span className="font-bold text-slate-700">{scheduleStatus?.currentTime}</span>. The portal will automatically unlock at your exact laboratory time slot.
           </div>
         </div>
       )}
 
-      {/* ================= SCENARIO 3: LAB ACTIVE BUT BEFORE LAST 10 MINUTES ================= */}
-      {!hasSubmitted && isLabActive && !isLast10Minutes && (
+      {/* ================= SCENARIO 3: LAB ACTIVE BUT BEFORE THE 5-MINUTE WINDOW ================= */}
+      {!hasSubmitted && isLabActive && isBeforeWindow && (
         <div className="bg-white p-8 rounded-3xl border-2 border-cyan-300 shadow-card space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-cyan-100">
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-cyan-500 animate-ping"></span>
                 <span className="text-xs font-black text-cyan-800 uppercase tracking-wider">
-                  Laboratory Practicals in Progress
+                  Semester {studentSem} Practical Lab in Progress
                 </span>
               </div>
               <h2 className="text-lg font-black text-slate-900 mt-1">
@@ -409,9 +411,10 @@ export const StudentAttendancePage: React.FC = () => {
             </div>
 
             <div className="bg-orange-50 border border-orange-200 px-4 py-2 rounded-2xl text-right">
-              <div className="text-[10px] text-orange-800 uppercase font-bold tracking-wider">Portal Opening In</div>
-              <div className="text-base font-black text-orange-950 font-mono">
-                ~{scheduleStatus?.minutesUntilSubmissionOpens || 10} minutes
+              <div className="text-[10px] text-orange-800 uppercase font-bold tracking-wider">Submission Portal Opens In</div>
+              <div className="text-base font-black text-orange-950 font-mono flex items-center gap-1.5 justify-end">
+                <Timer className="w-4 h-4 text-orange-600 animate-pulse" />
+                <span>~{scheduleStatus?.minutesUntilWindowOpens || 10} min</span>
               </div>
             </div>
           </div>
@@ -420,41 +423,57 @@ export const StudentAttendancePage: React.FC = () => {
             <Info className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
             <div className="text-xs text-slate-700 leading-relaxed space-y-1">
               <div className="font-bold text-slate-900 text-sm">
-                Attendance & Feedback Unlocks in the Final 10 Minutes
+                Attendance & Feedback Opens for 5 Minutes at {scheduleStatus?.windowOpenTimeStr || 'End of Lab - 10m'}
               </div>
               <p>
-                Students must first perform hands-on experimentation, understand the concepts, and receive faculty guidance.
-                The attendance verification and compulsory feedback evaluation form will unlock automatically in the last 10 minutes of the lab session.
+                As per institutional guidelines, the attendance and compulsory feedback portal will unlock <strong>10 minutes before the end of the lab session and remain open for strictly 5 minutes</strong> (from {scheduleStatus?.windowOpenTimeStr} to {scheduleStatus?.windowCloseTimeStr}).
               </p>
             </div>
           </div>
 
-          {/* Testing / Faculty Override */}
-          <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
-            <span>Faculty or Testing Fast-Track:</span>
-            <button
-              type="button"
-              onClick={handleTestingUnlock}
-              disabled={testingUnlock}
-              className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-cyan-600 text-white rounded-xl font-bold flex items-center gap-1.5 shadow-xs hover:opacity-90 disabled:opacity-50"
-            >
-              <Unlock className="w-3.5 h-3.5" />
-              <span>{testingUnlock ? 'Unlocking...' : 'Unlock Submission Window (Teacher / Test Mode)'}</span>
-            </button>
-          </div>
+          {/* Admin Override if needed */}
+          {scheduleStatus?.activeSession && (
+            <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
+              <span>Admin Override Option:</span>
+              <button
+                type="button"
+                onClick={handleTestingUnlock}
+                disabled={testingUnlock}
+                className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-cyan-600 text-white rounded-xl font-bold flex items-center gap-1.5 shadow-xs hover:opacity-90 disabled:opacity-50"
+              >
+                <Unlock className="w-3.5 h-3.5" />
+                <span>{testingUnlock ? 'Unlocking...' : 'Unlock 5-Minute Window Now'}</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* ================= SCENARIO 4: SUBMISSION WINDOW OPEN (LAST 10 MINS / UNLOCKED) ================= */}
-      {!hasSubmitted && isLabActive && isLast10Minutes && (
+      {/* ================= SCENARIO 4: SUBMISSION WINDOW EXPIRED ================= */}
+      {!hasSubmitted && isLabActive && isWindowExpired && (
+        <div className="bg-white p-8 rounded-3xl border border-amber-200 shadow-card text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h2 className="text-base font-extrabold text-slate-900">
+            Attendance & Feedback Submission Window Closed for Today's Lab
+          </h2>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            The designated 5-minute submission window for this laboratory concluded at {scheduleStatus?.windowCloseTimeStr}. Please contact the Department Administrator for attendance queries.
+          </p>
+        </div>
+      )}
+
+      {/* ================= SCENARIO 5: 5-MINUTE SUBMISSION WINDOW OPEN ================= */}
+      {!hasSubmitted && isLabActive && is5MinWindowActive && (
         <form onSubmit={handleUnifiedSubmit} className="space-y-6">
           {/* Active Session Info Card */}
-          <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card flex flex-wrap items-center justify-between gap-4">
+          <div className="bg-white p-6 rounded-3xl border-2 border-emerald-300 shadow-card flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                  Attendance & Feedback Window Open (Last 10 Mins)
+                  5-Minute Submission Window Active (Closing at {scheduleStatus?.windowCloseTimeStr})
                 </span>
               </div>
               <h2 className="text-lg font-black text-slate-900 mt-0.5">
@@ -467,7 +486,7 @@ export const StudentAttendancePage: React.FC = () => {
 
             <div className="bg-emerald-50 border border-emerald-300 px-3.5 py-1.5 rounded-2xl text-xs font-bold text-emerald-900 flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Ready for Submission</span>
+              <span>Portal Open</span>
             </div>
           </div>
 
@@ -536,11 +555,11 @@ export const StudentAttendancePage: React.FC = () => {
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                 <span className="text-[10px] text-slate-500 font-semibold block">Room</span>
-                <span className="font-bold text-slate-900 mt-0.5 block">Room {activeLab?.room_number || activeLab?.room || '204'}</span>
+                <span className="font-bold text-slate-900 mt-0.5 block">Room {activeLab?.room_number || activeLab?.room || '105'}</span>
               </div>
             </div>
 
-            {/* Simulation Engine for Lab Testing */}
+            {/* Simulation Engine */}
             <div className="pt-1">
               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                 <Compass className="w-3 h-3 text-orange-500" />
@@ -642,7 +661,7 @@ export const StudentAttendancePage: React.FC = () => {
                 </select>
               </div>
 
-              {/* 3. Teacher Desk-to-Desk Guidance */}
+              {/* 3. Teacher Guidance */}
               <div>
                 <label className="block font-extrabold text-slate-800 mb-1.5">
                   3. Teacher Desk-to-Desk Monitoring & Active Guidance *
@@ -665,7 +684,7 @@ export const StudentAttendancePage: React.FC = () => {
                 </select>
               </div>
 
-              {/* 4. Doubt Clearing Support */}
+              {/* 4. Doubt Support */}
               <div>
                 <label className="block font-extrabold text-slate-800 mb-1.5">
                   4. Doubt Clearance & Cooperative Attitude *
@@ -688,7 +707,7 @@ export const StudentAttendancePage: React.FC = () => {
                 </select>
               </div>
 
-              {/* 5. Working Principle & Reason Understanding */}
+              {/* 5. Working Principle Understanding */}
               <div>
                 <label className="block font-extrabold text-slate-800 mb-1.5">
                   5. Conceptual Understanding & Working Principle Learned *
@@ -711,7 +730,7 @@ export const StudentAttendancePage: React.FC = () => {
                 </select>
               </div>
 
-              {/* 6. Individual Viva Examination */}
+              {/* 6. Viva Taken */}
               <div>
                 <label className="block font-extrabold text-slate-800 mb-1.5">
                   6. Individual Viva Examination Conducted During Lab *
@@ -734,7 +753,7 @@ export const StudentAttendancePage: React.FC = () => {
                 </select>
               </div>
 
-              {/* 7. Hardware & Software Working Setup */}
+              {/* 7. Hardware Setup */}
               <div>
                 <label className="block font-extrabold text-slate-800 mb-1.5">
                   7. Laboratory Hardware, Kit & Software Availability *
@@ -757,7 +776,7 @@ export const StudentAttendancePage: React.FC = () => {
                 </select>
               </div>
 
-              {/* 8. Laboratory Punctuality & Duration */}
+              {/* 8. Lab Punctuality */}
               <div>
                 <label className="block font-extrabold text-slate-800 mb-1.5">
                   8. Laboratory Punctuality & Full Duration Utilization *
@@ -876,7 +895,7 @@ export const StudentAttendancePage: React.FC = () => {
       <div className="p-4 bg-gradient-to-r from-cyan-50/60 via-white to-orange-50/60 rounded-2xl border border-cyan-100 text-slate-600 text-[11px] leading-relaxed flex items-start gap-2">
         <Info className="w-4 h-4 shrink-0 text-cyan-600 mt-0.5" />
         <span>
-          <strong>Academic Feedback & Zero-Duplication Rule:</strong> Feedback is strictly compulsory. Attendance will not be recorded unless the comprehensive 8-point laboratory evaluation is completed. Duplicate check-ins are automatically rejected.
+          <strong>Academic Feedback & Zero-Duplication Rule:</strong> Feedback is strictly compulsory. Attendance will not be recorded unless the comprehensive 8-point laboratory evaluation is completed.
         </span>
       </div>
     </div>

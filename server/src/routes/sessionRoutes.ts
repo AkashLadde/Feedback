@@ -198,47 +198,69 @@ router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: Au
       ORDER BY ls.started_at DESC LIMIT 1
     `).get(semNum) as any;
 
-    // 3. Determine if student is currently within scheduled lab timing
+    // 3. Determine if student is currently within scheduled lab timing & 5-minute submission window
     let matchingSlot: any = null;
     let isWithinTimetableTime = false;
-    let isLast10Minutes = false;
-    let minutesRemainingInLab = 0;
-    let minutesUntilSubmissionOpens = 0;
+    let is5MinWindowActive = false;
+    let isBeforeWindow = false;
+    let isWindowExpired = false;
+    let minutesUntilWindowOpens = 0;
+    let minutesRemainingInWindow = 0;
+    let windowOpenTimeStr = '';
+    let windowCloseTimeStr = '';
+
+    const formatMinutesToTime = (totalMin: number) => {
+      const h24 = Math.floor(totalMin / 60) % 24;
+      const m = totalMin % 60;
+      const period = h24 >= 12 ? 'PM' : 'AM';
+      const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+      return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`;
+    };
 
     for (const slot of todayLabs) {
       const { startMin, endMin } = parseTimeRange(slot.time_range || '');
       if (currentMinutesOfDay >= startMin && currentMinutesOfDay <= endMin) {
         matchingSlot = slot;
         isWithinTimetableTime = true;
-        minutesRemainingInLab = Math.max(0, endMin - currentMinutesOfDay);
-        // Last 10 minutes of the lab session
-        if (currentMinutesOfDay >= (endMin - 10)) {
-          isLast10Minutes = true;
-          minutesUntilSubmissionOpens = 0;
+
+        // The window opens 10 mins before end of lab, and stays visible for ONLY 5 mins (from endMin - 10 to endMin - 5)
+        const windowOpenMin = endMin - 10;
+        const windowCloseMin = endMin - 5;
+
+        windowOpenTimeStr = formatMinutesToTime(windowOpenMin);
+        windowCloseTimeStr = formatMinutesToTime(windowCloseMin);
+
+        if (currentMinutesOfDay >= windowOpenMin && currentMinutesOfDay <= windowCloseMin) {
+          is5MinWindowActive = true;
+          isBeforeWindow = false;
+          isWindowExpired = false;
+          minutesRemainingInWindow = windowCloseMin - currentMinutesOfDay;
+          minutesUntilWindowOpens = 0;
+        } else if (currentMinutesOfDay < windowOpenMin) {
+          is5MinWindowActive = false;
+          isBeforeWindow = true;
+          isWindowExpired = false;
+          minutesUntilWindowOpens = windowOpenMin - currentMinutesOfDay;
         } else {
-          isLast10Minutes = false;
-          minutesUntilSubmissionOpens = (endMin - 10) - currentMinutesOfDay;
+          is5MinWindowActive = false;
+          isBeforeWindow = false;
+          isWindowExpired = true;
         }
         break;
       }
     }
 
-    // If an active session is live from faculty/admin, allow it even if outside strict timetable clock
+    // If an active session is live from admin/faculty, permit active access
     const isLabActive = !!activeFacultySession || isWithinTimetableTime;
     
-    // If active faculty session exists, submission is open if remaining <= 10 or faculty active
-    if (activeFacultySession) {
-      // If timetable slot matches or faculty active
-      if (!isWithinTimetableTime) {
-        isLast10Minutes = true; // Faculty explicitly started session
-        minutesRemainingInLab = 30;
-      }
+    if (activeFacultySession && !isWithinTimetableTime) {
+      is5MinWindowActive = true;
+      minutesRemainingInWindow = 5;
     }
 
-    // 4. Find Next Upcoming Scheduled Lab if not currently in lab
+    // 4. Find Next Upcoming Scheduled Lab for THIS SEMESTER ONLY if not currently in lab
     let nextScheduledLab: any = null;
     if (!isLabActive) {
-      // First check later today
       for (const slot of todayLabs) {
         const { startMin } = parseTimeRange(slot.time_range || '');
         if (startMin > currentMinutesOfDay) {
@@ -247,7 +269,6 @@ router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: Au
         }
       }
 
-      // If none later today, get next day's lab
       if (!nextScheduledLab) {
         const allUpcoming = db.prepare(`
           SELECT * FROM timetable_entries 
@@ -287,7 +308,6 @@ router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: Au
         submissionRecord = existing;
       }
     } else if (matchingSlot) {
-      // Check if attendance already recorded today for this subject
       const todayExisting = db.prepare(`
         SELECT a.id as attendance_id, a.timestamp as attendance_time, a.distance_to_lab,
                f.id as feedback_id, f.overall_rating, f.submitted_at as feedback_time,
@@ -312,14 +332,18 @@ router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: Au
         name: student.name,
         usn: student.usn,
         semester: semNum,
-        batch: student.batch || (semNum === 7 ? 'Batch 2023' : semNum === 5 ? 'Batch 2024' : 'Batch 2025')
+        batch: student.batch || (semNum === 1 ? 'Batch 2026' : semNum === 3 ? 'Batch 2025' : semNum === 5 ? 'Batch 2024' : 'Batch 2023')
       },
       currentDay,
       currentTime: currentTimeFormatted,
       isLabActive,
-      isLast10Minutes,
-      minutesRemainingInLab,
-      minutesUntilSubmissionOpens,
+      is5MinWindowActive,
+      isBeforeWindow,
+      isWindowExpired,
+      minutesUntilWindowOpens,
+      minutesRemainingInWindow,
+      windowOpenTimeStr,
+      windowCloseTimeStr,
       activeSession: activeFacultySession,
       matchingSlot,
       todayScheduledLabs: todayLabs,

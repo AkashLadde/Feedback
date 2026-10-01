@@ -7,14 +7,9 @@ import {
   Lock,
   Mail,
   ArrowRight,
-  UserCheck,
-  Laptop,
   GraduationCap,
   ShieldAlert,
   CheckCircle2,
-  BookOpen,
-  Calendar,
-  Layers,
   UserPlus,
   LogIn,
   Phone,
@@ -23,7 +18,9 @@ import {
   Link2,
   Server,
   Settings,
-  RefreshCw
+  RefreshCw,
+  MapPin,
+  Clock
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
@@ -37,48 +34,31 @@ export const LoginPage: React.FC = () => {
     typeof window !== 'undefined' && window.location.hostname.includes('vercel.app') && !initialBaseUrl
   );
   const [testingServer, setTestingServer] = useState(false);
-  const [serverStatus, setServerStatus] = useState<'UNTESTED' | 'ONLINE' | 'ERROR'>('UNTESTED');
 
   // Login States
-  const [roleTab, setRoleTab] = useState<'STUDENT' | 'TEACHER' | 'ADMIN'>('STUDENT');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Student Registration States (Batch 2023 -> 7th Sem, Batch 2024 -> 5th Sem, Batch 2025 -> 3rd Sem)
+  // Student Registration States (1st, 3rd, 5th, 7th Semesters)
   const [regName, setRegName] = useState('');
   const [regUsn, setRegUsn] = useState('');
   const [regEmail, setRegEmail] = useState('');
-  const [regSemester, setRegSemester] = useState<number>(7);
-  const [regBatch, setRegBatch] = useState('2023-2027');
+  const [regSemester, setRegSemester] = useState<number>(1);
+  const [regBatch, setRegBatch] = useState('2026-2030 (Batch 2026)');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regDepartment] = useState('CSE in IoT & Cyber Security including Block Chain Technology');
 
-  const handleRoleTabChange = (role: 'STUDENT' | 'TEACHER' | 'ADMIN') => {
-    setRoleTab(role);
-    setError(null);
-    setIdentifier('');
-    setPassword('');
-  };
-
   const handleSemesterChangeInReg = (sem: number) => {
     setRegSemester(sem);
-    if (sem === 7) setRegBatch('2023-2027 (Batch 2023)');
-    else if (sem === 5) setRegBatch('2024-2028 (Batch 2024)');
+    if (sem === 1) setRegBatch('2026-2030 (Batch 2026)');
     else if (sem === 3) setRegBatch('2025-2029 (Batch 2025)');
-    else if (sem === 1) setRegBatch('2026-2030 (Batch 2026)');
-  };
-
-  const handleFillDemo = (id: string, pass: string, role: 'STUDENT' | 'TEACHER' | 'ADMIN') => {
-    setAuthMode('LOGIN');
-    setRoleTab(role);
-    setIdentifier(id);
-    setPassword(pass);
-    setError(null);
+    else if (sem === 5) setRegBatch('2024-2028 (Batch 2024)');
+    else if (sem === 7) setRegBatch('2023-2027 (Batch 2023)');
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -86,18 +66,15 @@ export const LoginPage: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      if (roleTab === 'STUDENT') {
-        const isEmail = identifier.includes('@');
-        await login({
-          usn: isEmail ? undefined : identifier.trim().toUpperCase(),
-          email: isEmail ? identifier.trim() : undefined,
-          password
-        });
+      const cleanId = identifier.trim();
+      const isEmail = cleanId.includes('@');
+      if (isEmail) {
+        await login({ email: cleanId.toLowerCase(), password });
       } else {
-        await login({ email: identifier.trim(), password });
+        await login({ usn: cleanId.toUpperCase(), password });
       }
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your USN, email, or password.');
+      setError(err.message || 'Login failed. Please verify your USN or institutional email and password.');
     } finally {
       setLoading(false);
     }
@@ -109,7 +86,7 @@ export const LoginPage: React.FC = () => {
     setSuccessMsg(null);
 
     if (!regName.trim() || !regUsn.trim() || !regEmail.trim() || !regPassword) {
-      setError('Please fill in all required fields (Name, USN, Email, Password).');
+      setError('Please fill in all mandatory fields (Full Name, USN, Email, Password).');
       return;
     }
 
@@ -119,7 +96,7 @@ export const LoginPage: React.FC = () => {
     }
 
     if (regPassword !== regConfirmPassword) {
-      setError('Passwords do not match. Please re-enter your password.');
+      setError('Passwords do not match. Please verify your password entry.');
       return;
     }
 
@@ -138,17 +115,16 @@ export const LoginPage: React.FC = () => {
 
       if (res.success && res.token) {
         confetti({
-          particleCount: 80,
-          spread: 70,
+          particleCount: 90,
+          spread: 75,
           origin: { y: 0.6 }
         });
 
-        // Automatically log in with newly created token
         localStorage.setItem('labguard_token', res.token);
         window.location.reload();
       }
     } catch (err: any) {
-      setError(err.message || 'Account registration failed.');
+      setError(err.message || 'Account registration failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -159,12 +135,10 @@ export const LoginPage: React.FC = () => {
     setTestingServer(true);
     setError(null);
     setSuccessMsg(null);
-    setServerStatus('UNTESTED');
 
     const clean = serverUrl.trim().replace(/\/+$/, '').replace(/\/api$/, '');
     if (!clean) {
       setApiBaseUrl('');
-      setServerStatus('ONLINE');
       setSuccessMsg('Reverted to default /api endpoint.');
       setTestingServer(false);
       return;
@@ -175,16 +149,13 @@ export const LoginPage: React.FC = () => {
       const data = await resp.json();
       if (resp.ok && (data.status === 'HEALTHY' || data.system)) {
         setApiBaseUrl(clean);
-        setServerStatus('ONLINE');
-        setSuccessMsg(`Connected successfully to backend server!`);
+        setSuccessMsg('Connected successfully to backend server!');
       } else {
         setApiBaseUrl(clean);
-        setServerStatus('ONLINE');
         setSuccessMsg(`Backend URL set to ${clean}`);
       }
     } catch (err: any) {
-      setServerStatus('ERROR');
-      setError(`Cannot reach backend at ${clean}. Please verify the Render service is running and copy the URL.`);
+      setError(`Cannot reach backend at ${clean}. Please verify the service is running.`);
     } finally {
       setTestingServer(false);
     }
@@ -214,7 +185,7 @@ export const LoginPage: React.FC = () => {
       {/* Main Authentication Card */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 bg-white rounded-3xl shadow-xl border border-cyan-100 overflow-hidden">
-          {/* Left Institutional Information Panel - Bright Cyan & Orange Theme */}
+          {/* Left Institutional Information Panel - Cyan & Orange Theme */}
           <div className="md:col-span-5 bg-gradient-to-br from-cyan-500 via-cyan-600 to-orange-500 p-8 text-white flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-xs border border-white/30 text-white text-xs font-bold px-3 py-1 rounded-full shadow-xs">
@@ -222,29 +193,29 @@ export const LoginPage: React.FC = () => {
                 <span>Official GNDEC CSE-ICB Portal</span>
               </div>
               <h1 className="text-2xl font-black tracking-tight leading-snug text-white">
-                Attendance & Student Feedback System
+                Laboratory Attendance & Feedback Portal
               </h1>
               <p className="text-xs text-cyan-50 leading-relaxed font-medium">
-                Dedicated academic platform for 3rd, 5th, and 7th Semester. Each student creates their genuine account to access timetables, mark laboratory attendance, and submit confidential teacher feedback.
+                Official institutional portal for students and administration. Students access their semester timetable, mark verified geofenced laboratory attendance, and submit compulsory feedback during the designated practical session window.
               </p>
             </div>
 
             <div className="space-y-3 pt-6 border-t border-white/20 text-xs font-semibold">
               <div className="flex items-center gap-2.5 text-white">
                 <CheckCircle2 className="w-4 h-4 text-orange-200 shrink-0" />
-                <span>1st Step: Each student registers their own account</span>
+                <span>Strict Semester Timetable & Lab Isolation</span>
               </div>
               <div className="flex items-center gap-2.5 text-white">
                 <CheckCircle2 className="w-4 h-4 text-orange-200 shrink-0" />
-                <span>Sign in using your USN or Institutional Email</span>
+                <span>25m Satellite Geofencing Required in Lab</span>
               </div>
               <div className="flex items-center gap-2.5 text-white">
                 <CheckCircle2 className="w-4 h-4 text-orange-200 shrink-0" />
-                <span>3rd, 5th & 7th Semester Schedules & Laboratories</span>
+                <span>Attendance & Compulsory Feedback Submission</span>
               </div>
               <div className="flex items-center gap-2.5 text-white">
                 <CheckCircle2 className="w-4 h-4 text-orange-200 shrink-0" />
-                <span>Zero Duplicate Attendance & High-Precision GPS</span>
+                <span>Administrative Verification & Security Audits</span>
               </div>
             </div>
 
@@ -256,12 +227,12 @@ export const LoginPage: React.FC = () => {
           {/* Right Form Panel: Sign In or Register */}
           <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div>
-              {/* Backend API Server Connectivity Bar */}
+              {/* Backend Server Configuration Toggle (Optional) */}
               <div className="mb-4 bg-cyan-50/40 border border-cyan-100 rounded-2xl p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
                     <Server className="w-3.5 h-3.5 text-cyan-600" />
-                    <span>Backend API:</span>
+                    <span>API Endpoint:</span>
                     <span className="font-mono text-[10px] text-cyan-700 bg-white px-2 py-0.5 rounded-lg border border-cyan-200 truncate max-w-[170px] sm:max-w-[240px]">
                       {serverUrl ? serverUrl : 'Local / Relative (/api)'}
                     </span>
@@ -272,19 +243,19 @@ export const LoginPage: React.FC = () => {
                     className="text-xs font-bold text-cyan-600 hover:text-cyan-800 flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-xs"
                   >
                     <Settings className="w-3 h-3" />
-                    <span>{showServerConfig ? 'Close' : 'Set Backend URL'}</span>
+                    <span>{showServerConfig ? 'Close' : 'Config URL'}</span>
                   </button>
                 </div>
 
                 {showServerConfig && (
                   <div className="mt-2.5 pt-2.5 border-t border-cyan-100 space-y-2 animate-fadeIn">
                     <p className="text-[11px] text-slate-600 leading-tight">
-                      Paste your live Render Backend URL (e.g. <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-800">https://gndec-cse-feedback.onrender.com</code>) to connect the Vercel frontend:
+                      Custom backend API URL:
                     </p>
                     <div className="flex gap-2">
                       <input
                         type="url"
-                        placeholder="https://your-app.onrender.com"
+                        placeholder="https://your-backend.onrender.com"
                         value={serverUrl}
                         onChange={(e) => setServerUrl(e.target.value)}
                         className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none bg-white"
@@ -293,14 +264,10 @@ export const LoginPage: React.FC = () => {
                         type="button"
                         onClick={handleConnectServer}
                         disabled={testingServer}
-                        className="bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                        className="bg-gradient-to-r from-cyan-500 to-orange-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-xs disabled:opacity-50"
                       >
-                        {testingServer ? (
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Link2 className="w-3.5 h-3.5" />
-                        )}
-                        <span>Save & Connect</span>
+                        {testingServer ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
+                        <span>Connect</span>
                       </button>
                     </div>
                   </div>
@@ -360,59 +327,13 @@ export const LoginPage: React.FC = () => {
                 <div className="space-y-4">
                   <div className="mb-2">
                     <h2 className="text-xl font-extrabold text-slate-900">Sign In to Your Account</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Choose your role to access your portal</p>
-                  </div>
-
-                  {/* Role Selector: Student vs Teacher vs Admin */}
-                  <div className="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 mb-4">
-                    <button
-                      type="button"
-                      onClick={() => handleRoleTabChange('STUDENT')}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                        roleTab === 'STUDENT'
-                          ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      <GraduationCap className="w-3.5 h-3.5" />
-                      <span>Student</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleRoleTabChange('TEACHER')}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                        roleTab === 'TEACHER'
-                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      <UserCheck className="w-3.5 h-3.5" />
-                      <span>Faculty</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleRoleTabChange('ADMIN')}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                        roleTab === 'ADMIN'
-                          ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-md shadow-slate-900/20'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      <Shield className="w-3.5 h-3.5" />
-                      <span>Admin</span>
-                    </button>
+                    <p className="text-xs text-slate-500 mt-0.5">Enter your student USN or institutional email</p>
                   </div>
 
                   <form onSubmit={handleLoginSubmit} className="space-y-3.5">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        {roleTab === 'STUDENT'
-                          ? 'Student USN (e.g. 3GN23CI045, 3GN25CI012) or Email'
-                          : roleTab === 'ADMIN'
-                          ? 'Administrator Institutional Email'
-                          : 'Faculty / Staff Institutional Email'}
+                        Student USN or Institutional Email
                       </label>
                       <div className="relative">
                         <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -421,13 +342,7 @@ export const LoginPage: React.FC = () => {
                           required
                           value={identifier}
                           onChange={(e) => setIdentifier(e.target.value)}
-                          placeholder={
-                            roleTab === 'STUDENT'
-                              ? 'e.g. 3GN23CI045 (7th Sem) or 3GN25CI012 (3rd Sem)'
-                              : roleTab === 'ADMIN'
-                              ? 'admin@gndec.ac.in'
-                              : 'e.g. hod.cse@gndec.ac.in, harish.joshi@gndec.ac.in'
-                          }
+                          placeholder="e.g. 3GN26CI005 (USN) or admin@gndec.ac.in"
                           className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white font-medium text-slate-800"
                         />
                       </div>
@@ -457,77 +372,22 @@ export const LoginPage: React.FC = () => {
                         <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                       ) : (
                         <>
-                          <span>
-                            {roleTab === 'ADMIN' ? 'Sign In as System Administrator' : roleTab === 'TEACHER' ? 'Sign In as Faculty' : 'Sign In as Student'}
-                          </span>
+                          <span>Sign In to Portal</span>
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
                     </button>
                   </form>
 
-                  {/* Quick Demo Access Login Badges */}
-                  <div className="pt-3 border-t border-slate-200/80 space-y-2">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                      <span className="flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5 text-orange-500" />
-                        <span>Quick Access Logins (One-Click):</span>
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      {/* Admin Credentials */}
-                      <button
-                        type="button"
-                        onClick={() => handleFillDemo('admin@gndec.ac.in', 'admin123', 'ADMIN')}
-                        className="p-2 bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-left border border-slate-700 transition-all flex flex-col justify-between"
-                      >
-                        <div className="font-extrabold flex items-center gap-1">
-                          <Shield className="w-3 h-3 text-cyan-400" />
-                          <span>Admin Login</span>
-                        </div>
-                        <div className="text-[10px] text-slate-300 font-mono mt-0.5">admin@gndec.ac.in</div>
-                      </button>
-
-                      {/* HOD Credentials */}
-                      <button
-                        type="button"
-                        onClick={() => handleFillDemo('hod.cse@gndec.ac.in', 'hod123', 'TEACHER')}
-                        className="p-2 bg-orange-50 hover:bg-orange-100 text-orange-900 rounded-xl text-left border border-orange-200 transition-all flex flex-col justify-between"
-                      >
-                        <div className="font-extrabold flex items-center gap-1 text-orange-950">
-                          <UserCheck className="w-3 h-3 text-orange-600" />
-                          <span>HOD Dr. Harish Joshi</span>
-                        </div>
-                        <div className="text-[10px] text-orange-700 font-mono mt-0.5">hod.cse@gndec.ac.in</div>
-                      </button>
-
-                      {/* 7th Sem Student (Batch 2023) */}
-                      <button
-                        type="button"
-                        onClick={() => handleFillDemo('3GN23CI045', 'Student@123', 'STUDENT')}
-                        className="p-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-950 rounded-xl text-left border border-cyan-200 transition-all flex flex-col justify-between"
-                      >
-                        <div className="font-extrabold flex items-center gap-1 text-cyan-900">
-                          <GraduationCap className="w-3 h-3 text-cyan-600" />
-                          <span>7th Sem Student (Batch 2023)</span>
-                        </div>
-                        <div className="text-[10px] text-cyan-700 font-mono mt-0.5">3GN23CI045</div>
-                      </button>
-
-                      {/* 3rd Sem Student (Batch 2025) */}
-                      <button
-                        type="button"
-                        onClick={() => handleFillDemo('3GN25CI012', 'Student@123', 'STUDENT')}
-                        className="p-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-950 rounded-xl text-left border border-cyan-200 transition-all flex flex-col justify-between"
-                      >
-                        <div className="font-extrabold flex items-center gap-1 text-cyan-900">
-                          <GraduationCap className="w-3 h-3 text-cyan-600" />
-                          <span>3rd Sem Student (Batch 2025)</span>
-                        </div>
-                        <div className="text-[10px] text-cyan-700 font-mono mt-0.5">3GN25CI012</div>
-                      </button>
-                    </div>
+                  <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-xl text-xs text-cyan-900 flex items-center justify-between gap-2 mt-2">
+                    <span className="text-[11px] font-medium">New student? Create your account first.</span>
+                    <button
+                      type="button"
+                      onClick={() => setAuthMode('REGISTER')}
+                      className="text-cyan-700 font-extrabold hover:underline text-[11px]"
+                    >
+                      Register Now →
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -539,7 +399,7 @@ export const LoginPage: React.FC = () => {
                       <span>Student Account Registration</span>
                     </h2>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Fill your authentic GNDEC details to create your personal account
+                      Register your authentic GNDEC student credentials (verified by Admin)
                     </p>
                   </div>
 
@@ -567,7 +427,7 @@ export const LoginPage: React.FC = () => {
                         <input
                           type="text"
                           required
-                          placeholder="e.g. 3GN24CB015"
+                          placeholder="e.g. 3GN26CI005"
                           value={regUsn}
                           onChange={(e) => setRegUsn(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-cyan-500 outline-none font-mono uppercase font-bold"
@@ -581,10 +441,10 @@ export const LoginPage: React.FC = () => {
                           onChange={(e) => handleSemesterChangeInReg(parseInt(e.target.value, 10))}
                           className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-cyan-500 outline-none"
                         >
-                          <option value={7}>7th Semester (Batch 2023 - 2027)</option>
-                          <option value={5}>5th Semester (Batch 2024 - 2028)</option>
-                          <option value={3}>3rd Semester (Batch 2025 - 2029)</option>
                           <option value={1}>1st Semester (Batch 2026 - 2030)</option>
+                          <option value={3}>3rd Semester (Batch 2025 - 2029)</option>
+                          <option value={5}>5th Semester (Batch 2024 - 2028)</option>
+                          <option value={7}>7th Semester (Batch 2023 - 2027)</option>
                         </select>
                       </div>
                     </div>

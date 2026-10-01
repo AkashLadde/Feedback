@@ -29,13 +29,13 @@ export const Sidebar: React.FC = () => {
   // Admin / HOD navigation items
   const adminNav = [
     { id: 'dashboard', label: 'Department Dashboard', icon: LayoutDashboard, subtitle: 'Overview & Analytics' },
-    { id: 'timetable', label: 'Class Timetables', icon: Calendar, subtitle: '3rd, 5th, 7th Sem', highlight: true },
+    { id: 'students', label: 'Student Verification', icon: GraduationCap, subtitle: 'Approve New Registrations', highlight: true },
+    { id: 'timetable', label: 'Class Timetables', icon: Calendar, subtitle: '1st, 3rd, 5th, 7th Sem' },
     { id: 'admin-attendance', label: 'Attendance Records', icon: CheckCircle2, subtitle: 'Session Logs & Zero Dupes' },
     { id: 'admin-feedback', label: 'Student Feedback', icon: FileText, subtitle: 'Ratings & Evaluations' },
     { id: 'faculty', label: 'Teachers / Faculty', icon: UserCheck, subtitle: 'Faculty Directory' },
-    { id: 'students', label: 'Student Profiles', icon: GraduationCap, subtitle: '3rd, 5th, 7th Cohorts' },
     { id: 'laboratories', label: 'Subjects & Labs', icon: Building2, subtitle: 'Curriculum & 25m Geofences' },
-    { id: 'semesters', label: 'Academic Semesters', icon: Layers, subtitle: '3rd, 5th, 7th Sem' },
+    { id: 'semesters', label: 'Academic Semesters', icon: Layers, subtitle: '1st, 3rd, 5th, 7th Sem' },
     { id: 'live-sessions', label: 'Live Lab Sessions', icon: Radio, subtitle: 'Dynamic 1-Min QR' },
     { id: 'reports', label: 'Reports & Export', icon: FileSpreadsheet, subtitle: 'CSV Data Downloads' },
     { id: 'audit-logs', label: 'Audit Logs', icon: History, subtitle: 'Security Activity Stream' }
@@ -44,17 +44,16 @@ export const Sidebar: React.FC = () => {
   // Teachers ONLY take attendance & view timetable
   const facultyNav = [
     { id: 'teacher-attendance', label: 'Take Attendance', icon: UserCheck, subtitle: 'Roll-Call & Session Marking', highlight: true },
-    { id: 'timetable', label: 'Class Timetable', icon: Calendar, subtitle: '3rd, 5th, 7th Sem Schedule' }
+    { id: 'timetable', label: 'Class Timetable', icon: Calendar, subtitle: 'Semester Practical Schedule' }
   ];
 
-  // Students submit feedback, view attendance & timetable
+  // Students submit attendance & feedback, view attendance & timetable
   const studentNav = [
     { id: 'student-dashboard', label: 'Student Portal', icon: LayoutDashboard, subtitle: 'Overview' },
-    { id: 'student-attendance', label: 'GPS Check-In', icon: CheckCircle2, subtitle: 'High Accuracy Lab Lock', highlight: true },
-    { id: 'student-feedback', label: 'Submit Feedback', icon: FileText, subtitle: 'Rate Teaching & Lab Work', highlight: true },
+    { id: 'student-attendance', label: 'Attendance & Feedback', icon: CheckCircle2, subtitle: '5-Min Window & GPS Lock', highlight: true },
     { id: 'student-feedback-history', label: 'My Feedback History', icon: History, subtitle: 'Submission Records' },
     { id: 'student-attendance-history', label: 'My Attendance Log', icon: CheckCircle2, subtitle: 'Class Attendance Records' },
-    { id: 'timetable', label: 'Class Timetable', icon: Calendar, subtitle: '3rd, 5th, 7th Sem Schedule' }
+    { id: 'timetable', label: 'Semester Timetable', icon: Calendar, subtitle: 'Practical Lab Schedule' }
   ];
 
   const navItems = isStudent ? studentNav : isFaculty ? facultyNav : adminNav;
