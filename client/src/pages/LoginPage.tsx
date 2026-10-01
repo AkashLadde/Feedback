@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { api } from '../services/api';
+import { api, getApiBaseUrl, setApiBaseUrl } from '../services/api';
 import confetti from 'canvas-confetti';
 import {
   Shield,
@@ -19,12 +19,25 @@ import {
   LogIn,
   Phone,
   User as UserIcon,
-  Sparkles
+  Sparkles,
+  Link2,
+  Server,
+  Settings,
+  RefreshCw
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const [authMode, setAuthMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
+
+  // Backend API URL Configuration
+  const initialBaseUrl = getApiBaseUrl();
+  const [serverUrl, setServerUrl] = useState(initialBaseUrl);
+  const [showServerConfig, setShowServerConfig] = useState(
+    typeof window !== 'undefined' && window.location.hostname.includes('vercel.app') && !initialBaseUrl
+  );
+  const [testingServer, setTestingServer] = useState(false);
+  const [serverStatus, setServerStatus] = useState<'UNTESTED' | 'ONLINE' | 'ERROR'>('UNTESTED');
 
   // Login States
   const [roleTab, setRoleTab] = useState<'ADMIN' | 'TEACHER' | 'STUDENT'>('STUDENT');
@@ -132,6 +145,42 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const handleConnectServer = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setTestingServer(true);
+    setError(null);
+    setSuccessMsg(null);
+    setServerStatus('UNTESTED');
+
+    const clean = serverUrl.trim().replace(/\/+$/, '').replace(/\/api$/, '');
+    if (!clean) {
+      setApiBaseUrl('');
+      setServerStatus('ONLINE');
+      setSuccessMsg('Reverted to default /api endpoint.');
+      setTestingServer(false);
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${clean}/api/health`, { method: 'GET' });
+      const data = await resp.json();
+      if (resp.ok && (data.status === 'HEALTHY' || data.system)) {
+        setApiBaseUrl(clean);
+        setServerStatus('ONLINE');
+        setSuccessMsg(`Connected successfully to backend server!`);
+      } else {
+        setApiBaseUrl(clean);
+        setServerStatus('ONLINE');
+        setSuccessMsg(`Backend URL set to ${clean}`);
+      }
+    } catch (err: any) {
+      setServerStatus('ERROR');
+      setError(`Cannot reach backend at ${clean}. Please verify the Render service is running and copy the URL.`);
+    } finally {
+      setTestingServer(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
       {/* Institutional Top Navigation Header */}
@@ -198,6 +247,57 @@ export const LoginPage: React.FC = () => {
           {/* Right Form Panel: Sign In or Register */}
           <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div>
+              {/* Backend API Server Connectivity Bar */}
+              <div className="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                    <Server className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Backend API:</span>
+                    <span className="font-mono text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 truncate max-w-[170px] sm:max-w-[240px]">
+                      {serverUrl ? serverUrl : 'Local / Relative (/api)'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowServerConfig(!showServerConfig)}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-xs"
+                  >
+                    <Settings className="w-3 h-3" />
+                    <span>{showServerConfig ? 'Close' : 'Set Backend URL'}</span>
+                  </button>
+                </div>
+
+                {showServerConfig && (
+                  <div className="mt-2.5 pt-2.5 border-t border-slate-200 space-y-2 animate-fadeIn">
+                    <p className="text-[11px] text-slate-600 leading-tight">
+                      Paste your live Render Backend URL (e.g. <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-800">https://gndec-cse-feedback.onrender.com</code>) to connect the Vercel frontend:
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://your-app.onrender.com"
+                        value={serverUrl}
+                        onChange={(e) => setServerUrl(e.target.value)}
+                        className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleConnectServer}
+                        disabled={testingServer}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                      >
+                        {testingServer ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Link2 className="w-3.5 h-3.5" />
+                        )}
+                        <span>Save & Connect</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Primary Toggle: Sign In vs Create Student Account */}
               <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 mb-6">
                 <button

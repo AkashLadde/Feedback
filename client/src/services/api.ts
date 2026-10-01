@@ -1,4 +1,23 @@
-const API_BASE = (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/+$/, '') : '') + '/api';
+export function getApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+  const storedUrl = localStorage.getItem('labguard_api_url');
+  if (storedUrl && storedUrl.trim() !== '') {
+    return storedUrl.trim().replace(/\/+$/, '');
+  }
+  return '';
+}
+
+export function setApiBaseUrl(url: string) {
+  const cleaned = url.trim().replace(/\/+$/, '').replace(/\/api$/, '');
+  if (cleaned) {
+    localStorage.setItem('labguard_api_url', cleaned);
+  } else {
+    localStorage.removeItem('labguard_api_url');
+  }
+}
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('labguard_token');
@@ -6,20 +25,40 @@ function getAuthHeader(): Record<string, string> {
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const baseUrl = getApiBaseUrl();
+  const fullUrl = `${baseUrl}/api${endpoint}`;
+
   const headers = {
     'Content-Type': 'application/json',
     ...getAuthHeader(),
     ...(options.headers || {})
   };
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers
-  });
+  let response: Response;
+  try {
+    response = await fetch(fullUrl, {
+      ...options,
+      headers
+    });
+  } catch (networkErr: any) {
+    if (!baseUrl && window.location.hostname.includes('vercel.app')) {
+      throw new Error('Backend URL is not configured on Vercel. Please set VITE_API_URL or enter your Render backend URL.');
+    }
+    throw new Error(networkErr.message || 'Network connection failed. Please ensure the backend server is running.');
+  }
 
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (response.status === 405 && !baseUrl && window.location.hostname.includes('vercel.app')) {
+      const err: any = new Error(
+        'Backend not connected (Status 405). The frontend on Vercel needs your Render backend URL. Please configure VITE_API_URL in Vercel or enter your Render backend URL.'
+      );
+      err.status = 405;
+      err.data = data;
+      throw err;
+    }
+
     const errorMsg = data?.error || data?.message || `Request failed with status ${response.status}`;
     const err: any = new Error(errorMsg);
     err.data = data;
