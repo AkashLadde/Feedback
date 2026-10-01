@@ -76,9 +76,14 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const clientDist = path.resolve(process.cwd(), '../client/dist');
-const altClientDist = path.resolve(__dirname, '../../../client/dist');
-const finalDist = fs.existsSync(clientDist) ? clientDist : fs.existsSync(altClientDist) ? altClientDist : null;
+const possiblePaths = [
+  path.resolve(process.cwd(), 'client/dist'),
+  path.resolve(process.cwd(), '../client/dist'),
+  path.resolve(__dirname, '../../client/dist'),
+  path.resolve(__dirname, '../../../client/dist'),
+  path.resolve(__dirname, '../client/dist')
+];
+const finalDist = possiblePaths.find(p => fs.existsSync(p) && fs.existsSync(path.join(p, 'index.html'))) || null;
 
 if (finalDist) {
   app.use(express.static(finalDist));
@@ -87,6 +92,8 @@ if (finalDist) {
     res.sendFile(path.join(finalDist, 'index.html'));
   });
   console.log(`📦 Serving compiled client from: ${finalDist}`);
+} else {
+  console.log(`⚠️ Client dist not found in paths:`, possiblePaths);
 }
 
 // Global Error Handler
