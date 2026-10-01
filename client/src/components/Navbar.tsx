@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Bell, LogOut, User as UserIcon, Key } from 'lucide-react';
+import { Bell, LogOut, User as UserIcon, Key, Menu, X } from 'lucide-react';
 import { api } from '../services/api';
 
 export const Navbar: React.FC = () => {
-  const { user, logout, setActiveTab, refreshTrigger, triggerRefresh } = useAuth();
+  const { user, logout, setActiveTab, refreshTrigger, triggerRefresh, mobileMenuOpen, setMobileMenuOpen } = useAuth();
   const [alertCount, setAlertCount] = useState<number>(0);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [editName, setEditName] = useState(user?.name || '');
@@ -80,51 +80,61 @@ export const Navbar: React.FC = () => {
   return (
     <header className="bg-white border-b border-cyan-100 sticky top-0 z-30 shadow-subtle">
       {/* Top Department Banner: Clean White & Cyan with Orange Accent */}
-      <div className="bg-gradient-to-r from-cyan-50/80 via-white to-orange-50/80 border-b border-cyan-100/60 px-6 py-1.5 flex items-center justify-between text-[11px] text-slate-700 font-medium">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
-          <span className="font-extrabold text-slate-900">Guru Nanak Dev Engineering College Bidar</span>
-          <span className="text-cyan-300">|</span>
-          <span className="text-cyan-800 font-semibold">Dept. of CSE in IoT & Cyber Security including Block Chain Technology</span>
+      <div className="bg-gradient-to-r from-cyan-50/80 via-white to-orange-50/80 border-b border-cyan-100/60 px-3 sm:px-6 py-1 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-700 font-medium">
+        <div className="flex items-center gap-1.5 sm:gap-2 truncate">
+          <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shrink-0"></span>
+          <span className="font-extrabold text-slate-900 truncate">Guru Nanak Dev Engineering College Bidar</span>
+          <span className="text-cyan-300 hidden md:inline">|</span>
+          <span className="text-cyan-800 font-semibold hidden md:inline">Dept. of CSE (IoT & Cyber Security)</span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-slate-600 font-semibold">Academic Year 2026-2027</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-slate-600 font-semibold">2026-2027</span>
         </div>
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="px-6 py-3 flex items-center justify-between">
-        {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-cyan-500 to-orange-500 flex items-center justify-center text-white shadow-md shadow-cyan-500/20 font-black text-sm tracking-wider">
+      <div className="px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
+        {/* Brand & Mobile Menu Button */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {user && (
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-xl text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 border border-slate-200 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5 text-orange-600" /> : <Menu className="w-5 h-5 text-cyan-700" />}
+            </button>
+          )}
+
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-cyan-500 to-orange-500 flex items-center justify-center text-white shadow-md shadow-cyan-500/20 font-black text-xs sm:text-sm tracking-wider shrink-0">
             GND
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-black tracking-tight text-slate-900">
+            <div className="flex items-center gap-1.5">
+              <span className="text-lg sm:text-xl font-black tracking-tight text-slate-900 leading-none">
                 Lab<span className="text-cyan-600">Guard</span>
               </span>
-              <span className="bg-orange-50 text-orange-600 border border-orange-200 text-[10px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
+              <span className="bg-orange-50 text-orange-600 border border-orange-200 text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.2 rounded uppercase tracking-wider">
                 CSE-ICB
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-medium">Laboratory Attendance & Student Feedback Verification Platform</p>
+            <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate max-w-[200px] sm:max-w-none">Attendance & Feedback Platform</p>
           </div>
         </div>
 
         {/* Right side controls */}
         {user ? (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Alert Bell for Admin / HOD */}
             {(user.role === 'ADMIN' || user.role === 'HOD') && (
               <button
                 onClick={() => setActiveTab('alerts')}
-                className="relative p-2 rounded-xl text-slate-600 hover:text-cyan-700 hover:bg-cyan-50 transition-colors border border-transparent hover:border-cyan-100"
+                className="relative p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-cyan-700 hover:bg-cyan-50 transition-colors border border-transparent hover:border-cyan-100"
                 title="System Alerts"
               >
-                <Bell className="w-5 h-5 text-slate-600" />
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
                 {alertCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-orange-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-pulse">
+                  <span className="absolute -top-0.5 -right-0.5 bg-orange-500 text-white text-[9px] sm:text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-pulse">
                     {alertCount}
                   </span>
                 )}
@@ -132,8 +142,8 @@ export const Navbar: React.FC = () => {
             )}
 
             {/* User Pill */}
-            <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-100 to-orange-100 border border-cyan-200 flex items-center justify-center text-cyan-800 font-bold">
+            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-cyan-100 to-orange-100 border border-cyan-200 flex items-center justify-center text-cyan-800 font-bold shrink-0">
                 <UserIcon className="w-4 h-4 text-cyan-700" />
               </div>
               <div className="hidden sm:block text-left">
@@ -157,7 +167,7 @@ export const Navbar: React.FC = () => {
 
               <button
                 onClick={logout}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-orange-600 hover:bg-orange-50 transition-colors ml-1"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-orange-600 hover:bg-orange-50 transition-colors ml-0.5 sm:ml-1"
                 title="Sign Out"
               >
                 <LogOut className="w-4 h-4" />

@@ -28,7 +28,7 @@ import { AdminAttendancePage } from './pages/AdminAttendancePage';
 import { AdminFeedbackPage } from './pages/AdminFeedbackPage';
 
 const AppContent: React.FC = () => {
-  const { user, loading, activeTab } = useAuth();
+  const { user, loading, activeTab, setActiveTab } = useAuth();
 
   if (loading) {
     return (
@@ -114,17 +114,105 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800">
+    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800 pb-16 lg:pb-0">
       {/* Main Navbar */}
       <Navbar />
 
       {/* Workspace with Sidebar & Main Body */}
       <div className="flex-1 flex max-w-[1600px] w-full mx-auto">
         <Sidebar />
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-3 sm:p-6 md:p-8 overflow-y-auto min-w-0">
           {renderPage()}
         </main>
       </div>
+
+      {/* Mobile Smartphone Bottom Quick Navigation Bar */}
+      {user && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-cyan-100 px-2 py-1.5 z-40 flex items-center justify-around shadow-lg">
+          {user.role === 'STUDENT' ? (
+            <>
+              <button
+                onClick={() => setActiveTab('student-dashboard')}
+                className={`flex flex-col items-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+                  activeTab === 'student-dashboard' ? 'text-cyan-700 font-extrabold' : 'text-slate-500'
+                }`}
+              >
+                <span className="text-base">🏛️</span>
+                <span>Dashboard</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('student-attendance')}
+                className={`flex flex-col items-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+                  activeTab === 'student-attendance' ? 'text-orange-600 font-extrabold' : 'text-slate-500'
+                }`}
+              >
+                <span className="text-base">📍</span>
+                <span>Mark Lab</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('timetable')}
+                className={`flex flex-col items-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+                  activeTab === 'timetable' ? 'text-cyan-700 font-extrabold' : 'text-slate-500'
+                }`}
+              >
+                <span className="text-base">📅</span>
+                <span>Timetable</span>
+              </button>
+            </>
+          ) : user.role === 'FACULTY' ? (
+            <>
+              <button
+                onClick={() => setActiveTab('teacher-attendance')}
+                className={`flex flex-col items-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+                  activeTab === 'teacher-attendance' ? 'text-orange-600 font-extrabold' : 'text-slate-500'
+                }`}
+              >
+                <span className="text-base">📋</span>
+                <span>Roll Call</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('timetable')}
+                className={`flex flex-col items-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+                  activeTab === 'timetable' ? 'text-cyan-700 font-extrabold' : 'text-slate-500'
+                }`}
+              >
+                <span className="text-base">📅</span>
+                <span>Schedule</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`flex flex-col items-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+                  activeTab === 'dashboard' ? 'text-cyan-700 font-extrabold' : 'text-slate-500'
+                }`}
+              >
+                <span className="text-base">📊</span>
+                <span>Analytics</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('students')}
+                className={`flex flex-col items-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+                  activeTab === 'students' ? 'text-orange-600 font-extrabold' : 'text-slate-500'
+                }`}
+              >
+                <span className="text-base">🎓</span>
+                <span>Students</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('admin-feedback')}
+                className={`flex flex-col items-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+                  activeTab === 'admin-feedback' ? 'text-cyan-700 font-extrabold' : 'text-slate-500'
+                }`}
+              >
+                <span className="text-base">💬</span>
+                <span>Feedback</span>
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

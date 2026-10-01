@@ -1,3 +1,13 @@
+// Suppress Node.js ExperimentalWarning for SQLite in terminal logs
+const originalEmit = process.emit;
+// @ts-ignore
+process.emit = function (this: NodeJS.Process, event: any, ...args: any[]): boolean {
+  if (event === 'warning' && args[0] && (args[0].name === 'ExperimentalWarning' || String(args[0].message || '').includes('SQLite is an experimental feature'))) {
+    return false;
+  }
+  return (originalEmit as any).apply(this, [event, ...args]);
+};
+
 import express from 'express';
 import cors from 'cors';
 import { CONFIG } from './config/constants.js';

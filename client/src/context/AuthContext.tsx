@@ -15,6 +15,8 @@ interface AuthContextType {
   setDemoModalOpen: (open: boolean) => void;
   refreshTrigger: number;
   triggerRefresh: () => void;
+  mobileMenuOpen: boolean;
+  setMobileMenuOpen: (open: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [demoModalOpen, setDemoModalOpen] = useState<boolean>(false);
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   const triggerRefresh = () => setRefreshTrigger(prev => prev + 1);
 
@@ -98,7 +101,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         demoModalOpen,
         setDemoModalOpen,
         refreshTrigger,
-        triggerRefresh
+        triggerRefresh,
+        mobileMenuOpen,
+        setMobileMenuOpen
       }}
     >
       {children}
