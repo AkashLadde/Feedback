@@ -198,20 +198,41 @@ router.post('/verify-all', authenticateJWT, requireRoles('ADMIN', 'HOD'), (req: 
   }
 });
 
-// DELETE /api/students/:id - delete student
-router.delete('/:id', authenticateJWT, requireRoles('ADMIN'), (req: AuthenticatedRequest, res) => {
+// DELETE /api/students/:id - delete student (Admin & HOD)
+router.delete('/:id', authenticateJWT, requireRoles('ADMIN', 'HOD'), (req: AuthenticatedRequest, res) => {
   try {
     const student = db.prepare('SELECT * FROM students WHERE id = ?').get(req.params.id) as any;
     if (!student) {
       return res.status(404).json({ success: false, error: 'Student not found.' });
     }
 
-    db.prepare('DELETE FROM users WHERE id = ?').run(student.user_id);
-    logAudit(req.user!.id, req.user!.email, req.user!.role, 'DELETE_STUDENT', 'STUDENT', req.params.id, `Removed student ID ${req.params.id}`);
+    const studentId = student.id;
+    const userId = student.user_id;
 
-    return res.json({ success: true, message: 'Student profile removed.' });
-  } catch (err) {
-    return res.status(500).json({ success: false, error: 'Failed to delete student profile.' });
+    // Clean all child tables in correct order
+    try {
+      db.prepare('DELETE FROM verification_events WHERE student_id = ?').run(studentId);
+      db.prepare('DELETE FROM feedback WHERE student_id = ?').run(studentId);
+      db.prepare('DELETE FROM used_qr_tokens WHERE student_id = ?').run(studentId);
+      db.prepare('DELETE FROM attendance WHERE student_id = ?').run(studentId);
+      db.prepare('DELETE FROM alerts WHERE student_id = ?').run(studentId);
+      db.prepare('DELETE FROM students WHERE id = ?').run(studentId);
+
+      if (userId) {
+        db.prepare('DELETE FROM audit_logs WHERE user_id = ?').run(userId);
+        db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+      }
+    } catch (cleanErr: any) {
+      console.error('Child table clean error:', cleanErr);
+      throw cleanErr;
+    }
+
+    logAudit(req.user!.id, req.user!.email, req.user!.role, 'DELETE_STUDENT', 'STUDENT', req.params.id, `Permanently removed student ID ${studentId} (${student.usn})`);
+
+    return res.json({ success: true, message: `Student account ${student.usn} permanently deleted.` });
+  } catch (err: any) {
+    console.error('Failed to delete student:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Failed to delete student profile.' });
   }
 });
 

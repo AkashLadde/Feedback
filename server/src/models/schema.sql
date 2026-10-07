@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS students (
   department VARCHAR(255) NOT NULL DEFAULT 'CSE in IoT & Cyber Security including Block Chain Technology',
   academic_year VARCHAR(50) NOT NULL DEFAULT '2026-2027',
   phone VARCHAR(50) NULL,
+  phone_verified INT DEFAULT 0,
   profile_photo TEXT NULL,
   INDEX idx_students_usn (usn),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -56,12 +57,23 @@ CREATE TABLE IF NOT EXISTS laboratories (
   academic_year VARCHAR(50) NOT NULL DEFAULT '2026-2027',
   faculty_id INT NULL,
   room_number VARCHAR(100) NOT NULL,
+  location VARCHAR(255) NULL,
   latitude DOUBLE NOT NULL DEFAULT 17.9104,
   longitude DOUBLE NOT NULL DEFAULT 77.5199,
   geofence_radius DOUBLE NOT NULL DEFAULT 25.0,
   status VARCHAR(50) DEFAULT 'ACTIVE',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS otp_verifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  phone VARCHAR(50) NOT NULL,
+  otp_code VARCHAR(10) NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  verified INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_otp_phone (phone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS experiments (
@@ -148,7 +160,8 @@ CREATE TABLE IF NOT EXISTS timetable_entries (
   subject_name VARCHAR(255) NOT NULL,
   faculty_abbr VARCHAR(50) NOT NULL,
   faculty_name VARCHAR(255) NOT NULL,
-  room VARCHAR(100) NOT NULL
+  room VARCHAR(100) NOT NULL,
+  batch VARCHAR(50) DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS qr_sessions (

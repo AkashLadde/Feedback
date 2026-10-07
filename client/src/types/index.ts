@@ -11,6 +11,9 @@ export interface User {
   usn?: string;
   semester?: number;
   batch?: string;
+  department?: string;
+  phone?: string;
+  phone_verified?: number;
   profile?: any;
 }
 
@@ -24,6 +27,7 @@ export interface Laboratory {
   faculty_name?: string;
   faculty_emp_id?: string;
   room_number: string;
+  location?: string;
   latitude: number;
   longitude: number;
   geofence_radius: number;
@@ -59,6 +63,7 @@ export interface LabSession {
   lab_name?: string;
   lab_code?: string;
   room_number?: string;
+  location?: string;
   latitude?: number;
   longitude?: number;
   geofence_radius?: number;

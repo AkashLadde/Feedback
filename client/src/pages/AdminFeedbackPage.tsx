@@ -96,7 +96,7 @@ export const AdminFeedbackPage: React.FC = () => {
 
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-emerald-600/20 transition-all"
+            className="px-4 py-2 bg-gradient-to-r from-pink-800 to-pink-700 hover:from-pink-900 hover:to-pink-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-pink-900/20 transition-all"
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span>Export CSV</span>
@@ -107,7 +107,7 @@ export const AdminFeedbackPage: React.FC = () => {
       {/* KPI Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-700 flex items-center justify-center shrink-0">
             <MessageSquare className="w-6 h-6" />
           </div>
           <div>
@@ -129,13 +129,13 @@ export const AdminFeedbackPage: React.FC = () => {
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-700 flex items-center justify-center shrink-0">
             <Award className="w-6 h-6" />
           </div>
           <div>
             <div className="text-xs font-semibold text-slate-500">5-Star Feedback Count</div>
             <div className="text-2xl font-extrabold text-slate-900">{stats.ratingCounts[5] || 0}</div>
-            <div className="text-[11px] text-purple-700 font-medium">Highest Praise Given</div>
+            <div className="text-[11px] text-pink-800 font-medium">Highest Praise Given</div>
           </div>
         </div>
       </div>
@@ -151,7 +151,7 @@ export const AdminFeedbackPage: React.FC = () => {
                 onClick={() => setSelectedSem(sem)}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
                   selectedSem === sem
-                    ? 'bg-cyan-600 text-white shadow-sm'
+                    ? 'bg-pink-700 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -165,7 +165,7 @@ export const AdminFeedbackPage: React.FC = () => {
             <button
               onClick={() => setSelectedRating('')}
               className={`px-2.5 py-1.5 rounded-lg font-bold transition-all ${
-                !selectedRating ? 'bg-orange-500 text-white' : 'text-slate-600'
+                !selectedRating ? 'bg-pink-700 text-white' : 'text-slate-600'
               }`}
             >
               All Stars
@@ -175,7 +175,7 @@ export const AdminFeedbackPage: React.FC = () => {
                 key={r}
                 onClick={() => setSelectedRating(String(r))}
                 className={`px-2.5 py-1.5 rounded-lg font-bold transition-all flex items-center gap-0.5 ${
-                  selectedRating === String(r) ? 'bg-orange-500 text-white' : 'text-slate-600'
+                  selectedRating === String(r) ? 'bg-pink-700 text-white' : 'text-slate-600'
                 }`}
               >
                 <span>{r}</span>
@@ -193,7 +193,7 @@ export const AdminFeedbackPage: React.FC = () => {
       {/* Feedback Feed */}
       {loading ? (
         <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-slate-200">
-          <div className="w-8 h-8 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <div className="w-8 h-8 border-3 border-pink-700 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
           <span className="text-xs font-bold">Loading student feedback records...</span>
         </div>
       ) : feedbacks.length === 0 ? (
@@ -206,7 +206,7 @@ export const AdminFeedbackPage: React.FC = () => {
           {feedbacks.map((fb) => (
             <div
               key={fb.id}
-              className="bg-white rounded-2xl border border-slate-200 p-5 shadow-subtle hover:border-blue-300 transition-all space-y-3"
+              className="bg-white rounded-2xl border border-slate-200 p-5 shadow-subtle hover:border-pink-300 transition-all space-y-3"
             >
               {/* Header */}
               <div className="flex items-start justify-between gap-3">
@@ -251,7 +251,7 @@ export const AdminFeedbackPage: React.FC = () => {
 
               {/* Comments if any */}
               {fb.comments && (
-                <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100 text-xs text-blue-950 italic">
+                <div className="p-3 bg-pink-50/50 rounded-xl border border-pink-100 text-xs text-pink-950 italic">
                   "{fb.comments}"
                 </div>
               )}

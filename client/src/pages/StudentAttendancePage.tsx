@@ -26,7 +26,11 @@ import {
   FlaskConical,
   Unlock,
   AlertCircle,
-  Timer
+  Timer,
+  Building2,
+  CalendarDays,
+  Calendar,
+  Users
 } from 'lucide-react';
 
 export const StudentAttendancePage: React.FC = () => {
@@ -59,11 +63,21 @@ export const StudentAttendancePage: React.FC = () => {
   const [comments, setComments] = useState<string>('');
 
   const [testingUnlock, setTestingUnlock] = useState<boolean>(false);
+  const [selectedDayTab, setSelectedDayTab] = useState<string>('TODAY');
+  const [timetableEntries, setTimetableEntries] = useState<any[]>([]);
+
+  const daysOfWeek = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+
+  const studentSem = Number(scheduleStatus?.student?.semester || user?.semester || user?.profile?.semester || 1);
 
   const fetchStatus = async () => {
     try {
       setLoading(true);
-      const res = await api.getStudentLabScheduleStatus();
+      const [res, ttRes] = await Promise.all([
+        api.getStudentLabScheduleStatus(),
+        api.getSemesterTimetable(studentSem).catch(() => ({ success: false, entries: [] }))
+      ]);
+
       if (res.success) {
         setScheduleStatus(res);
         if (res.activeSession?.latitude && res.activeSession?.longitude) {
@@ -85,6 +99,10 @@ export const StudentAttendancePage: React.FC = () => {
           }
         }
       }
+
+      if (ttRes.success && ttRes.entries) {
+        setTimetableEntries(ttRes.entries);
+      }
     } catch (err) {
       console.error('Failed to load student status:', err);
     } finally {
@@ -96,7 +114,7 @@ export const StudentAttendancePage: React.FC = () => {
     fetchStatus();
     const timer = setInterval(fetchStatus, 20000);
     return () => clearInterval(timer);
-  }, []);
+  }, [studentSem]);
 
   // High-Accuracy GPS Capture
   const getRealGPS = () => {
@@ -256,20 +274,17 @@ export const StudentAttendancePage: React.FC = () => {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  if (loading && !scheduleStatus) {
+  };  if (loading && !scheduleStatus) {
     return (
       <div className="p-12 text-center text-slate-600 space-y-3">
-        <div className="w-10 h-10 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <div className="w-10 h-10 border-3 border-pink-700 border-t-transparent rounded-full animate-spin mx-auto"></div>
         <span className="text-xs font-bold text-slate-700">
-          Checking Semester {user?.semester || user?.profile?.semester || 1} Laboratory Timetable & Geofence Status...
+          Checking Semester {user?.semester || user?.profile?.semester || 5} Laboratory Timetable & Geofence Status...
         </span>
       </div>
     );
   }
 
-  const studentSem = Number(scheduleStatus?.student?.semester || user?.semester || user?.profile?.semester || 1);
   const isLabActive = scheduleStatus?.isLabActive;
   const is5MinWindowActive = scheduleStatus?.is5MinWindowActive;
   const isBeforeWindow = scheduleStatus?.isBeforeWindow;
@@ -280,10 +295,10 @@ export const StudentAttendancePage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
       {/* Top Academic Header Banner */}
-      <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-card flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-600 animate-pulse"></span>
             <h1 className="text-xl font-black text-slate-900 tracking-tight">
               Laboratory Attendance & Feedback Portal
             </h1>
@@ -294,8 +309,8 @@ export const StudentAttendancePage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="bg-gradient-to-r from-cyan-50 to-orange-50 border border-cyan-200 px-3.5 py-1.5 rounded-2xl text-xs font-bold text-cyan-900 flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-orange-500" />
+          <div className="bg-gradient-to-r from-cyan-50 to-orange-50 border border-cyan-200 px-3.5 py-1.5 rounded-2xl text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-orange-600" />
             <span>{scheduleStatus?.currentDay || 'Today'} • {scheduleStatus?.currentTime}</span>
           </div>
           <button
@@ -353,7 +368,7 @@ export const StudentAttendancePage: React.FC = () => {
 
       {/* ================= SCENARIO 2: OUTSIDE SCHEDULED LAB TIMING ================= */}
       {!hasSubmitted && !isLabActive && (
-        <div className="bg-white p-8 rounded-3xl border border-cyan-100 shadow-card text-center space-y-6">
+        <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-card text-center space-y-6">
           <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-cyan-100 to-orange-100 text-cyan-800 flex items-center justify-center mx-auto border border-cyan-200 shadow-inner">
             <Lock className="w-8 h-8 text-cyan-700" />
           </div>
@@ -369,16 +384,22 @@ export const StudentAttendancePage: React.FC = () => {
 
           {scheduleStatus?.nextScheduledLab && (
             <div className="bg-gradient-to-r from-cyan-50/70 via-white to-orange-50/70 p-5 rounded-2xl border border-cyan-200 max-w-md mx-auto text-left space-y-2">
-              <div className="text-[11px] font-bold text-orange-800 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="text-[11px] font-bold text-cyan-800 uppercase tracking-wider flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-orange-600" />
                 <span>Next Scheduled Semester {studentSem} Practical Lab:</span>
               </div>
               <div className="text-sm font-extrabold text-slate-900">
                 {scheduleStatus.nextScheduledLab.subject_name} ({scheduleStatus.nextScheduledLab.subject_code})
               </div>
-              <div className="text-xs text-cyan-800 font-bold flex items-center justify-between">
+              {scheduleStatus.nextScheduledLab.location && (
+                <div className="text-[11px] text-slate-600 flex items-center gap-1 font-semibold">
+                  <Building2 className="w-3.5 h-3.5 text-cyan-700 shrink-0" />
+                  <span>{scheduleStatus.nextScheduledLab.location}</span>
+                </div>
+              )}
+              <div className="text-xs text-slate-800 font-bold flex items-center justify-between pt-1 border-t border-slate-100">
                 <span>{scheduleStatus.nextScheduledLab.when}</span>
-                <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-cyan-200">
+                <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-slate-200">
                   Room {scheduleStatus.nextScheduledLab.room || 'Lab'}
                 </span>
               </div>
@@ -393,21 +414,28 @@ export const StudentAttendancePage: React.FC = () => {
 
       {/* ================= SCENARIO 3: LAB ACTIVE BUT BEFORE THE 5-MINUTE WINDOW ================= */}
       {!hasSubmitted && isLabActive && isBeforeWindow && (
-        <div className="bg-white p-8 rounded-3xl border-2 border-cyan-300 shadow-card space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-cyan-100">
+        <div className="bg-white p-8 rounded-3xl border-2 border-orange-300 shadow-card space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-cyan-500 animate-ping"></span>
-                <span className="text-xs font-black text-cyan-800 uppercase tracking-wider">
+                <span className="w-3 h-3 rounded-full bg-orange-600 animate-ping"></span>
+                <span className="text-xs font-black text-orange-900 uppercase tracking-wider">
                   Semester {studentSem} Practical Lab in Progress
                 </span>
               </div>
               <h2 className="text-lg font-black text-slate-900 mt-1">
                 {activeLab?.lab_name || activeLab?.subject_name} ({activeLab?.lab_code || activeLab?.subject_code})
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Room {activeLab?.room_number || activeLab?.room} • Instructor: {activeLab?.faculty_name}
-              </p>
+              <div className="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+                {activeLab?.location && (
+                  <span className="font-semibold text-slate-800 flex items-center gap-1">
+                    <Building2 className="w-3.5 h-3.5 text-cyan-700" />
+                    <span>{activeLab.location}</span>
+                  </span>
+                )}
+                <span>• Room {activeLab?.room_number || activeLab?.room}</span>
+                <span>• Instructor: {activeLab?.faculty_name}</span>
+              </div>
             </div>
 
             <div className="bg-orange-50 border border-orange-200 px-4 py-2 rounded-2xl text-right">
@@ -419,8 +447,8 @@ export const StudentAttendancePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-5 bg-gradient-to-r from-cyan-50/80 via-white to-orange-50/80 rounded-2xl border border-cyan-200 flex items-start gap-3">
-            <Info className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
+          <div className="p-5 bg-gradient-to-r from-orange-50/80 via-white to-cyan-50/80 rounded-2xl border border-orange-200 flex items-start gap-3">
+            <Info className="w-5 h-5 text-orange-700 shrink-0 mt-0.5" />
             <div className="text-xs text-slate-700 leading-relaxed space-y-1">
               <div className="font-bold text-slate-900 text-sm">
                 Attendance & Feedback Opens for 5 Minutes at {scheduleStatus?.windowOpenTimeStr || 'End of Lab - 10m'}
@@ -434,12 +462,12 @@ export const StudentAttendancePage: React.FC = () => {
           {/* Admin Override if needed */}
           {scheduleStatus?.activeSession && (
             <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
-              <span>Admin Override Option:</span>
+              <span>Testing Quick Unlock Option:</span>
               <button
                 type="button"
                 onClick={handleTestingUnlock}
                 disabled={testingUnlock}
-                className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-cyan-600 text-white rounded-xl font-bold flex items-center gap-1.5 shadow-xs hover:opacity-90 disabled:opacity-50"
+                className="px-3 py-1.5 bg-gradient-to-r from-orange-600 to-pink-700 text-white rounded-xl font-bold flex items-center gap-1.5 shadow-xs hover:opacity-90 disabled:opacity-50"
               >
                 <Unlock className="w-3.5 h-3.5" />
                 <span>{testingUnlock ? 'Unlocking...' : 'Unlock 5-Minute Window Now'}</span>
@@ -479,8 +507,15 @@ export const StudentAttendancePage: React.FC = () => {
               <h2 className="text-lg font-black text-slate-900 mt-0.5">
                 {activeLab?.lab_name || activeLab?.subject_name} ({activeLab?.lab_code || activeLab?.subject_code})
               </h2>
-              <div className="text-xs text-slate-500 mt-0.5">
-                Room {activeLab?.room_number || activeLab?.room} • Instructor: {activeLab?.faculty_name}
+              <div className="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+                {activeLab?.location && (
+                  <span className="font-semibold text-slate-800 flex items-center gap-1">
+                    <Building2 className="w-3.5 h-3.5 text-cyan-700" />
+                    <span>{activeLab.location}</span>
+                  </span>
+                )}
+                <span>• Room {activeLab?.room_number || activeLab?.room}</span>
+                <span>• Instructor: {activeLab?.faculty_name}</span>
               </div>
             </div>
 
@@ -491,10 +526,10 @@ export const StudentAttendancePage: React.FC = () => {
           </div>
 
           {/* Section 1: Geofence & Strong GPS Check */}
-          <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-cyan-50">
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-card space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <span className="text-xs font-bold text-slate-900 flex items-center gap-2">
-                <Satellite className="w-4 h-4 text-cyan-600" />
+                <Satellite className="w-4 h-4 text-cyan-700" />
                 <span>Step 1: Strong Satellite GPS Verification (&lt; 25m Room Geofence)</span>
               </span>
 
@@ -502,7 +537,7 @@ export const StudentAttendancePage: React.FC = () => {
                 type="button"
                 onClick={getRealGPS}
                 disabled={locating}
-                className="text-xs font-bold text-cyan-700 hover:text-cyan-900 bg-cyan-50 hover:bg-cyan-100 px-3 py-1.5 rounded-xl border border-cyan-200 flex items-center gap-1.5 transition-colors"
+                className="text-xs font-bold text-cyan-800 hover:text-cyan-950 bg-cyan-50 hover:bg-cyan-100 px-3 py-1.5 rounded-xl border border-cyan-200 flex items-center gap-1.5 transition-colors"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
                 <span>{locating ? 'Acquiring GPS...' : 'Refresh Device GPS'}</span>
@@ -520,7 +555,7 @@ export const StudentAttendancePage: React.FC = () => {
               }`}
             >
               <div className="flex items-start gap-3">
-                {geoState === 'GREEN' && <ShieldCheck className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />}
+                {geoState === 'GREEN' && <ShieldCheck className="w-5 h-5 text-cyan-700 shrink-0 mt-0.5" />}
                 {geoState === 'YELLOW' && <AlertTriangle className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />}
                 {geoState === 'RED' && <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />}
 
@@ -541,7 +576,7 @@ export const StudentAttendancePage: React.FC = () => {
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                 <span className="text-[10px] text-slate-500 font-semibold block">Precision</span>
                 <span className="font-bold text-slate-900 flex items-center gap-1 mt-0.5">
-                  <span className={`w-2 h-2 rounded-full ${isGpsStrong ? 'bg-cyan-500' : 'bg-orange-400'}`}></span>
+                  <span className={`w-2 h-2 rounded-full ${isGpsStrong ? 'bg-cyan-600' : 'bg-orange-400'}`}></span>
                   <span>{isGpsStrong ? 'Strong' : 'Moderate'}</span>
                 </span>
               </div>
@@ -555,32 +590,32 @@ export const StudentAttendancePage: React.FC = () => {
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                 <span className="text-[10px] text-slate-500 font-semibold block">Room</span>
-                <span className="font-bold text-slate-900 mt-0.5 block">Room {activeLab?.room_number || activeLab?.room || '105'}</span>
+                <span className="font-bold text-slate-900 mt-0.5 block">Room {activeLab?.room_number || activeLab?.room || '307'}</span>
               </div>
             </div>
 
             {/* Simulation Engine */}
             <div className="pt-1">
               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                <Compass className="w-3 h-3 text-orange-500" />
+                <Compass className="w-3 h-3 text-cyan-600" />
                 <span>Test Simulation Coordinates:</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                 <button
                   type="button"
                   onClick={() => setPreset('INSIDE')}
-                  className="p-2 bg-cyan-50 hover:bg-cyan-100/80 border border-cyan-200 text-cyan-900 rounded-xl font-bold text-left"
+                  className="p-2 bg-cyan-50 hover:bg-cyan-100/80 border border-cyan-200 text-cyan-950 rounded-xl font-bold text-left"
                 >
                   <div>Inside Lab Room</div>
-                  <div className="text-[10px] text-cyan-600">~4m (Valid)</div>
+                  <div className="text-[10px] text-cyan-700">~4m (Valid)</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setPreset('DOORWAY')}
-                  className="p-2 bg-orange-50 hover:bg-orange-100/80 border border-orange-200 text-orange-900 rounded-xl font-bold text-left"
+                  className="p-2 bg-orange-50 hover:bg-orange-100/80 border border-orange-200 text-orange-950 rounded-xl font-bold text-left"
                 >
                   <div>Lab Doorway</div>
-                  <div className="text-[10px] text-orange-600">~18m (Valid)</div>
+                  <div className="text-[10px] text-orange-700">~18m (Valid)</div>
                 </button>
                 <button
                   type="button"
@@ -603,13 +638,13 @@ export const StudentAttendancePage: React.FC = () => {
           </div>
 
           {/* Section 2: Compulsory Laboratory Feedback Evaluation */}
-          <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-cyan-50">
+          <div className="bg-white p-6 rounded-3xl border border-pink-100 shadow-card space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-pink-50">
               <span className="text-xs font-bold text-slate-900 flex items-center gap-2">
-                <Star className="w-4 h-4 text-orange-500" />
+                <Star className="w-4 h-4 text-pink-700 fill-pink-600" />
                 <span>Step 2: Mandatory Laboratory Feedback (All 8 Fields Compulsory)</span>
               </span>
-              <span className="text-[10px] bg-orange-100 text-orange-800 font-bold px-2 py-0.5 rounded-full border border-orange-200">
+              <span className="text-[10px] bg-pink-100 text-pink-800 font-bold px-2.5 py-0.5 rounded-full border border-pink-200">
                 Compulsory to Record Attendance
               </span>
             </div>
@@ -624,7 +659,7 @@ export const StudentAttendancePage: React.FC = () => {
                   required
                   value={teachingBasics}
                   onChange={(e) => setTeachingBasics(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-500 outline-none"
                 >
                   <option value="Thoroughly explained on board/slides with clear objectives">
                     Thoroughly explained on board/slides with clear objectives (Excellent)
@@ -647,7 +682,7 @@ export const StudentAttendancePage: React.FC = () => {
                   required
                   value={handsOn}
                   onChange={(e) => setHandsOn(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-500 outline-none"
                 >
                   <option value="Yes, performed hands-on individually on my PC/Kit">
                     Yes, performed hands-on individually on my PC/Kit (Individual Execution)
@@ -670,7 +705,7 @@ export const StudentAttendancePage: React.FC = () => {
                   required
                   value={teacherGuidance}
                   onChange={(e) => setTeacherGuidance(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-500 outline-none"
                 >
                   <option value="Continuously guided and inspected each student desk">
                     Continuously guided and inspected each student desk (Active Continuous Guidance)
@@ -693,7 +728,7 @@ export const StudentAttendancePage: React.FC = () => {
                   required
                   value={doubtSupport}
                   onChange={(e) => setDoubtSupport(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-500 outline-none"
                 >
                   <option value="Extremely cooperative, patiently cleared every doubt">
                     Extremely cooperative, patiently cleared every doubt (Excellent Support)
@@ -716,7 +751,7 @@ export const StudentAttendancePage: React.FC = () => {
                   required
                   value={reasonUnderstanding}
                   onChange={(e) => setReasonUnderstanding(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-500 outline-none"
                 >
                   <option value="Yes, fully understand the working principle & reasons">
                     Yes, fully understand the working principle & reasons (100% Clarity)
@@ -739,7 +774,7 @@ export const StudentAttendancePage: React.FC = () => {
                   required
                   value={vivaTaken}
                   onChange={(e) => setVivaTaken(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-500 outline-none"
                 >
                   <option value="Yes, detailed one-on-one individual viva conducted">
                     Yes, detailed one-on-one individual viva conducted
@@ -762,7 +797,7 @@ export const StudentAttendancePage: React.FC = () => {
                   required
                   value={hardwareSetup}
                   onChange={(e) => setHardwareSetup(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-500 outline-none"
                 >
                   <option value="Complete working setup (all kits, PCs & software working)">
                     Complete working setup (all kits, PCs & software working smoothly)
@@ -785,7 +820,7 @@ export const StudentAttendancePage: React.FC = () => {
                   required
                   value={labPunctuality}
                   onChange={(e) => setLabPunctuality(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-500 outline-none"
                 >
                   <option value="Full scheduled lab duration conducted properly">
                     Full scheduled lab duration conducted properly (Full Session)
@@ -847,7 +882,7 @@ export const StudentAttendancePage: React.FC = () => {
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
                   placeholder="Share any constructive notes on the experiment, kit quality, or teacher guidance..."
-                  className="w-full p-3 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none text-xs"
+                  className="w-full p-3 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-500 outline-none text-xs"
                 ></textarea>
               </div>
             </div>
@@ -868,7 +903,7 @@ export const StudentAttendancePage: React.FC = () => {
           )}
 
           {/* Unified Submission Footer Card */}
-          <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-card flex flex-wrap items-center justify-between gap-4">
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-card flex flex-wrap items-center justify-between gap-4">
             <div className="text-xs text-slate-600 font-medium">
               Student: <strong className="text-slate-900 font-bold">{user?.name}</strong> (<span className="font-mono">{user?.usn}</span>) • Semester {studentSem}
             </div>
@@ -876,7 +911,7 @@ export const StudentAttendancePage: React.FC = () => {
             <button
               type="submit"
               disabled={submitting || geoState !== 'GREEN'}
-              className="px-8 py-3 bg-gradient-to-r from-cyan-600 via-cyan-500 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white font-extrabold text-xs rounded-2xl shadow-cyan flex items-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-8 py-3.5 bg-gradient-to-r from-cyan-600 via-pink-700 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white font-extrabold text-xs rounded-2xl shadow-md shadow-orange-500/20 flex items-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-101"
             >
               {submitting ? (
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -891,9 +926,154 @@ export const StudentAttendancePage: React.FC = () => {
         </form>
       )}
 
+      {/* ========================================================================= */}
+      {/* 📅 DAY-WISE SEMESTER PRACTICAL LABORATORY SCHEDULE (DAY & SEMESTER WISE) */}
+      {/* ========================================================================= */}
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-card p-6 space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-cyan-700" />
+              <h2 className="text-base font-extrabold text-slate-900">
+                Semester {studentSem} Practical Laboratory Timetable (Day-Wise & Batch-Wise)
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Official Department Schedule • CSE in IoT & Cyber Security including Blockchain Technology
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs font-bold text-orange-800 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200">
+            <Timer className="w-3.5 h-3.5 text-orange-600" />
+            <span>Attendance Active: Last 10m before lab end (5 mins duration)</span>
+          </div>
+        </div>
+
+        {/* Day Filter Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+          {['ALL', 'TODAY', ...daysOfWeek].map((tab) => {
+            const isSelected = selectedDayTab === tab;
+            const currentDayStr = scheduleStatus?.currentDay?.toUpperCase() || 'MONDAY';
+            const displayDay = tab === 'TODAY' ? currentDayStr : tab;
+            const count = tab === 'ALL'
+              ? timetableEntries.length
+              : timetableEntries.filter(t => t.day_of_week === displayDay).length;
+
+            return (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setSelectedDayTab(tab)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-cyan-600 to-pink-700 text-white shadow-md shadow-cyan-800/25 ring-2 ring-cyan-300'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200'
+                }`}
+              >
+                <span>{tab === 'ALL' ? 'All Days' : tab === 'TODAY' ? `Today (${currentDayStr.substring(0, 3)})` : tab}</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                  isSelected ? 'bg-cyan-950 text-white' : 'bg-slate-200 text-slate-700'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Practical Lab Cards Grid */}
+        {(() => {
+          const currentDayStr = scheduleStatus?.currentDay?.toUpperCase() || 'MONDAY';
+          const filteredEntries = selectedDayTab === 'ALL'
+            ? timetableEntries
+            : selectedDayTab === 'TODAY'
+            ? timetableEntries.filter(t => t.day_of_week === currentDayStr)
+            : timetableEntries.filter(t => t.day_of_week === selectedDayTab);
+
+          if (filteredEntries.length === 0) {
+            return (
+              <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 text-xs">
+                No practical laboratory sessions scheduled for {selectedDayTab === 'TODAY' ? `Today (${currentDayStr})` : selectedDayTab} in Semester {studentSem}.
+              </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              {filteredEntries.map((entry, idx) => {
+                const isTodayEntry = entry.day_of_week === currentDayStr;
+                const batchText = entry.batch || (entry.subject_name?.includes('(B1)') ? 'B1' : entry.subject_name?.includes('(B2)') ? 'B2' : 'All Batches');
+
+                return (
+                  <div
+                    key={entry.id || idx}
+                    className={`p-4 rounded-2xl border transition-all space-y-2.5 ${
+                      isTodayEntry
+                        ? 'bg-gradient-to-br from-cyan-50/70 via-white to-orange-50/70 border-cyan-300 shadow-sm'
+                        : 'bg-slate-50/80 border-slate-200 hover:border-cyan-200'
+                    }`}
+                  >
+                    {/* Top Row: Day + Time + Batch */}
+                    <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`font-black text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider ${
+                          isTodayEntry ? 'bg-cyan-800 text-white' : 'bg-slate-200 text-slate-700'
+                        }`}>
+                          {entry.day_of_week}
+                        </span>
+                        {batchText && (
+                          <span className="font-extrabold text-[10px] bg-orange-100 text-orange-900 border border-orange-200 px-2 py-0.5 rounded-md">
+                            Batch {batchText}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="font-mono font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200 text-[11px] flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-cyan-700" />
+                        <span>{entry.time_range}</span>
+                      </div>
+                    </div>
+
+                    {/* Subject Code & Name */}
+                    <div>
+                      <div className="text-xs font-mono font-bold text-cyan-800">
+                        {entry.subject_code}
+                      </div>
+                      <div className="text-sm font-extrabold text-slate-900 leading-snug">
+                        {entry.subject_name}
+                      </div>
+                    </div>
+
+                    {/* Location, Room & Faculty */}
+                    <div className="bg-white/90 p-2.5 rounded-xl border border-slate-200 text-[11px] space-y-1">
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span className="font-medium">Faculty: <strong className="text-slate-800 font-bold">{entry.faculty_name || 'Department Faculty'}</strong></span>
+                        <span className="font-semibold text-slate-700">Room {entry.room || '307'}</span>
+                      </div>
+                      {entry.location && (
+                        <div className="text-slate-500 flex items-center gap-1 text-[10px] pt-1 border-t border-slate-100">
+                          <Building2 className="w-3 h-3 text-cyan-700 shrink-0" />
+                          <span className="truncate">{entry.location}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Attendance Window Notice */}
+                    <div className="text-[10px] text-orange-900 bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200 flex items-center justify-between">
+                      <span className="font-semibold">⚡ Attendance window opens 10m before lab finish</span>
+                      <span className="font-bold text-orange-700">5 mins duration</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+      </div>
+
       {/* Institutional Attendance Rule Callout */}
       <div className="p-4 bg-gradient-to-r from-cyan-50/60 via-white to-orange-50/60 rounded-2xl border border-cyan-100 text-slate-600 text-[11px] leading-relaxed flex items-start gap-2">
-        <Info className="w-4 h-4 shrink-0 text-cyan-600 mt-0.5" />
+        <Info className="w-4 h-4 shrink-0 text-cyan-700 mt-0.5" />
         <span>
           <strong>Academic Feedback & Zero-Duplication Rule:</strong> Feedback is strictly compulsory. Attendance will not be recorded unless the comprehensive 8-point laboratory evaluation is completed.
         </span>
@@ -901,3 +1081,4 @@ export const StudentAttendancePage: React.FC = () => {
     </div>
   );
 };
+

@@ -66,9 +66,9 @@ export const Sidebar: React.FC = () => {
   const navContent = (
     <div className="flex flex-col justify-between h-full space-y-5">
       <div className="space-y-4">
-        <div className="px-3 mb-2 text-[10px] font-black uppercase tracking-wider text-cyan-700 flex items-center justify-between">
+        <div className="px-3 mb-2 text-[10px] font-black uppercase tracking-wider text-cyan-800 flex items-center justify-between">
           <span>{isStudent ? 'STUDENT SERVICES' : isFaculty ? 'TEACHER PORTAL' : 'DEPARTMENT OVERSIGHT'}</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
         </div>
 
         <nav className="space-y-1">
@@ -79,18 +79,18 @@ export const Sidebar: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-left transition-all ${
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-left transition-all ${
                   isActive
-                    ? 'bg-gradient-to-r from-cyan-600 to-cyan-700 text-white font-bold shadow-md shadow-cyan-500/20'
+                    ? 'bg-gradient-to-r from-cyan-600 via-cyan-700 to-pink-700 text-white font-bold shadow-md shadow-cyan-500/25 ring-1 ring-cyan-400'
                     : item.highlight
-                    ? 'text-orange-800 bg-orange-50/90 hover:bg-orange-100/80 border border-orange-200/80 font-bold'
-                    : 'text-slate-700 hover:bg-cyan-50/60 hover:text-cyan-800 font-semibold'
+                    ? 'text-orange-900 bg-orange-50/90 hover:bg-orange-100/80 border border-orange-200 font-bold'
+                    : 'text-slate-700 hover:bg-cyan-50/70 hover:text-cyan-900 font-semibold'
                 }`}
               >
                 <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : item.highlight ? 'text-orange-600' : 'text-cyan-600'}`} />
                 <div className="min-w-0 flex-1">
                   <div className="text-xs truncate">{item.label}</div>
-                  <div className={`text-[10px] truncate ${isActive ? 'text-cyan-100' : item.highlight ? 'text-orange-600/80' : 'text-slate-400'}`}>
+                  <div className={`text-[10px] truncate ${isActive ? 'text-cyan-100' : item.highlight ? 'text-orange-600/90' : 'text-slate-400'}`}>
                     {item.subtitle}
                   </div>
                 </div>
@@ -103,31 +103,31 @@ export const Sidebar: React.FC = () => {
       {/* Informational Role Policy Banner */}
       <div className="space-y-3">
         {isFaculty && (
-          <div className="p-3 bg-gradient-to-br from-orange-50 to-white rounded-2xl border border-orange-200 text-xs space-y-1 text-orange-950">
-            <div className="flex items-center gap-1.5 font-bold text-orange-800">
-              <Lock className="w-3.5 h-3.5 text-orange-600" />
+          <div className="p-3 bg-gradient-to-br from-pink-50 to-white rounded-2xl border border-pink-200 text-xs space-y-1 text-pink-950">
+            <div className="flex items-center gap-1.5 font-bold text-pink-800">
+              <Lock className="w-3.5 h-3.5 text-pink-600" />
               <span>Teacher Role Policy</span>
             </div>
-            <p className="text-[11px] text-orange-900/80 leading-relaxed">
+            <p className="text-[11px] text-pink-900/80 leading-relaxed">
               Teacher access is dedicated exclusively to recording attendance and viewing class schedules. Student feedback ratings are strictly anonymous.
             </p>
           </div>
         )}
 
         {isStudent && (
-          <div className="p-3 bg-gradient-to-br from-cyan-50 to-white rounded-2xl border border-cyan-200 text-xs space-y-1 text-cyan-950">
+          <div className="p-3 bg-gradient-to-br from-cyan-50 via-white to-orange-50/40 rounded-2xl border border-cyan-200 text-xs space-y-1 text-slate-800">
             <div className="flex items-center gap-1.5 font-bold text-cyan-800">
               <ShieldCheck className="w-3.5 h-3.5 text-cyan-600" />
               <span>Verified Geolocation</span>
             </div>
-            <p className="text-[11px] text-cyan-900/80 leading-relaxed">
+            <p className="text-[11px] text-slate-600 leading-relaxed">
               Attendance and feedback are verified using high-precision GPS geofencing inside your active lab room.
             </p>
           </div>
         )}
 
         {/* Footer Info */}
-        <div className="pt-3 border-t border-cyan-100/70 text-[11px] text-slate-500 space-y-1">
+        <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
           <div className="flex justify-between">
             <span>Institution</span>
             <span className="font-bold text-slate-800">GNDEC Bidar</span>
@@ -148,7 +148,7 @@ export const Sidebar: React.FC = () => {
   return (
     <>
       {/* Desktop Persistent Sidebar */}
-      <aside className="hidden lg:flex w-64 bg-white border-r border-cyan-100 min-h-[calc(100vh-100px)] flex-col justify-between p-4 shadow-subtle shrink-0">
+      <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200 min-h-[calc(100vh-100px)] flex-col justify-between p-4 shadow-subtle shrink-0">
         {navContent}
       </aside>
 

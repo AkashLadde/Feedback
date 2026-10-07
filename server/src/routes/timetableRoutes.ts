@@ -7,14 +7,15 @@ const router = Router();
 router.get('/', (_req, res) => {
   try {
     const entries = db.prepare(`
-      SELECT t.*, f.employee_id as faculty_emp_id, f.designation as faculty_designation
+      SELECT t.*, f.employee_id as faculty_emp_id, f.designation as faculty_designation, l.location, l.id as laboratory_id
       FROM timetable_entries t
       LEFT JOIN faculty f ON (f.employee_id LIKE '%' || t.faculty_abbr || '%' OR lower(t.faculty_name) LIKE '%' || lower(t.faculty_name) || '%')
+      LEFT JOIN laboratories l ON (l.code = t.subject_code OR (l.semester = t.semester AND l.name LIKE '%' || t.subject_abbr || '%'))
       ORDER BY t.semester ASC, t.day_of_week ASC, t.slot_index ASC
     `).all();
 
     // Group by semester
-    const grouped: Record<number, any[]> = { 3: [], 5: [], 7: [] };
+    const grouped: Record<number, any[]> = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [] };
     for (const entry of entries) {
       if (!grouped[(entry as any).semester]) {
         grouped[(entry as any).semester] = [];
@@ -29,15 +30,28 @@ router.get('/', (_req, res) => {
   }
 });
 
-// GET /api/timetable/:semester - get timetable for specific semester (3, 5, or 7)
+// GET /api/timetable/:semester - get timetable for specific semester (1 through 8) with optional ?day=MONDAY
 router.get('/:semester', (req, res) => {
   try {
     const sem = parseInt(req.params.semester, 10);
-    const entries = db.prepare(`
-      SELECT * FROM timetable_entries
-      WHERE semester = ?
+    const day = req.query.day ? String(req.query.day).toUpperCase() : null;
+
+    let sql = `
+      SELECT t.*, l.location, l.id as laboratory_id
+      FROM timetable_entries t
+      LEFT JOIN laboratories l ON (l.code = t.subject_code OR (l.semester = t.semester AND l.name LIKE '%' || t.subject_abbr || '%'))
+      WHERE t.semester = ?
+    `;
+    const params: any[] = [sem];
+
+    if (day) {
+      sql += ` AND upper(t.day_of_week) = ?`;
+      params.push(day);
+    }
+
+    sql += `
       ORDER BY 
-        CASE day_of_week
+        CASE upper(t.day_of_week)
           WHEN 'MONDAY' THEN 1
           WHEN 'TUESDAY' THEN 2
           WHEN 'WEDNESDAY' THEN 3
@@ -46,10 +60,12 @@ router.get('/:semester', (req, res) => {
           WHEN 'SATURDAY' THEN 6
           ELSE 7
         END,
-        slot_index ASC
-    `).all(sem);
+        t.slot_index ASC
+    `;
 
-    return res.json({ success: true, semester: sem, entries });
+    const entries = db.prepare(sql).all(...params);
+
+    return res.json({ success: true, semester: sem, day: day || 'ALL', entries });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: 'Failed to fetch semester timetable.' });
   }

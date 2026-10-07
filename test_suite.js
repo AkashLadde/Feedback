@@ -22,21 +22,21 @@ async function runTests() {
   console.log('1. Testing System Health & Department Branding...');
   const healthRes = await fetch('http://localhost:5000/api/health').then(r => r.json());
   assert(healthRes.status === 'HEALTHY', 'Server status is HEALTHY');
-  assert(healthRes.department.includes('IoT and Cybersecurity'), 'Department name verified');
+  assert(healthRes.department.toLowerCase().includes('iot & cyber security'), 'Department name verified');
 
   // 2. Auth Endpoint
   console.log('\n2. Testing Multi-Role Authentication...');
   const adminLogin = await fetch('http://localhost:5000/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'admin.iot@labguard.edu', password: 'Admin@123' })
+    body: JSON.stringify({ email: 'aiml.harishjoshi@gmail.com', password: 'Joshi@2308' })
   }).then(r => r.json());
   assert(adminLogin.success && adminLogin.user.role === 'ADMIN', 'Admin login successful');
 
   const studentLogin = await fetch('http://localhost:5000/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'rahul.verma@student.edu', password: 'Student@123' })
+    body: JSON.stringify({ usn: '3GN24IC006', password: 'Student@123' })
   }).then(r => r.json());
   assert(studentLogin.success && studentLogin.user.role === 'STUDENT', 'Student login successful');
   const studentToken = studentLogin.token;

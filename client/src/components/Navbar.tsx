@@ -67,33 +67,33 @@ export const Navbar: React.FC = () => {
     switch (role) {
       case 'ADMIN':
       case 'HOD':
-        return <span className="bg-orange-50 text-orange-700 text-[11px] font-bold px-2 py-0.5 rounded-full border border-orange-200">Head of Dept / Admin</span>;
+        return <span className="bg-orange-100 text-orange-900 text-[11px] font-bold px-2 py-0.5 rounded-full border border-orange-300">Head of Dept / Admin</span>;
       case 'FACULTY':
-        return <span className="bg-cyan-50 text-cyan-800 text-[11px] font-bold px-2 py-0.5 rounded-full border border-cyan-200">Faculty</span>;
+        return <span className="bg-pink-50 text-pink-800 text-[11px] font-bold px-2 py-0.5 rounded-full border border-pink-200">Faculty</span>;
       case 'STUDENT':
-        return <span className="bg-emerald-50 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">Student</span>;
+        return <span className="bg-cyan-50 text-cyan-800 text-[11px] font-bold px-2 py-0.5 rounded-full border border-cyan-200">Student</span>;
       default:
         return null;
     }
   };
 
   return (
-    <header className="bg-white border-b border-cyan-100 sticky top-0 z-30 shadow-subtle">
-      {/* Top Department Banner: Clean White & Cyan with Orange Accent */}
-      <div className="bg-gradient-to-r from-cyan-50/80 via-white to-orange-50/80 border-b border-cyan-100/60 px-3 sm:px-6 py-1 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-700 font-medium">
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-subtle">
+      {/* Top Department Banner: Balanced Multi-Accent Header */}
+      <div className="bg-gradient-to-r from-slate-950 via-pink-950 to-slate-900 border-b border-slate-900 px-3 sm:px-6 py-1.5 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-200 font-medium">
         <div className="flex items-center gap-1.5 sm:gap-2 truncate">
-          <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shrink-0"></span>
-          <span className="font-extrabold text-slate-900 truncate">Guru Nanak Dev Engineering College Bidar</span>
-          <span className="text-cyan-300 hidden md:inline">|</span>
-          <span className="text-cyan-800 font-semibold hidden md:inline">Dept. of CSE (IoT & Cyber Security)</span>
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0"></span>
+          <span className="font-extrabold text-white tracking-wide truncate">Guru Nanak Dev Engineering College Bidar</span>
+          <span className="text-cyan-400 hidden md:inline">|</span>
+          <span className="text-pink-200 font-semibold hidden md:inline">Dept. of CSE (IoT & Cyber Security including Blockchain)</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-slate-600 font-semibold">2026-2027</span>
+          <span className="bg-orange-500/20 border border-orange-400/40 text-orange-300 px-2 py-0.5 rounded-md font-mono text-[10px] font-bold">2026-2027</span>
         </div>
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
+      <div className="px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between bg-white">
         {/* Brand & Mobile Menu Button */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           {user && (
@@ -102,11 +102,11 @@ export const Navbar: React.FC = () => {
               className="lg:hidden p-2 rounded-xl text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 border border-slate-200 transition-colors"
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5 text-orange-600" /> : <Menu className="w-5 h-5 text-cyan-700" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 text-pink-600" /> : <Menu className="w-5 h-5 text-cyan-700" />}
             </button>
           )}
 
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-cyan-500 to-orange-500 flex items-center justify-center text-white shadow-md shadow-cyan-500/20 font-black text-xs sm:text-sm tracking-wider shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-pink-700 to-orange-500 flex items-center justify-center text-white shadow-md shadow-pink-500/25 font-black text-xs sm:text-sm tracking-wider shrink-0">
             GND
           </div>
           <div>
@@ -114,7 +114,7 @@ export const Navbar: React.FC = () => {
               <span className="text-lg sm:text-xl font-black tracking-tight text-slate-900 leading-none">
                 Lab<span className="text-cyan-600">Guard</span>
               </span>
-              <span className="bg-orange-50 text-orange-600 border border-orange-200 text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.2 rounded uppercase tracking-wider">
+              <span className="bg-orange-100 text-orange-800 border border-orange-300 text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.2 rounded uppercase tracking-wider">
                 CSE-ICB
               </span>
             </div>
@@ -129,10 +129,10 @@ export const Navbar: React.FC = () => {
             {(user.role === 'ADMIN' || user.role === 'HOD') && (
               <button
                 onClick={() => setActiveTab('alerts')}
-                className="relative p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-cyan-700 hover:bg-cyan-50 transition-colors border border-transparent hover:border-cyan-100"
+                className="relative p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-orange-600 hover:bg-orange-50 transition-colors border border-transparent hover:border-orange-200"
                 title="System Alerts"
               >
-                <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
                 {alertCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 bg-orange-500 text-white text-[9px] sm:text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-pulse">
                     {alertCount}
@@ -143,7 +143,7 @@ export const Navbar: React.FC = () => {
 
             {/* User Pill */}
             <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-cyan-100 to-orange-100 border border-cyan-200 flex items-center justify-center text-cyan-800 font-bold shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-cyan-100 to-pink-100 border border-cyan-200 flex items-center justify-center text-cyan-900 font-bold shrink-0">
                 <UserIcon className="w-4 h-4 text-cyan-700" />
               </div>
               <div className="hidden sm:block text-left">
@@ -151,7 +151,7 @@ export const Navbar: React.FC = () => {
                   <span className="text-xs font-bold text-slate-900 leading-none">{user.name}</span>
                   {getRoleBadge(user.role)}
                 </div>
-                <div className="text-[11px] text-slate-500 mt-0.5 leading-none font-mono">
+                <div className="text-[11px] text-cyan-800 font-medium mt-0.5 leading-none font-mono">
                   {user.usn ? `USN: ${user.usn}` : user.email}
                 </div>
               </div>
@@ -159,7 +159,7 @@ export const Navbar: React.FC = () => {
               {/* Profile / Credentials Edit Button */}
               <button
                 onClick={() => setProfileModalOpen(true)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 transition-colors"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-cyan-700 hover:bg-cyan-50 transition-colors"
                 title="Change Credentials"
               >
                 <Key className="w-4 h-4" />
@@ -167,7 +167,7 @@ export const Navbar: React.FC = () => {
 
               <button
                 onClick={logout}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-orange-600 hover:bg-orange-50 transition-colors ml-0.5 sm:ml-1"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-pink-600 hover:bg-pink-50 transition-colors ml-0.5 sm:ml-1"
                 title="Sign Out"
               >
                 <LogOut className="w-4 h-4" />
@@ -179,12 +179,12 @@ export const Navbar: React.FC = () => {
 
       {/* Edit Profile & Real Credentials Modal */}
       {profileModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-xs p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-cyan-100 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-cyan-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-pink-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-pink-100">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center border border-cyan-100 font-bold">
-                  <Key className="w-4 h-4 text-cyan-600" />
+                <div className="w-9 h-9 rounded-xl bg-pink-50 text-pink-700 flex items-center justify-center border border-pink-200 font-bold">
+                  <Key className="w-4 h-4 text-pink-700" />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm">Account Credentials & Profile</h3>
@@ -198,7 +198,7 @@ export const Navbar: React.FC = () => {
               <div className={`p-3 rounded-xl text-xs font-semibold ${
                 profileMsg.type === 'success'
                   ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                  : 'bg-orange-50 text-orange-800 border border-orange-200'
+                  : 'bg-rose-50 text-rose-800 border border-rose-200'
               }`}>
                 {profileMsg.text}
               </div>
@@ -212,7 +212,7 @@ export const Navbar: React.FC = () => {
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-pink-500 outline-none"
                 />
               </div>
 
@@ -223,7 +223,7 @@ export const Navbar: React.FC = () => {
                   required
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-500 outline-none"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">This will be your login username.</p>
               </div>
@@ -235,7 +235,7 @@ export const Navbar: React.FC = () => {
                   placeholder="Enter new strong password"
                   value={editPassword}
                   onChange={(e) => setEditPassword(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-500 outline-none"
                 />
               </div>
 
@@ -250,7 +250,7 @@ export const Navbar: React.FC = () => {
                 <button
                   type="submit"
                   disabled={savingProfile}
-                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white rounded-xl font-bold shadow-cyan"
+                  className="px-4 py-2 bg-gradient-to-r from-pink-800 via-pink-700 to-rose-600 hover:from-pink-900 hover:to-rose-700 text-white rounded-xl font-bold shadow-pink transition-all"
                 >
                   {savingProfile ? 'Saving...' : 'Save Credentials'}
                 </button>

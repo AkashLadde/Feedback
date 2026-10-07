@@ -64,8 +64,8 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /api/labs - Admin create new lab
-router.post('/', authenticateJWT, requireRoles('ADMIN'), (req: AuthenticatedRequest, res) => {
-  const { name, code, semester, academic_year, faculty_id, room_number, latitude, longitude, geofence_radius } = req.body;
+router.post('/', authenticateJWT, requireRoles('ADMIN', 'HOD'), (req: AuthenticatedRequest, res) => {
+  const { name, code, semester, academic_year, faculty_id, room_number, location, latitude, longitude, geofence_radius } = req.body;
 
   if (!name || !code || !room_number || latitude === undefined || longitude === undefined) {
     return res.status(400).json({ success: false, error: 'All core laboratory fields are required.' });
@@ -74,8 +74,8 @@ router.post('/', authenticateJWT, requireRoles('ADMIN'), (req: AuthenticatedRequ
   try {
     const result = db.prepare(`
       INSERT INTO laboratories (
-        name, code, semester, section, academic_year, faculty_id, room_number, latitude, longitude, geofence_radius, status
-      ) VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, ?, 'ACTIVE')
+        name, code, semester, section, academic_year, faculty_id, room_number, location, latitude, longitude, geofence_radius, status
+      ) VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, ?, ?, 'ACTIVE')
     `).run(
       name,
       code.toUpperCase(),
@@ -83,9 +83,10 @@ router.post('/', authenticateJWT, requireRoles('ADMIN'), (req: AuthenticatedRequ
       academic_year || '2026-2027',
       faculty_id || null,
       room_number,
+      location || `${room_number} - CSE & IoT Academic Complex`,
       latitude,
       longitude,
-      geofence_radius || 50.0
+      geofence_radius || 25.0
     );
 
     const labId = Number(result.lastInsertRowid);
@@ -100,7 +101,7 @@ router.post('/', authenticateJWT, requireRoles('ADMIN'), (req: AuthenticatedRequ
       insertExp.run(labId, i, `${name} - Practical Module ${i}`, `Laboratory module ${i} curriculum workflow.`);
     }
 
-    logAudit(req.user!.id, req.user!.email, req.user!.role, 'CREATE_LAB', 'LABORATORY', String(labId), `Created lab ${name} (${code})`);
+    logAudit(req.user!.id, req.user!.email, req.user!.role, 'CREATE_LAB', 'LABORATORY', String(labId), `Created lab ${name} (${code}) at location ${location || room_number}`);
 
     return res.status(201).json({ success: true, labId, message: 'Laboratory created with 10 experiments.' });
   } catch (err: any) {
@@ -111,15 +112,78 @@ router.post('/', authenticateJWT, requireRoles('ADMIN'), (req: AuthenticatedRequ
   }
 });
 
+// POST /api/labs/calibrate-all - Batch calibrate all labs (or semester labs) to live GPS coordinates
+router.post('/calibrate-all', authenticateJWT, requireRoles('ADMIN', 'HOD', 'FACULTY'), (req: AuthenticatedRequest, res) => {
+  const { latitude, longitude, geofence_radius, semester, apply_uniform } = req.body;
+
+  if (latitude === undefined || longitude === undefined) {
+    return res.status(400).json({ success: false, error: 'Latitude and Longitude are required for geofence calibration.' });
+  }
+
+  try {
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    const radius = geofence_radius !== undefined ? parseFloat(geofence_radius) : null;
+
+    let labsToUpdate: { id: number; name: string }[];
+    if (semester && semester !== 'ALL') {
+      labsToUpdate = db.prepare('SELECT id, name FROM laboratories WHERE semester = ?').all(parseInt(semester as string, 10)) as { id: number; name: string }[];
+    } else {
+      labsToUpdate = db.prepare('SELECT id, name FROM laboratories').all() as { id: number; name: string }[];
+    }
+
+    if (labsToUpdate.length === 0) {
+      return res.status(404).json({ success: false, error: 'No laboratories found to calibrate.' });
+    }
+
+    const updateStmt = db.prepare(`
+      UPDATE laboratories
+      SET latitude = ?,
+          longitude = ?,
+          geofence_radius = COALESCE(?, geofence_radius)
+      WHERE id = ?
+    `);
+
+    labsToUpdate.forEach((lab, idx) => {
+      // If apply_uniform is true or single lab, use exact coords. Otherwise use subtle 2m micro-offset per room
+      const offsetLat = apply_uniform ? lat : lat + (idx % 4) * 0.00002;
+      const offsetLng = apply_uniform ? lng : lng + (idx % 4) * 0.00002;
+      updateStmt.run(offsetLat, offsetLng, radius, lab.id);
+    });
+
+    logAudit(
+      req.user!.id,
+      req.user!.email,
+      req.user!.role,
+      'CALIBRATE_GEOFENCE',
+      'LABORATORIES',
+      'ALL',
+      `Calibrated ${labsToUpdate.length} laboratories to live GPS (${lat.toFixed(6)}, ${lng.toFixed(6)}) with radius ${radius || 'preserved'}m`
+    );
+
+    return res.json({
+      success: true,
+      updatedCount: labsToUpdate.length,
+      latitude: lat,
+      longitude: lng,
+      message: `Successfully calibrated ${labsToUpdate.length} laboratories to your live GPS coordinates!`
+    });
+  } catch (err: any) {
+    console.error('Error calibrating geofence:', err);
+    return res.status(500).json({ success: false, error: 'Failed to calibrate laboratories geofence: ' + err.message });
+  }
+});
+
 // PUT /api/labs/:id - Admin update lab details & geofence
 router.put('/:id', authenticateJWT, requireRoles('ADMIN', 'HOD'), (req: AuthenticatedRequest, res) => {
-  const { name, room_number, latitude, longitude, geofence_radius, status, faculty_id, semester } = req.body;
+  const { name, room_number, location, latitude, longitude, geofence_radius, status, faculty_id, semester } = req.body;
 
   try {
     db.prepare(`
       UPDATE laboratories
       SET name = COALESCE(?, name),
           room_number = COALESCE(?, room_number),
+          location = COALESCE(?, location),
           latitude = COALESCE(?, latitude),
           longitude = COALESCE(?, longitude),
           geofence_radius = COALESCE(?, geofence_radius),
@@ -130,6 +194,7 @@ router.put('/:id', authenticateJWT, requireRoles('ADMIN', 'HOD'), (req: Authenti
     `).run(
       name || null,
       room_number || null,
+      location || null,
       latitude !== undefined ? latitude : null,
       longitude !== undefined ? longitude : null,
       geofence_radius !== undefined ? geofence_radius : null,
@@ -139,7 +204,7 @@ router.put('/:id', authenticateJWT, requireRoles('ADMIN', 'HOD'), (req: Authenti
       req.params.id
     );
 
-    logAudit(req.user!.id, req.user!.email, req.user!.role, 'UPDATE_LAB', 'LABORATORY', req.params.id, 'Updated lab configuration / geofence');
+    logAudit(req.user!.id, req.user!.email, req.user!.role, 'UPDATE_LAB', 'LABORATORY', req.params.id, 'Updated lab configuration / geofence / location');
 
     return res.json({ success: true, message: 'Laboratory details updated successfully.' });
   } catch (err) {
@@ -182,8 +247,157 @@ router.put('/experiments/:id', authenticateJWT, requireRoles('ADMIN', 'FACULTY')
   }
 });
 
-// DELETE /api/labs/:id - delete a laboratory
-router.delete('/:id', authenticateJWT, requireRoles('ADMIN'), (req: AuthenticatedRequest, res) => {
+// POST /api/labs/:id/set-location - Update lab GPS coordinates & physical location from inside the lab
+router.post('/:id/set-location', authenticateJWT, (req: AuthenticatedRequest, res) => {
+  const { latitude, longitude, geofence_radius, location, room_number } = req.body;
+
+  if (latitude === undefined || longitude === undefined) {
+    return res.status(400).json({ success: false, error: 'Latitude and Longitude are required to set laboratory location.' });
+  }
+
+  try {
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    const radius = geofence_radius !== undefined ? parseFloat(geofence_radius) : 25.0;
+
+    const lab = db.prepare('SELECT * FROM laboratories WHERE id = ?').get(req.params.id) as any;
+    if (!lab) {
+      return res.status(404).json({ success: false, error: 'Laboratory not found.' });
+    }
+
+    db.prepare(`
+      UPDATE laboratories
+      SET latitude = ?,
+          longitude = ?,
+          geofence_radius = ?,
+          location = COALESCE(?, location),
+          room_number = COALESCE(?, room_number)
+      WHERE id = ?
+    `).run(lat, lng, radius, location || null, room_number || null, req.params.id);
+
+    // Also update matching timetable entries if location/room provided
+    if (location || room_number) {
+      db.prepare(`
+        UPDATE timetable_entries
+        SET room = COALESCE(?, room)
+        WHERE subject_code = ?
+      `).run(room_number || null, lab.code);
+    }
+
+    logAudit(
+      req.user!.id,
+      req.user!.email,
+      req.user!.role,
+      'UPDATE_LAB_LOCATION',
+      'LABORATORY',
+      String(lab.id),
+      `Set lab ${lab.name} (${lab.code}) location to (${lat.toFixed(6)}, ${lng.toFixed(6)}) with radius ${radius}m`
+    );
+
+    return res.json({
+      success: true,
+      message: `Laboratory ${lab.name} (${lab.code}) location successfully saved to database!`,
+      lab: {
+        id: lab.id,
+        name: lab.name,
+        code: lab.code,
+        latitude: lat,
+        longitude: lng,
+        geofence_radius: radius,
+        location: location || lab.location,
+        room_number: room_number || lab.room_number
+      }
+    });
+  } catch (err: any) {
+    console.error('Error updating lab location:', err);
+    return res.status(500).json({ success: false, error: 'Failed to update lab location: ' + err.message });
+  }
+});
+
+// POST /api/labs/calibrate-current - Universal 1-click GPS calibration for any lab
+router.post('/calibrate-current', authenticateJWT, (req: AuthenticatedRequest, res) => {
+  const { code, id, semester, latitude, longitude, geofence_radius, location, room_number } = req.body;
+
+  if (latitude === undefined || longitude === undefined) {
+    return res.status(400).json({ success: false, error: 'Latitude and Longitude are required for calibration.' });
+  }
+
+  try {
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    const radius = geofence_radius !== undefined ? parseFloat(geofence_radius) : 25.0;
+
+    let targetLab: any = null;
+    if (id) {
+      targetLab = db.prepare('SELECT * FROM laboratories WHERE id = ?').get(id);
+    } else if (code) {
+      targetLab = db.prepare('SELECT * FROM laboratories WHERE upper(code) = upper(?)').get(code);
+    } else if (semester) {
+      targetLab = db.prepare('SELECT * FROM laboratories WHERE semester = ? ORDER BY id ASC LIMIT 1').get(parseInt(semester, 10));
+    }
+
+    if (targetLab) {
+      db.prepare(`
+        UPDATE laboratories
+        SET latitude = ?,
+            longitude = ?,
+            geofence_radius = ?,
+            location = COALESCE(?, location),
+            room_number = COALESCE(?, room_number)
+        WHERE id = ?
+      `).run(lat, lng, radius, location || null, room_number || null, targetLab.id);
+
+      logAudit(
+        req.user!.id,
+        req.user!.email,
+        req.user!.role,
+        'CALIBRATE_LAB_LOCATION',
+        'LABORATORY',
+        String(targetLab.id),
+        `Calibrated lab ${targetLab.name} (${targetLab.code}) to GPS (${lat.toFixed(6)}, ${lng.toFixed(6)})`
+      );
+
+      return res.json({
+        success: true,
+        message: `Laboratory "${targetLab.name}" calibrated to your current GPS position!`,
+        lab: {
+          id: targetLab.id,
+          name: targetLab.name,
+          code: targetLab.code,
+          latitude: lat,
+          longitude: lng,
+          geofence_radius: radius
+        }
+      });
+    }
+
+    // Fallback: update all labs in student's semester or all labs
+    const targetSem = semester || (req.user as any).semester;
+    let updateQuery = 'UPDATE laboratories SET latitude = ?, longitude = ?, geofence_radius = ?';
+    const params: any[] = [lat, lng, radius];
+
+    if (targetSem) {
+      updateQuery += ' WHERE semester = ?';
+      params.push(targetSem);
+    }
+
+    db.prepare(updateQuery).run(...params);
+
+    return res.json({
+      success: true,
+      message: `All laboratories ${targetSem ? `for Semester ${targetSem}` : ''} calibrated to your current GPS coordinates!`,
+      latitude: lat,
+      longitude: lng,
+      geofence_radius: radius
+    });
+  } catch (err: any) {
+    console.error('Error in calibrate-current:', err);
+    return res.status(500).json({ success: false, error: 'Calibration failed: ' + err.message });
+  }
+});
+
+// DELETE /api/labs/:id - delete a laboratory (Admin & HOD)
+router.delete('/:id', authenticateJWT, requireRoles('ADMIN', 'HOD'), (req: AuthenticatedRequest, res) => {
   try {
     const lab = db.prepare('SELECT * FROM laboratories WHERE id = ?').get(req.params.id) as any;
     if (!lab) {

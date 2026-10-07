@@ -7,8 +7,8 @@ import { logAudit } from '../services/auditService.js';
 
 const router = Router();
 
-// POST /api/sessions/start - Faculty/Admin starts a new lab session
-router.post('/start', authenticateJWT, requireRoles('FACULTY', 'ADMIN'), async (req: AuthenticatedRequest, res) => {
+// POST /api/sessions/start - Faculty/Admin/HOD starts a new lab session
+router.post('/start', authenticateJWT, requireRoles('FACULTY', 'ADMIN', 'HOD'), async (req: AuthenticatedRequest, res) => {
   const { laboratory_id, experiment_id, semester, date, start_time } = req.body;
 
   if (!laboratory_id || !experiment_id) {
@@ -79,7 +79,7 @@ router.post('/start', authenticateJWT, requireRoles('FACULTY', 'ADMIN'), async (
 });
 
 // POST /api/sessions/:id/end - End active lab session
-router.post('/:id/end', authenticateJWT, requireRoles('FACULTY', 'ADMIN'), (req: AuthenticatedRequest, res) => {
+router.post('/:id/end', authenticateJWT, requireRoles('FACULTY', 'ADMIN', 'HOD'), (req: AuthenticatedRequest, res) => {
   try {
     const session = db.prepare('SELECT * FROM lab_sessions WHERE id = ?').get(req.params.id) as any;
     if (!session) {
@@ -176,17 +176,36 @@ router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: Au
 
     // 1. Fetch Today's scheduled timetable labs for this student's semester ONLY
     const todayLabs = db.prepare(`
-      SELECT te.*, l.id as laboratory_id, l.latitude, l.longitude, l.geofence_radius, l.room_number
+      SELECT te.*, l.id as laboratory_id, l.latitude, l.longitude, l.geofence_radius, l.room_number, l.location
       FROM timetable_entries te
       LEFT JOIN laboratories l ON l.code = te.subject_code
       WHERE te.semester = ? AND upper(te.day_of_week) = ?
       ORDER BY te.slot_index ASC
     `).all(semNum, currentDay) as any[];
 
+    // Fetch full weekly timetable for this semester (Monday to Saturday)
+    const allWeeklyLabs = db.prepare(`
+      SELECT te.*, l.id as laboratory_id, l.latitude, l.longitude, l.geofence_radius, l.room_number, l.location
+      FROM timetable_entries te
+      LEFT JOIN laboratories l ON l.code = te.subject_code
+      WHERE te.semester = ?
+      ORDER BY 
+        CASE upper(te.day_of_week)
+          WHEN 'MONDAY' THEN 1
+          WHEN 'TUESDAY' THEN 2
+          WHEN 'WEDNESDAY' THEN 3
+          WHEN 'THURSDAY' THEN 4
+          WHEN 'FRIDAY' THEN 5
+          WHEN 'SATURDAY' THEN 6
+          ELSE 7
+        END,
+        te.slot_index ASC
+    `).all(semNum) as any[];
+
     // 2. Fetch Active Faculty-Started Session for this Semester (if any)
     const activeFacultySession = db.prepare(`
       SELECT ls.*, 
-             l.name as lab_name, l.code as lab_code, l.room_number, l.latitude, l.longitude, l.geofence_radius,
+             l.name as lab_name, l.code as lab_code, l.room_number, l.location, l.latitude, l.longitude, l.geofence_radius,
              e.experiment_number, e.title as experiment_title, e.description as experiment_description,
              u.name as faculty_name, f.employee_id as faculty_emp_id
       FROM lab_sessions ls
@@ -250,12 +269,19 @@ router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: Au
       }
     }
 
-    // If an active session is live from admin/faculty, permit active access
+    // If an active session is live from admin/faculty, permit active access and unlock submission window
     const isLabActive = !!activeFacultySession || isWithinTimetableTime;
     
-    if (activeFacultySession && !isWithinTimetableTime) {
+    if (activeFacultySession) {
       is5MinWindowActive = true;
-      minutesRemainingInWindow = 5;
+      isBeforeWindow = false;
+      isWindowExpired = false;
+      if (!minutesRemainingInWindow || minutesRemainingInWindow <= 0) {
+        minutesRemainingInWindow = 15;
+      }
+      if (!windowCloseTimeStr) {
+        windowCloseTimeStr = formatMinutesToTime(currentMinutesOfDay + 15);
+      }
     }
 
     // 4. Find Next Upcoming Scheduled Lab for THIS SEMESTER ONLY if not currently in lab
@@ -347,6 +373,7 @@ router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: Au
       activeSession: activeFacultySession,
       matchingSlot,
       todayScheduledLabs: todayLabs,
+      weeklyScheduledLabs: allWeeklyLabs,
       nextScheduledLab,
       hasSubmitted,
       submissionRecord
@@ -362,7 +389,7 @@ router.get('/active', (req, res) => {
   try {
     const sessions = db.prepare(`
       SELECT ls.*, 
-             l.name as lab_name, l.code as lab_code, l.room_number, l.latitude, l.longitude, l.geofence_radius,
+             l.name as lab_name, l.code as lab_code, l.room_number, l.location, l.latitude, l.longitude, l.geofence_radius,
              e.experiment_number, e.title as experiment_title,
              u.name as faculty_name
       FROM lab_sessions ls
@@ -385,7 +412,7 @@ router.get('/:id/live', async (req, res) => {
   try {
     const session = db.prepare(`
       SELECT ls.*, 
-             l.name as lab_name, l.code as lab_code, l.room_number, l.latitude, l.longitude, l.geofence_radius,
+             l.name as lab_name, l.code as lab_code, l.room_number, l.location, l.latitude, l.longitude, l.geofence_radius,
              e.experiment_number, e.title as experiment_title, e.description as experiment_desc,
              u.name as faculty_name, f.employee_id as faculty_emp_id
       FROM lab_sessions ls

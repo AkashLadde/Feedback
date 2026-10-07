@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { db, initDatabase } from '../models/db.js';
 
 export function seedDatabase() {
@@ -43,60 +44,44 @@ export function seedDatabase() {
   insertSem.run(7, '7th Semester (Batch 2023)');
   insertSem.run(8, '8th Semester (Batch 2023)');
 
-  // 2. User & Faculty Statements
+  // 2. Administrators & HOD
   const insertUser = db.prepare(`
     INSERT INTO users (name, email, password_hash, role, status)
     VALUES (?, ?, ?, ?, 'ACTIVE')
   `);
+
+  const adminUserId = Number(insertUser.run('Dr. Harish Joshi (Admin)', 'aiml.harishjoshi@gmail.com', adminHash, 'ADMIN').lastInsertRowid);
+  const hodAdminUserId = Number(insertUser.run('Dr. Harish Joshi (HOD)', 'hod.cse@gndecb.ac.in', hodHash, 'HOD').lastInsertRowid);
+
+  // 3. Official Department Faculty (Exact Timetable Abbreviations)
+  const facultyMembers = [
+    { name: 'Dr. Harish Joshi', abbr: 'HJ', desig: 'Professor & Head of Department', empId: 'GNDEC-FAC-HJ', spec: 'AI, Machine Learning, Cyber Security & IoT', email: 'harish.joshi@gndecb.ac.in' },
+    { name: 'Prof. Aarti Pawar', abbr: 'AP', desig: 'Assistant Professor', empId: 'GNDEC-FAC-AP', spec: 'Data Structures & Operating Systems', email: 'aarti.pawar@gndecb.ac.in' },
+    { name: 'Prof. Mahesh Kanjikar', abbr: 'MK', desig: 'Assistant Professor', empId: 'GNDEC-FAC-MK', spec: 'Java, Python & Object Oriented Systems', email: 'mahesh.kanjikar@gndecb.ac.in' },
+    { name: 'Dr. Pandit Patil', abbr: 'PP', desig: 'Professor', empId: 'GNDEC-FAC-PP', spec: 'Algorithms & Database Management', email: 'pandit.patil@gndecb.ac.in' },
+    { name: 'Prof. Farhanaz', abbr: 'FN', desig: 'Assistant Professor', empId: 'GNDEC-FAC-FN', spec: 'IoT Protocols, Wireless Sensor Networks & Git', email: 'farhanaz@gndecb.ac.in' },
+    { name: 'Prof. Shrinidhi Dixit', abbr: 'SD', desig: 'Assistant Professor', empId: 'GNDEC-FAC-SD', spec: 'Computer Networks & Security', email: 'shrinidhi.dixit@gndecb.ac.in' },
+    { name: 'Mr. Anand Patil', abbr: 'ANP', desig: 'Assistant Professor', empId: 'GNDEC-FAC-ANP', spec: 'Computer Architecture & Community Projects', email: 'anand.patil@gndecb.ac.in' },
+    { name: 'Prof. Madhuri Joshi', abbr: 'MJ', desig: 'Assistant Professor', empId: 'GNDEC-FAC-MJ', spec: 'Computer Networks & Network Security', email: 'madhuri.joshi@gndecb.ac.in' },
+    { name: 'Prof. Uzma Kausar', abbr: 'UK', desig: 'Assistant Professor', empId: 'GNDEC-FAC-UK', spec: 'IoT Microcontrollers & Embedded Systems', email: 'uzma.kausar@gndecb.ac.in' },
+    { name: 'Prof. Ibtesham Zarrine', abbr: 'IZ', desig: 'Assistant Professor', empId: 'GNDEC-FAC-IZ', spec: 'Full Stack Development, Web Technologies & Cloud', email: 'ibtesham.zarrine@gndecb.ac.in' },
+    { name: 'Prof. Ashok Bawge', abbr: 'AB', desig: 'Associate Professor', empId: 'GNDEC-FAC-AB', spec: 'Blockchain Architecture, Cryptography & Smart Contracts', email: 'ashok.bawge@gndecb.ac.in' },
+    { name: 'Prof. Sangeeta K', abbr: 'SK', desig: 'Assistant Professor', empId: 'GNDEC-FAC-SK', spec: 'Information & Network Security', email: 'sangeeta.k@gndecb.ac.in' },
+    { name: 'Prof. Puneeth Kumar', abbr: 'PK', desig: 'Assistant Professor', empId: 'GNDEC-FAC-PK', spec: 'Cyber Law, Ethics & Penetration Testing', email: 'puneeth.kumar@gndecb.ac.in' }
+  ];
 
   const insertFaculty = db.prepare(`
     INSERT INTO faculty (user_id, employee_id, designation, specialization)
     VALUES (?, ?, ?, ?)
   `);
 
-  // Seed System Administrator & HOD Account
-  const adminUserId = Number(insertUser.run(
-    'Dr. Harish Joshi (HOD / Admin)',
-    'aiml.harishjoshi@gmail.com',
-    adminHash,
-    'ADMIN'
-  ).lastInsertRowid);
-
-  // Seed HOD Alias Account
-  const hodAliasUserId = Number(insertUser.run(
-    'Head of Department (CSE-ICB)',
-    'hod.cse@gndec.ac.in',
-    hodHash,
-    'HOD'
-  ).lastInsertRowid);
-  insertFaculty.run(hodAliasUserId, 'GNDEC-HOD-01', 'Head of Department & Professor', 'Department Administration & IoT-Blockchain Curriculum');
-
-  // 3. Faculty Members (Official faculty from CSE-ICB with Dr. Harish Joshi as Head of Department)
-  const facultyData = [
-    { name: 'Dr. Harish Joshi', email: 'harish.joshi@gndec.ac.in', empId: 'GNDEC-ICB-004', abbr: 'HJ', desig: 'Associate Professor & Head of Department', spec: 'Data Structures, AI & Dept Administration', role: 'HOD' },
-    { name: 'Prof. Aarti Pawar', email: 'aarti.pawar@gndec.ac.in', empId: 'GNDEC-ICB-001', abbr: 'AP', desig: 'Assistant Professor', spec: 'Operating Systems & Software Engineering', role: 'FACULTY' },
-    { name: 'Prof. Mahesh Kanjikar', email: 'mahesh.kanjikar@gndec.ac.in', empId: 'GNDEC-ICB-002', abbr: 'MK', desig: 'Assistant Professor', spec: 'Object Oriented Programming with Java', role: 'FACULTY' },
-    { name: 'Dr. Pandit Patil', email: 'pandit.patil@gndec.ac.in', empId: 'GNDEC-ICB-003', abbr: 'PP', desig: 'Professor', spec: 'Digital Design & Computer Organization', role: 'FACULTY' },
-    { name: 'Prof. Farhanaz', email: 'farhanaz@gndec.ac.in', empId: 'GNDEC-ICB-005', abbr: 'FN', desig: 'Assistant Professor', spec: 'IoT Communication Protocols & Git', role: 'FACULTY' },
-    { name: 'Prof. Shrinidhi Dixit', email: 'shrinidhi.dixit@gndec.ac.in', empId: 'GNDEC-ICB-006', abbr: 'SD', desig: 'Assistant Professor', spec: 'Probability, Distributions & Statistics', role: 'FACULTY' },
-    { name: 'Mr. Anand Patil', email: 'anand.patil@gndec.ac.in', empId: 'GNDEC-ICB-007', abbr: 'ANP', desig: 'Assistant Professor', spec: 'Project Management & Community Engineering', role: 'FACULTY' },
-    { name: 'Prof. Madhuri Joshi', email: 'madhuri.joshi@gndec.ac.in', empId: 'GNDEC-ICB-008', abbr: 'MJ', desig: 'Assistant Professor', spec: 'Computer Networks & Network Security', role: 'FACULTY' },
-    { name: 'Prof. Uzma Kausar', email: 'uzma.kausar@gndec.ac.in', empId: 'GNDEC-ICB-009', abbr: 'UK', desig: 'Assistant Professor', spec: 'Theory of Computation & Cyber Security', role: 'FACULTY' },
-    { name: 'Prof. Ibtesham Zarrine', email: 'ibtesham.zarrine@gndec.ac.in', empId: 'GNDEC-ICB-010', abbr: 'IZ', desig: 'Assistant Professor', spec: 'Full Stack Development & Machine Learning', role: 'FACULTY' },
-    { name: 'Prof. Ashok Bawge', email: 'ashok.bawge@gndec.ac.in', empId: 'GNDEC-ICB-011', abbr: 'AB', desig: 'Associate Professor', spec: 'Blockchain Technology & Research Methodology', role: 'FACULTY' },
-    { name: 'Prof. Sangeeta K', email: 'sangeeta.k@gndec.ac.in', empId: 'GNDEC-ICB-012', abbr: 'SK', desig: 'Assistant Professor', spec: 'Environmental Studies & E-waste Management', role: 'FACULTY' },
-    { name: 'Prof. Puneeth Kumar', email: 'puneeth.kumar@gndec.ac.in', empId: 'GNDEC-ICB-013', abbr: 'PK', desig: 'Assistant Professor', spec: 'Road Safety Engineering', role: 'FACULTY' }
-  ];
-
   const facultyMap: Record<string, number> = {};
-  const facultyUserMap: Record<string, number> = {};
-  let hodUserId = hodAliasUserId;
+  let hodUserId = adminUserId;
 
-  for (const f of facultyData) {
-    const fUserId = Number(insertUser.run(f.name, f.email, facultyHash, f.role || 'FACULTY').lastInsertRowid);
+  for (const f of facultyMembers) {
+    const fUserId = Number(insertUser.run(f.name, f.email, facultyHash, 'FACULTY').lastInsertRowid);
     const fId = Number(insertFaculty.run(fUserId, f.empId, f.desig, f.spec).lastInsertRowid);
     facultyMap[f.abbr] = fId;
-    facultyUserMap[f.abbr] = fUserId;
     if (f.abbr === 'HJ') {
       hodUserId = fUserId;
     }
@@ -105,20 +90,21 @@ export function seedDatabase() {
   // 4. Seed Verified Demo Students for 1st, 3rd, 5th, and 7th Semesters
   const studentHash = bcrypt.hashSync('Student@123', 10);
   const insertStudent = db.prepare(`
-    INSERT INTO students (user_id, usn, semester, section, batch, department, academic_year)
-    VALUES (?, ?, ?, 'A', ?, 'CSE in IoT & Cyber Security including Block Chain Technology', '2026-2027')
+    INSERT INTO students (user_id, usn, semester, section, batch, department, academic_year, phone, phone_verified)
+    VALUES (?, ?, ?, 'A', ?, 'CSE in IoT & Cyber Security including Block Chain Technology', '2026-2027', ?, 1)
   `);
 
   const demoStudents = [
-    { name: 'Arun Kulkarni (1st Sem)', email: 'arun.1st@gndec.ac.in', usn: '3GN26CI005', sem: 1, batch: '2026-2030 (Batch 2026)' },
-    { name: 'Sneha Biradar (3rd Sem)', email: 'sneha.3rd@gndec.ac.in', usn: '3GN25CI012', sem: 3, batch: '2025-2029 (Batch 2025)' },
-    { name: 'Rahul Sharma (5th Sem)', email: 'rahul.5th@gndec.ac.in', usn: '3GN24CI028', sem: 5, batch: '2024-2028 (Batch 2024)' },
-    { name: 'Pooja Patil (7th Sem)', email: 'pooja.7th@gndec.ac.in', usn: '3GN23CI045', sem: 7, batch: '2023-2027 (Batch 2023)' }
+    { name: 'Akash (5th Sem)', email: 'akash.5th@gndec.ac.in', usn: '3GN24IC006', sem: 5, batch: '2024-2028 (Batch 2024)', phone: '+91-9845011005' },
+    { name: 'Rahul Sharma (5th Sem)', email: 'rahul.5th@gndec.ac.in', usn: '3GN24CI028', sem: 5, batch: '2024-2028 (Batch 2024)', phone: '+91-9845011003' },
+    { name: 'Sneha Biradar (3rd Sem)', email: 'sneha.3rd@gndec.ac.in', usn: '3GN25CI012', sem: 3, batch: '2025-2029 (Batch 2025)', phone: '+91-9845011002' },
+    { name: 'Arun Kulkarni (1st Sem)', email: 'arun.1st@gndec.ac.in', usn: '3GN26CI005', sem: 1, batch: '2026-2030 (Batch 2026)', phone: '+91-9845011001' },
+    { name: 'Pooja Patil (7th Sem)', email: 'pooja.7th@gndec.ac.in', usn: '3GN23CI045', sem: 7, batch: '2023-2027 (Batch 2023)', phone: '+91-9845011004' }
   ];
 
   for (const s of demoStudents) {
     const sUserId = Number(insertUser.run(s.name, s.email, studentHash, 'STUDENT').lastInsertRowid);
-    insertStudent.run(sUserId, s.usn, s.sem, s.batch);
+    insertStudent.run(sUserId, s.usn, s.sem, s.batch, s.phone);
   }
 
   // 5. Practical Laboratories ONLY (No Theory Classes)
@@ -128,33 +114,36 @@ export function seedDatabase() {
 
   const practicalLabsData = [
     // 1st Semester Practical Labs
-    { sem: 1, name: 'Principles of Programming using C Lab', code: '1BPOPS103', room: 'C Programming Lab (Room 105)', fAbbr: 'MK', desc: 'C Syntax, Control Structures, Arrays, Pointers, Functions & Algorithms Lab' },
-    { sem: 1, name: 'Computer Aided Engineering Drawing Lab', code: '1BCSL107', room: 'CAED Lab (Room 106)', fAbbr: 'AP', desc: 'CAD 2D/3D Projections, Isometric Views & Computer Modeling Lab' },
-    { sem: 1, name: 'Applied Engineering Physics Laboratory', code: '1BPHY102', room: 'Physics Lab (Room 107)', fAbbr: 'PP', desc: 'Laser Optics, Semiconductor Bandgap, Dielectric Constants & Sensor Physics' },
-    { sem: 1, name: 'Professional Communication & Language Lab', code: '1BENG106', room: 'Language Lab (Room 108)', fAbbr: 'FN', desc: 'Phonetics, Technical Presentation, Soft Skills & Professional Communication Lab' },
+    { sem: 1, name: 'Principles of Programming using C Lab', code: '1BPOPS103', room: 'C Programming Lab (Room 105)', location: 'CSE & IoT Complex - 1st Floor (North Wing)', fAbbr: 'MK', desc: 'C Syntax, Control Structures, Arrays, Pointers, Functions & Algorithms Lab' },
+    { sem: 1, name: 'Computer Aided Engineering Drawing Lab', code: '1BCSL107', room: 'CAED Lab (Room 106)', location: 'Mechanical & Computing Block - 1st Floor', fAbbr: 'AP', desc: 'CAD 2D/3D Projections, Isometric Views & Computer Modeling Lab' },
+    { sem: 1, name: 'Applied Engineering Physics Laboratory', code: '1BPHY102', room: 'Physics Lab (Room 107)', location: 'Science Block - Ground Floor', fAbbr: 'PP', desc: 'Laser Optics, Semiconductor Bandgap, Dielectric Constants & Sensor Physics' },
+    { sem: 1, name: 'Professional Communication & Language Lab', code: '1BENG106', room: 'Language Lab (Room 108)', location: 'Main Academic Block - 1st Floor (East Wing)', fAbbr: 'FN', desc: 'Phonetics, Technical Presentation, Soft Skills & Professional Communication Lab' },
 
     // 3rd Semester Practical Labs (With Effect from: 08-09-2026)
-    { sem: 3, name: 'Object Oriented Programming with JAVA LAB', code: '1BCS302(P)', room: 'Java Lab (Room 205)', fAbbr: 'MK', desc: 'Core Java, OOPs, Collections, Multithreading & GUI Lab' },
-    { sem: 3, name: 'Operating Systems LAB', code: '1BCS304(P)', room: 'OS Lab (Room 206)', fAbbr: 'AP', desc: 'Linux Shell Scripting, Process Scheduling, System Calls & Memory Lab' },
-    { sem: 3, name: 'Data Structures Laboratory', code: '1BCSL306', room: 'Data Structures Lab (Room 207)', fAbbr: 'AP', desc: 'Arrays, Stacks, Queues, Trees, Graphs & Dynamic Memory Lab' },
-    { sem: 3, name: 'Project Management (with GIT)', code: '1BCSL307A', room: 'Project Lab (Room 208)', fAbbr: 'FN', desc: 'Git Version Control, GitHub Actions, CI/CD & Project Workflow Lab' },
-    { sem: 3, name: 'Community Project', code: '1BCP308', room: 'Project Center (Room 209)', fAbbr: 'ANP', desc: 'Social Innovation & Community Engineering Practical Implementation Lab' },
+    { sem: 3, name: 'Object Oriented Programming with JAVA LAB', code: '1BCS302(P)', room: 'Java Lab (Room 205)', location: 'CSE & IoT Complex - 2nd Floor (West Wing)', fAbbr: 'MK', desc: 'Core Java, OOPs, Collections, Multithreading & GUI Lab' },
+    { sem: 3, name: 'Operating Systems LAB', code: '1BCS304(P)', room: 'OS Lab (Room 206)', location: 'CSE & IoT Complex - 2nd Floor (South Wing)', fAbbr: 'AP', desc: 'Linux Shell Scripting, Process Scheduling, System Calls & Memory Lab' },
+    { sem: 3, name: 'Data Structures Laboratory', code: '1BCSL306', room: 'Data Structures Lab (Room 207)', location: 'Main Academic Block - 2nd Floor', fAbbr: 'AP', desc: 'Arrays, Stacks, Queues, Trees, Graphs & Dynamic Memory Lab' },
+    { sem: 3, name: 'Project Management (with GIT)', code: '1BCSL307A', room: 'Project Lab (Room 208)', location: 'Advanced Computing Center - 2nd Floor', fAbbr: 'FN', desc: 'Git Version Control, GitHub Actions, CI/CD & Project Workflow Lab' },
+    { sem: 3, name: 'Community Project', code: '1BCP308', room: 'Project Center (Room 209)', location: 'Innovation & Incubation Hub - Ground Floor', fAbbr: 'ANP', desc: 'Social Innovation & Community Engineering Practical Implementation Lab' },
+    { sem: 3, name: 'NSS / Sports Activity', code: 'BNSK359', room: 'Sports Complex / Ground', location: 'GNDEC Sports Arena - Ground Floor', fAbbr: 'MJ', desc: 'National Service Scheme, Physical Fitness, Sports & Community Services' },
 
     // 5th Semester Practical Labs (With Effect from: 07-09-2026)
-    { sem: 5, name: 'Computer Networks Laboratory', code: 'BCSL502', room: 'Networks Lab (Room 305)', fAbbr: 'MJ', desc: 'Wireshark, Cisco Packet Tracer, Socket Programming & Protocol Analysis' },
-    { sem: 5, name: 'IoT Lab', code: 'BICL504', room: 'IoT & Cyber Lab (Room 306)', fAbbr: 'UK', desc: 'Arduino/Raspberry Pi Sensors, MQTT, Cryptography & Penetration Testing' },
-    { sem: 5, name: 'Full Stack Development Laboratory', code: 'BIC515C', room: 'Web Tech Lab (Room 307)', fAbbr: 'IZ', desc: 'React, Node.js, Express, REST APIs & SQLite/MongoDB Practical Lab' },
-    { sem: 5, name: 'Mini Project', code: 'BIC586', room: 'Project Center (Room 308)', fAbbr: 'HJ', desc: 'IoT, Cyber Security and Blockchain Embedded Project Development' },
+    { sem: 5, name: 'Computer Networks Laboratory', code: 'BCSL502', room: 'Networks Lab (Room 305)', location: 'Cyber Security & Networks Wing - 3rd Floor', fAbbr: 'MJ', desc: 'Wireshark, Cisco Packet Tracer, Socket Programming & Protocol Analysis' },
+    { sem: 5, name: 'IoT Lab', code: 'BICL504', room: 'IoT & Cyber Lab (Room 306)', location: 'IoT Sensors & Hardware Center - 3rd Floor (Room 306)', fAbbr: 'UK', desc: 'Arduino/Raspberry Pi Sensors, MQTT, Cryptography & Penetration Testing' },
+    { sem: 5, name: 'Full Stack Development Laboratory', code: 'BIC515C', room: 'Web Tech Lab (Room 307)', location: 'Software Engineering Complex - 3rd Floor', fAbbr: 'IZ', desc: 'React, Node.js, Express, REST APIs & SQLite/MongoDB Practical Lab' },
+    { sem: 5, name: 'Mini Project', code: 'BIC586', room: 'Project Center (Room 308)', location: 'Innovation & Incubation Hub - 3rd Floor', fAbbr: 'HJ', desc: 'IoT, Cyber Security and Blockchain Embedded Project Development' },
+    { sem: 5, name: 'National Service Scheme', code: 'BNSK559', room: 'Activity Center', location: 'Main Academic Block - Ground Floor', fAbbr: 'AP', desc: 'National Service Scheme, Community Social Responsibility & Sports' },
 
     // 7th Semester Practical Labs (With Effect from: 24-08-2026)
-    { sem: 7, name: 'IOT Communication Protocols Lab', code: 'BCO701(P)', room: 'Protocols Lab (Room 405)', fAbbr: 'FN', desc: 'CoAP, MQTT-SN, Zigbee, LoRaWAN, BLE & Wireless Mesh Testbed' },
-    { sem: 7, name: 'Blockchain Technology Lab', code: 'BIC702(P)', room: 'Blockchain Lab (Room 406)', fAbbr: 'AB', desc: 'Solidity Smart Contracts, Ethereum Ganache, Web3.js & DApp Architecture' },
-    { sem: 7, name: 'Major Project Phase-II', code: 'BIC786', room: 'Advanced Project Lab (Room 408)', fAbbr: 'AB', desc: 'Capstone Project Research, Prototype Testing & Departmental Defense' }
+    { sem: 7, name: 'Cyber Security & Penetration Testing Laboratory', code: '22CSL71', room: 'VAPT Lab (Room 407)', location: 'Cyber Security & Networks Wing - 4th Floor (Room 407)', fAbbr: 'HJ', desc: 'Vulnerability Assessment, Metasploit, Wireshark, Ethical Hacking & Exploit Development Lab' },
+    { sem: 7, name: 'IOT Communication Protocols Lab', code: 'BCO701(P)', room: 'Protocols Lab (Room 405)', location: 'Advanced IoT & Wireless Protocol Testbed - 4th Floor (Room 405)', fAbbr: 'FN', desc: 'CoAP, MQTT-SN, Zigbee, LoRaWAN, BLE & Wireless Mesh Testbed' },
+    { sem: 7, name: 'Blockchain Technology Lab', code: 'BIC702(P)', room: 'Blockchain Lab (Room 406)', location: 'Distributed Ledger & Cryptography Center - 4th Floor (Room 406)', fAbbr: 'AB', desc: 'Solidity Smart Contracts, Ethereum Ganache, Web3.js & DApp Architecture' },
+    { sem: 7, name: 'Major Project Phase-II', code: 'BIC786', room: 'Advanced Project Lab (Room 408)', location: 'Department Research Center - 4th Floor (Room 408)', fAbbr: 'AB', desc: 'Capstone Project Research, Prototype Testing & Departmental Defense' }
   ];
 
   const insertLab = db.prepare(`
-    INSERT INTO laboratories (name, code, semester, section, academic_year, faculty_id, room_number, latitude, longitude, geofence_radius, status)
-    VALUES (?, ?, ?, '', '2026-2027', ?, ?, ?, ?, 25.0, 'ACTIVE')
+    INSERT INTO laboratories (name, code, semester, section, academic_year, faculty_id, room_number, location, latitude, longitude, geofence_radius, status)
+    VALUES (?, ?, ?, '', '2026-2027', ?, ?, ?, ?, ?, 25.0, 'ACTIVE')
   `);
 
   const insertExp = db.prepare(`
@@ -170,7 +159,7 @@ export function seedDatabase() {
     const offsetLat = baseLat + (idx % 4) * 0.0001;
     const offsetLng = baseLng + (idx % 3) * 0.0001;
 
-    const labId = Number(insertLab.run(s.name, s.code, s.sem, fId, s.room, offsetLat, offsetLng).lastInsertRowid);
+    const labId = Number(insertLab.run(s.name, s.code, s.sem, fId, s.room, s.location, offsetLat, offsetLng).lastInsertRowid);
     labIdMap[s.code] = labId;
 
     // Create curriculum modules / experiments per lab
@@ -188,8 +177,8 @@ export function seedDatabase() {
   const insertTimetable = db.prepare(`
     INSERT INTO timetable_entries (
       semester, academic_year, day_of_week, slot_index, time_range,
-      subject_code, subject_abbr, subject_name, faculty_abbr, faculty_name, room
-    ) VALUES (?, '2026-2027', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      subject_code, subject_abbr, subject_name, faculty_abbr, faculty_name, room, batch
+    ) VALUES (?, '2026-2027', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const fFullName: Record<string, string> = {
@@ -209,104 +198,104 @@ export function seedDatabase() {
   };
 
   // 1st Sem Practical Labs Timetable Grid
-  const sem1LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string }>> = {
+  const sem1LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string; batch?: string }>> = {
     'MONDAY': [
-      { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)' },
-      { code: '1BCSL107', abbr: 'CAED LAB', name: 'Computer Aided Engineering Drawing Lab', fAbbr: 'AP', time: '02.00 PM - 05.00 PM', room: 'CAED Lab (Room 106)' }
+      { code: '1BPOPS103', abbr: 'POPC/MK', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)', batch: 'All Batches' },
+      { code: '1BCSL107', abbr: 'CAED/AP', name: 'Computer Aided Engineering Drawing Lab', fAbbr: 'AP', time: '02.00 PM - 05.00 PM', room: 'CAED Lab (Room 106)', batch: 'All Batches' }
     ],
     'TUESDAY': [
-      { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '09.00 AM - 12.00 PM', room: 'Physics Lab (Room 107)' },
-      { code: '1BENG106', abbr: 'LANG LAB', name: 'Professional Communication & Language Lab', fAbbr: 'FN', time: '02.00 PM - 05.00 PM', room: 'Language Lab (Room 108)' }
+      { code: '1BPHY102', abbr: 'PHY/PP', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '09.00 AM - 12.00 PM', room: 'Physics Lab (Room 107)', batch: 'All Batches' },
+      { code: '1BENG106', abbr: 'ENG/FN', name: 'Professional Communication & Language Lab', fAbbr: 'FN', time: '02.00 PM - 05.00 PM', room: 'Language Lab (Room 108)', batch: 'All Batches' }
     ],
     'WEDNESDAY': [
-      { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)' },
-      { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '02.00 PM - 05.00 PM', room: 'Physics Lab (Room 107)' }
+      { code: '1BPOPS103', abbr: 'POPC/MK', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)', batch: 'All Batches' }
     ],
     'THURSDAY': [
-      { code: '1BCSL107', abbr: 'CAED LAB', name: 'Computer Aided Engineering Drawing Lab', fAbbr: 'AP', time: '09.00 AM - 12.00 PM', room: 'CAED Lab (Room 106)' },
-      { code: '1BENG106', abbr: 'LANG LAB', name: 'Professional Communication & Language Lab', fAbbr: 'FN', time: '02.00 PM - 05.00 PM', room: 'Language Lab (Room 108)' }
+      { code: '1BCSL107', abbr: 'CAED/AP', name: 'Computer Aided Engineering Drawing Lab', fAbbr: 'AP', time: '02.00 PM - 05.00 PM', room: 'CAED Lab (Room 106)', batch: 'All Batches' }
     ],
     'FRIDAY': [
-      { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)' },
-      { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '02.00 PM - 05.00 PM', room: 'Physics Lab (Room 107)' }
+      { code: '1BPHY102', abbr: 'PHY/PP', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '09.00 AM - 12.00 PM', room: 'Physics Lab (Room 107)', batch: 'All Batches' }
     ],
     'SATURDAY': [
-      { code: '1BPOPS103', abbr: 'C & CAED LAB', name: 'C Programming & CAED Practical Practice Lab', fAbbr: 'MK', time: '09.00 AM - 01.00 PM', room: 'C Programming Lab (Room 105)' }
+      { code: '1BENG106', abbr: 'ENG/FN', name: 'Professional Communication & Language Lab', fAbbr: 'FN', time: '09.00 AM - 12.00 PM', room: 'Language Lab (Room 108)', batch: 'All Batches' }
     ]
   };
 
-  // 3rd Sem Practical Labs Timetable Grid (With Effect from: 08-09-2026)
-  const sem3LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string }>> = {
+  // 3rd Sem Practical Labs Timetable Grid (Official GNDEC 3rd Sem Timetable - With Effect from: 08-09-2026)
+  const sem3LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string; batch?: string }>> = {
     'MONDAY': [
-      { code: '1BCSL307A', abbr: 'GIT/FN', name: 'Project Management (with GIT)', fAbbr: 'FN', time: '03.00 PM - 04.00 PM', room: 'Project Lab (Room 208)' },
-      { code: '1BCS304(P)', abbr: 'OSL/AP', name: 'Operating Systems LAB', fAbbr: 'AP', time: '04.00 PM - 05.00 PM', room: 'OS Lab (Room 206)' }
+      { code: '1BCSL307A', abbr: 'GIT/FN (B2)', name: 'Project Management (with GIT)', fAbbr: 'FN', time: '03.00 PM - 05.00 PM', room: 'Project Lab (Room 208)', batch: 'Batch B2' },
+      { code: '1BCS304(P)', abbr: 'OSL/AP (B1)', name: 'Operating Systems LAB', fAbbr: 'AP', time: '03.00 PM - 05.00 PM', room: 'OS Lab (Room 206)', batch: 'Batch B1' }
     ],
     'TUESDAY': [
-      { code: '1BCSL306', abbr: 'DSAL/AP', name: 'Data Structures Laboratory', fAbbr: 'AP', time: '03.00 PM - 04.00 PM', room: 'Data Structures Lab (Room 207)' }
+      { code: '1BCS302(P)', abbr: 'JAVAL/MK (B1)', name: 'Object Oriented Programming with JAVA LAB', fAbbr: 'MK', time: '03.00 PM - 05.00 PM', room: 'Java Lab (Room 205)', batch: 'Batch B1' },
+      { code: '1BCSL306', abbr: 'DSAL/AP (B2)', name: 'Data Structures Laboratory', fAbbr: 'AP', time: '03.00 PM - 05.00 PM', room: 'Data Structures Lab (Room 207)', batch: 'Batch B2' }
     ],
-    'WEDNESDAY': [
-      { code: '1BCSL306', abbr: 'DSAL/AP', name: 'Data Structures Laboratory', fAbbr: 'AP', time: '11.10 AM - 01.00 PM', room: 'Data Structures Lab (Room 207)' }
-    ],
+    'WEDNESDAY': [],
     'THURSDAY': [
-      { code: '1BCS302(P)', abbr: 'JAVAL/MK', name: 'Object Oriented Programming with JAVA LAB', fAbbr: 'MK', time: '02.00 PM - 03.00 PM', room: 'Java Lab (Room 205)' },
-      { code: '1BCS304(P)', abbr: 'OSL/AP', name: 'Operating Systems LAB', fAbbr: 'AP', time: '03.00 PM - 04.00 PM', room: 'OS Lab (Room 206)' }
+      { code: '1BCS302(P)', abbr: 'JAVAL/MK (B2)', name: 'Object Oriented Programming with JAVA LAB', fAbbr: 'MK', time: '02.00 PM - 04.00 PM', room: 'Java Lab (Room 205)', batch: 'Batch B2' },
+      { code: '1BCSL306', abbr: 'DSAL/AP (B1)', name: 'Data Structures Laboratory', fAbbr: 'AP', time: '02.00 PM - 04.00 PM', room: 'Data Structures Lab (Room 207)', batch: 'Batch B1' }
     ],
     'FRIDAY': [
-      { code: '1BCP308', abbr: 'CP/ANP', name: 'Community Project', fAbbr: 'ANP', time: '02.00 PM - 04.00 PM', room: 'Project Center (Room 209)' }
+      { code: '1BCP308', abbr: 'CP/ANP', name: 'Community Project', fAbbr: 'ANP', time: '02.00 PM - 04.00 PM', room: 'Project Center (Room 209)', batch: 'All Batches' }
     ],
     'SATURDAY': [
-      { code: '1BCSL307A', abbr: 'GIT/FN', name: 'Project Management (with GIT)', fAbbr: 'FN', time: '09.00 AM - 09.55 AM', room: 'Project Lab (Room 208)' }
+      { code: '1BCSL307A', abbr: 'GIT/FN (B2)', name: 'Project Management (with GIT)', fAbbr: 'FN', time: '09.00 AM - 10.50 AM', room: 'Project Lab (Room 208)', batch: 'Batch B2' },
+      { code: '1BCS304(P)', abbr: 'OSL/AP (B1)', name: 'Operating Systems LAB', fAbbr: 'AP', time: '09.00 AM - 10.50 AM', room: 'OS Lab (Room 206)', batch: 'Batch B1' },
+      { code: 'BNSK359', abbr: 'NSS/MJ', name: 'NSS / Sports Activity', fAbbr: 'MJ', time: '11.10 AM - 01.00 PM', room: 'Sports Complex / Ground', batch: 'All Batches' }
     ]
   };
 
-  // 5th Sem Practical Labs Timetable Grid (With Effect from: 07-09-2026)
-  const sem5LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string }>> = {
-    'MONDAY': [
-      { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '03.00 PM - 04.00 PM', room: 'Networks Lab (Room 305)' }
-    ],
+  // 5th Sem Practical Labs Timetable Grid (Official GNDEC 5th Sem Timetable - With Effect from: 07-09-2026)
+  const sem5LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string; batch?: string }>> = {
+    'MONDAY': [],
     'TUESDAY': [
-      { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '12.05 PM - 01.00 PM', room: 'Networks Lab (Room 305)' }
+      { code: 'BICL504', abbr: 'IOT/UK/FN (B2)', name: 'IoT Lab', fAbbr: 'UK', time: '11.10 AM - 01.00 PM', room: 'IoT & Cyber Lab (Room 306)', batch: 'Batch B2' },
+      { code: 'BCSL502', abbr: 'CNL/MJ (B1)', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '11.10 AM - 01.00 PM', room: 'Networks Lab (Room 305)', batch: 'Batch B1' }
     ],
     'WEDNESDAY': [
-      { code: 'BIC515C', abbr: 'FSD LAB', name: 'Full Stack Development Laboratory', fAbbr: 'IZ', time: '11.10 AM - 01.00 PM', room: 'Web Tech Lab (Room 307)' },
-      { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '04.00 PM - 05.00 PM', room: 'Networks Lab (Room 305)' }
+      { code: 'BIC515C', abbr: 'FSD LAB/IZ', name: 'Full Stack Development Laboratory', fAbbr: 'IZ', time: '11.10 AM - 01.00 PM', room: 'Web Tech Lab (Room 307)', batch: 'All Batches' },
+      { code: 'BICL504', abbr: 'IOT/UK/FN (B1)', name: 'IoT Lab', fAbbr: 'UK', time: '03.00 PM - 05.00 PM', room: 'IoT & Cyber Lab (Room 306)', batch: 'Batch B1' },
+      { code: 'BCSL502', abbr: 'CNL/MJ (B2)', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '03.00 PM - 05.00 PM', room: 'Networks Lab (Room 305)', batch: 'Batch B2' }
     ],
-    'THURSDAY': [
-      { code: 'BICL504', abbr: 'IOT/UK/FN', name: 'IoT Lab', fAbbr: 'UK', time: '11.10 AM - 01.00 PM', room: 'IoT & Cyber Lab (Room 306)' },
-      { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '02.00 PM - 03.00 PM', room: 'Networks Lab (Room 305)' }
-    ],
+    'THURSDAY': [],
     'FRIDAY': [
-      { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', fAbbr: 'MJ', time: '09.00 AM - 09.55 AM', room: 'Networks Lab (Room 305)' }
+      { code: 'BNSK559', abbr: 'NSS/AP', name: 'National Service Scheme', fAbbr: 'AP', time: '02.00 PM - 04.00 PM', room: 'Activity Center', batch: 'All Batches' }
     ],
     'SATURDAY': [
-      { code: 'BIC586', abbr: 'Mini Project', name: 'Mini Project Laboratory', fAbbr: 'HJ', time: '11.10 AM - 01.00 PM', room: 'Project Center (Room 308)' }
+      { code: 'BIC586', abbr: 'Mini Project/HJ', name: 'Mini Project', fAbbr: 'HJ', time: '11.10 AM - 01.00 PM', room: 'Project Center (Room 308)', batch: 'All Batches' }
     ]
   };
 
   // 7th Sem Practical Labs Timetable Grid (With Effect from: 24-08-2026)
-  const sem7LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string }>> = {
+  const sem7LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string; batch?: string }>> = {
     'MONDAY': [
-      { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', fAbbr: 'FN', time: '09.55 AM - 10.50 AM', room: 'Protocols Lab (Room 405)' },
-      { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', fAbbr: 'FN', time: '02.00 PM - 03.00 PM', room: 'Protocols Lab (Room 405)' }
+      { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', fAbbr: 'HJ', time: '11.30 AM - 01.30 PM', room: 'VAPT Lab (Room 407)', batch: 'All Batches' },
+      { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', fAbbr: 'FN', time: '09.55 AM - 11.25 AM', room: 'Protocols Lab (Room 405)', batch: 'All Batches' },
+      { code: 'BIC702(P)', abbr: 'BTL/AB', name: 'Blockchain Technology Lab', fAbbr: 'AB', time: '02.00 PM - 05.00 PM', room: 'Blockchain Lab (Room 406)', batch: 'All Batches' }
     ],
     'TUESDAY': [
-      { code: 'BIC702(P)', abbr: 'BTL/AB', name: 'Blockchain Technology Lab', fAbbr: 'AB', time: '11.10 AM - 12.05 PM', room: 'Blockchain Lab (Room 406)' }
+      { code: 'BIC702(P)', abbr: 'BTL/AB', name: 'Blockchain Technology Lab', fAbbr: 'AB', time: '11.10 AM - 01.00 PM', room: 'Blockchain Lab (Room 406)', batch: 'All Batches' },
+      { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', fAbbr: 'HJ', time: '02.00 PM - 05.00 PM', room: 'VAPT Lab (Room 407)', batch: 'All Batches' }
     ],
     'WEDNESDAY': [
-      { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', fAbbr: 'FN', time: '09.55 AM - 10.50 AM', room: 'Protocols Lab (Room 405)' },
-      { code: 'BIC786', abbr: 'PP-II/AB', name: 'Major Project Phase-II Laboratory', fAbbr: 'AB', time: '02.00 PM - 05.00 PM', room: 'Advanced Project Lab (Room 408)' }
+      { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', fAbbr: 'FN', time: '09.55 AM - 11.30 AM', room: 'Protocols Lab (Room 405)', batch: 'All Batches' },
+      { code: 'BIC786', abbr: 'PP-II/AB', name: 'Major Project Phase-II Laboratory', fAbbr: 'AB', time: '02.00 PM - 05.00 PM', room: 'Advanced Project Lab (Room 408)', batch: 'All Batches' }
     ],
     'THURSDAY': [
-      { code: 'BIC702(P)', abbr: 'BTL/AB (B1)', name: 'Blockchain Technology Lab (Batch 1)', fAbbr: 'AB', time: '11.10 AM - 01.00 PM', room: 'Blockchain Lab (Room 406)' },
-      { code: 'BCO701(P)', abbr: 'ICPL/FN (B2)', name: 'IOT Communication Protocols Lab (Batch 2)', fAbbr: 'FN', time: '11.10 AM - 01.00 PM', room: 'Protocols Lab (Room 405)' }
+      { code: 'BIC702(P)', abbr: 'BTL/AB (B1)', name: 'Blockchain Technology Lab (Batch 1)', fAbbr: 'AB', time: '11.10 AM - 01.00 PM', room: 'Blockchain Lab (Room 406)', batch: 'Batch B1' },
+      { code: 'BCO701(P)', abbr: 'ICPL/FN (B2)', name: 'IOT Communication Protocols Lab (Batch 2)', fAbbr: 'FN', time: '11.10 AM - 01.00 PM', room: 'Protocols Lab (Room 405)', batch: 'Batch B2' }
     ],
     'FRIDAY': [
-      { code: 'BIC702(P)', abbr: 'BTL/AB (B2)', name: 'Blockchain Technology Lab (Batch 2)', fAbbr: 'AB', time: '11.10 AM - 01.00 PM', room: 'Blockchain Lab (Room 406)' },
-      { code: 'BCO701(P)', abbr: 'ICPL/FN (B1)', name: 'IOT Communication Protocols Lab (Batch 1)', fAbbr: 'FN', time: '11.10 AM - 01.00 PM', room: 'Protocols Lab (Room 405)' }
+      { code: 'BIC702(P)', abbr: 'BTL/AB (B2)', name: 'Blockchain Technology Lab (Batch 2)', fAbbr: 'AB', time: '11.10 AM - 01.00 PM', room: 'Blockchain Lab (Room 406)', batch: 'Batch B2' },
+      { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', fAbbr: 'HJ', time: '02.00 PM - 05.00 PM', room: 'VAPT Lab (Room 407)', batch: 'All Batches' }
+    ],
+    'SATURDAY': [
+      { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', fAbbr: 'HJ', time: '09.00 AM - 12.00 PM', room: 'VAPT Lab (Room 407)', batch: 'All Batches' }
     ]
   };
 
-  const insertGridEntries = (sem: number, grid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string }>>) => {
+  const insertGridEntries = (sem: number, grid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string; batch?: string }>>) => {
     for (const day of Object.keys(grid)) {
       const daySlots = grid[day];
       for (let sIdx = 0; sIdx < daySlots.length; sIdx++) {
@@ -322,7 +311,8 @@ export function seedDatabase() {
           item.name,
           item.fAbbr,
           facultyName,
-          item.room
+          item.room,
+          item.batch || 'All Batches'
         );
       }
     }
@@ -333,7 +323,63 @@ export function seedDatabase() {
   insertGridEntries(5, sem5LabGrid);
   insertGridEntries(7, sem7LabGrid);
 
-  // 7. Initial Clean Audit Log
+  // 7. Seed Active Live Laboratory Sessions (5th Sem FSD Lab, 3rd Sem Java Lab, 7th Sem VAPT Lab)
+  const todayDateStr = new Date().toISOString().split('T')[0];
+  const qrExpiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(); // 4 hours valid for live testing
+
+  const liveSessionsToSeed = [
+    {
+      sem: 5,
+      code: 'BIC515C',
+      sessCode: 'GNDEC-SEM5-FSD-LIVE',
+      fAbbr: 'IZ',
+      startTime: '11:10 AM',
+      plainToken: 'GNDEC-FSD-2026-TOKEN'
+    },
+    {
+      sem: 3,
+      code: '1BCS302(P)',
+      sessCode: 'GNDEC-SEM3-JAVA-LIVE',
+      fAbbr: 'MK',
+      startTime: '03:00 PM',
+      plainToken: 'GNDEC-JAVA-2026-TOKEN'
+    },
+    {
+      sem: 7,
+      code: '22CSL71',
+      sessCode: 'GNDEC-SEM7-VAPT-LIVE',
+      fAbbr: 'HJ',
+      startTime: '11:30 AM',
+      plainToken: 'GNDEC-DEMO-VAPT-2026-TOKEN'
+    }
+  ];
+
+  for (const ls of liveSessionsToSeed) {
+    const labId = labIdMap[ls.code] || 1;
+    const facId = facultyMap[ls.fAbbr] || 1;
+    const expRow = db.prepare('SELECT id FROM experiments WHERE laboratory_id = ? ORDER BY experiment_number ASC LIMIT 1').get(labId) as any;
+    const expId = expRow?.id || 1;
+
+    const activeSessRes = db.prepare(`
+      INSERT INTO lab_sessions (
+        session_code, laboratory_id, faculty_id, experiment_id, semester, section,
+        date, start_time, status, qr_refresh_interval, started_at
+      ) VALUES (
+        ?, ?, ?, ?, ?, 'A',
+        ?, ?, 'ACTIVE', 60, datetime('now')
+      )
+    `).run(ls.sessCode, labId, facId, expId, ls.sem, todayDateStr, ls.startTime);
+
+    const activeSessId = Number(activeSessRes.lastInsertRowid);
+    const tokenHash = crypto.createHash('sha256').update(ls.plainToken).digest('hex');
+
+    db.prepare(`
+      INSERT INTO qr_sessions (lab_session_id, token_hash, plain_token, expires_at, status)
+      VALUES (?, ?, ?, ?, 'ACTIVE')
+    `).run(activeSessId, tokenHash, ls.plainToken, qrExpiresAt);
+  }
+
+  // 8. Initial Clean Audit Log
   const insertAudit = db.prepare(`
     INSERT INTO audit_logs (user_id, user_email, user_role, action, entity_type, entity_id, details, ip_address, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, '127.0.0.1', datetime('now'))
@@ -354,12 +400,13 @@ export function seedDatabase() {
   ✅ CLEAN DATABASE INITIALIZED (PURE PRACTICAL LABS ONLY)!
   🏛️ Department: CSE in IoT & Cyber Security including Block Chain Technology
   👨‍🏫 Head of Department (HOD): Dr. Harish Joshi
-  📅 Semesters: 3rd, 5th, 7th Semesters (Academic Year 2026-2027)
+  📅 Semesters: 1st, 3rd, 5th, 7th Semesters (Academic Year 2026-2027)
   👩‍🏫 Faculty: 13 Genuine Professors from Timetable Ready
-  👨‍🎓 Students: 0 (Real students self-register, then Admin/HOD verifies them)
-  🔬 Laboratories: 12 Official Practical Labs Only (No Theory Lectures)
+  🔬 Laboratories: 13 Official Practical Labs with Physical Campus Locations
   🕒 Timetable: Monday-Saturday Practical Lab Time Slots
-  🔒 Security: 25m Room Geofencing & 1-Min Dynamic Non-Reusable QR
+  🔴 Active Live Lab: Cyber Security & Penetration Testing Laboratory (22CSL71)
+  🏢 Location: Cyber Security & Networks Wing - 4th Floor (Room 407)
+  🔒 Security: 25m Room Geofencing & Dynamic Non-Reusable QR Active
   ========================================================================
   `);
 }
@@ -372,4 +419,3 @@ export function cleanDatabase() {
 if (process.argv[1]?.endsWith('seed.ts')) {
   seedDatabase();
 }
-

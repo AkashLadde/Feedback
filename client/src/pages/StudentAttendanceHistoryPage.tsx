@@ -64,7 +64,7 @@ export const StudentAttendanceHistoryPage: React.FC = () => {
           </div>
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-subtle">
             <span className="text-xs text-slate-500 font-medium">Compliance Attendance Rate</span>
-            <div className="text-2xl font-bold text-cyan-700 mt-1">{summary.percentage}%</div>
+            <div className="text-2xl font-bold text-pink-700 mt-1">{summary.percentage}%</div>
           </div>
         </div>
       )}

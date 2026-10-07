@@ -47,7 +47,7 @@ export const TimetablePage: React.FC = () => {
     { code: '1BENG106', name: 'Professional Communication & Language Lab', abbr: 'LANG LAB', legend: 'Prof. Farhanaz', room: 'Language Lab (Room 108)' }
   ];
 
-  // 3rd Semester Practical Laboratories (Official GNDEC 3rd Sem Timetable)
+  // 3rd Semester Practical Laboratories (Official GNDEC 3rd Sem Timetable - With Effect from: 08-09-2026)
   const sem3Legends: LabLegend[] = [
     { code: '1BCS302(P)', name: 'Object Oriented Programming with JAVA LAB', abbr: 'JAVAL/MK', legend: 'Prof. Mahesh Kanjikar', room: 'Java Lab (Room 205)' },
     { code: '1BCS304(P)', name: 'Operating Systems LAB', abbr: 'OSL/AP', legend: 'Prof. Aarti Pawar', room: 'OS Lab (Room 206)' },
@@ -57,7 +57,7 @@ export const TimetablePage: React.FC = () => {
     { code: 'BNSK359', name: 'NSS / Sports Activity', abbr: 'NSS/MJ', legend: 'Prof. Madhuri Joshi', room: 'Sports Complex / Ground' }
   ];
 
-  // 5th Semester Practical Laboratories (Official GNDEC 5th Sem Timetable)
+  // 5th Semester Practical Laboratories (Official GNDEC 5th Sem Timetable - With Effect from: 07-09-2026)
   const sem5Legends: LabLegend[] = [
     { code: 'BCSL502', name: 'Computer Networks Laboratory', abbr: 'CNL/MJ', legend: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)' },
     { code: 'BICL504', name: 'IoT Lab', abbr: 'IOT/UK/FN', legend: 'Prof. Uzma Kausar & Prof. Farhnaz', room: 'IoT & Cyber Lab (Room 306)' },
@@ -68,6 +68,7 @@ export const TimetablePage: React.FC = () => {
 
   // 7th Semester Practical Laboratories (Official GNDEC 7th Sem Timetable)
   const sem7Legends: LabLegend[] = [
+    { code: '22CSL71', name: 'Cyber Security & Penetration Testing Laboratory', abbr: 'VAPT/HJ', legend: 'Dr. Harish Joshi (HOD)', room: 'VAPT Lab (Room 407)' },
     { code: 'BCO701(P)', name: 'IOT Communication Protocols Lab', abbr: 'ICPL/FN', legend: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)' },
     { code: 'BIC702(P)', name: 'Blockchain Technology Lab', abbr: 'BTL/AB', legend: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)' },
     { code: 'BIC786', name: 'Major Project Phase-II', abbr: 'PP-II/AB', legend: 'Prof. Ashok Bawge & Dr. Harish Joshi', room: 'Advanced Project Lab (Room 408)' }
@@ -78,126 +79,124 @@ export const TimetablePage: React.FC = () => {
     {
       day: 'MONDAY',
       slots: [
-        { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)' },
-        { code: '1BCSL107', abbr: 'CAED LAB', name: 'Computer Aided Engineering Drawing Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)' }
+        { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'All Batches' },
+        { code: '1BCSL107', abbr: 'CAED LAB', name: 'Computer Aided Engineering Drawing Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)', batch: 'All Batches' }
       ]
     },
     {
       day: 'TUESDAY',
       slots: [
-        { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', time: '09.00 AM - 12.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)' },
-        { code: '1BENG106', abbr: 'LANG LAB', name: 'Professional Communication & Language Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)' }
+        { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', time: '09.00 AM - 12.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'All Batches' },
+        { code: '1BENG106', abbr: 'LANG LAB', name: 'Professional Communication & Language Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)', batch: 'All Batches' }
       ]
     },
     {
       day: 'WEDNESDAY',
       slots: [
-        { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)' },
-        { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)' }
+        { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'All Batches' },
+        { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'All Batches' }
       ]
     },
     {
       day: 'THURSDAY',
       slots: [
-        { code: '1BCSL107', abbr: 'CAED LAB', name: 'Computer Aided Engineering Drawing Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)' },
-        { code: '1BENG106', abbr: 'LANG LAB', name: 'Professional Communication & Language Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)' }
+        { code: '1BCSL107', abbr: 'CAED LAB', name: 'Computer Aided Engineering Drawing Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)', batch: 'All Batches' },
+        { code: '1BENG106', abbr: 'LANG LAB', name: 'Professional Communication & Language Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)', batch: 'All Batches' }
       ]
     },
     {
       day: 'FRIDAY',
       slots: [
-        { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)' },
-        { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)' }
+        { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'All Batches' },
+        { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'All Batches' }
       ]
     },
     {
       day: 'SATURDAY',
       slots: [
-        { code: '1BPOPS103', abbr: 'C & CAED LAB', name: 'C Programming & CAED Practical Practice Lab', time: '09.00 AM - 01.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)' }
+        { code: '1BPOPS103', abbr: 'C & CAED LAB', name: 'C Programming & CAED Practical Practice Lab', time: '09.00 AM - 01.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'All Batches' }
       ]
     }
   ];
 
-  // 3rd Sem Practical Schedule (Real Time Slots from Official Timetable)
+  // 3rd Sem Practical Schedule (Official GNDEC 3rd Sem Timetable - With Effect from: 08-09-2026)
   const sem3Schedule: DaySchedule[] = [
     {
       day: 'MONDAY',
       slots: [
-        { code: '1BCSL307A', abbr: 'GIT/FN', name: 'Project Management (with GIT)', time: '03.00 PM - 04.00 PM', fac: 'Prof. Farhnaz & Mr. Anand Patil', room: 'Project Lab (Room 208)' },
-        { code: '1BCS304(P)', abbr: 'OSL/AP', name: 'Operating Systems LAB', time: '04.00 PM - 05.00 PM', fac: 'Prof. Aarti Pawar', room: 'OS Lab (Room 206)' }
+        { code: '1BCSL307A', abbr: 'GIT/FN (B2)', name: 'Project Management (with GIT)', time: '03.00 PM - 05.00 PM', fac: 'Prof. Farhnaz & Mr. Anand Patil', room: 'Project Lab (Room 208)', batch: 'Batch B2' },
+        { code: '1BCS304(P)', abbr: 'OSL/AP (B1)', name: 'Operating Systems LAB', time: '03.00 PM - 05.00 PM', fac: 'Prof. Aarti Pawar', room: 'OS Lab (Room 206)', batch: 'Batch B1' }
       ]
     },
     {
       day: 'TUESDAY',
       slots: [
-        { code: '1BCSL306', abbr: 'DSAL/AP', name: 'Data Structures Laboratory', time: '03.00 PM - 04.00 PM', fac: 'Prof. Aarti Pawar', room: 'Data Structures Lab (Room 207)' }
+        { code: '1BCS302(P)', abbr: 'JAVAL/MK (B1)', name: 'Object Oriented Programming with JAVA LAB', time: '03.00 PM - 05.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'Java Lab (Room 205)', batch: 'Batch B1' },
+        { code: '1BCSL306', abbr: 'DSAL/AP (B2)', name: 'Data Structures Laboratory', time: '03.00 PM - 05.00 PM', fac: 'Prof. Aarti Pawar', room: 'Data Structures Lab (Room 207)', batch: 'Batch B2' }
       ]
     },
     {
       day: 'WEDNESDAY',
-      slots: [
-        { code: '1BCSL306', abbr: 'DSAL/AP', name: 'Data Structures Laboratory', time: '11.10 AM - 01.00 PM', fac: 'Prof. Aarti Pawar', room: 'Data Structures Lab (Room 207)' }
-      ]
+      slots: []
     },
     {
       day: 'THURSDAY',
       slots: [
-        { code: '1BCS302(P)', abbr: 'JAVAL/MK', name: 'Object Oriented Programming with JAVA LAB', time: '02.00 PM - 03.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'Java Lab (Room 205)' },
-        { code: '1BCS304(P)', abbr: 'OSL/AP', name: 'Operating Systems LAB', time: '03.00 PM - 04.00 PM', fac: 'Prof. Aarti Pawar', room: 'OS Lab (Room 206)' }
+        { code: '1BCS302(P)', abbr: 'JAVAL/MK (B2)', name: 'Object Oriented Programming with JAVA LAB', time: '02.00 PM - 04.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'Java Lab (Room 205)', batch: 'Batch B2' },
+        { code: '1BCSL306', abbr: 'DSAL/AP (B1)', name: 'Data Structures Laboratory', time: '02.00 PM - 04.00 PM', fac: 'Prof. Aarti Pawar', room: 'Data Structures Lab (Room 207)', batch: 'Batch B1' }
       ]
     },
     {
       day: 'FRIDAY',
       slots: [
-        { code: '1BCP308', abbr: 'CP/ANP', name: 'Community Project', time: '02.00 PM - 04.00 PM', fac: 'Mr. Anand Patil', room: 'Project Center (Room 209)' }
+        { code: '1BCP308', abbr: 'CP/ANP', name: 'Community Project', time: '02.00 PM - 04.00 PM', fac: 'Mr. Anand Patil', room: 'Project Center (Room 209)', batch: 'All Batches' }
       ]
     },
     {
       day: 'SATURDAY',
       slots: [
-        { code: '1BCSL307A', abbr: 'GIT/FN', name: 'Project Management (with GIT)', time: '09.00 AM - 09.55 AM', fac: 'Prof. Farhnaz & Mr. Anand Patil', room: 'Project Lab (Room 208)' }
+        { code: '1BCSL307A', abbr: 'GIT/FN (B2)', name: 'Project Management (with GIT)', time: '09.00 AM - 10.50 AM', fac: 'Prof. Farhnaz & Mr. Anand Patil', room: 'Project Lab (Room 208)', batch: 'Batch B2' },
+        { code: '1BCS304(P)', abbr: 'OSL/AP (B1)', name: 'Operating Systems LAB', time: '09.00 AM - 10.50 AM', fac: 'Prof. Aarti Pawar', room: 'OS Lab (Room 206)', batch: 'Batch B1' },
+        { code: 'BNSK359', abbr: 'NSS/MJ', name: 'NSS / Sports Activity', time: '11.10 AM - 01.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Sports Complex / Ground', batch: 'All Batches' }
       ]
     }
   ];
 
-  // 5th Sem Practical Schedule (Real Time Slots from Official Timetable)
+  // 5th Sem Practical Schedule (Official GNDEC 5th Sem Timetable - With Effect from: 07-09-2026)
   const sem5Schedule: DaySchedule[] = [
     {
       day: 'MONDAY',
-      slots: [
-        { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', time: '03.00 PM - 04.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)' }
-      ]
+      slots: []
     },
     {
       day: 'TUESDAY',
       slots: [
-        { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', time: '12.05 PM - 01.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)' }
+        { code: 'BICL504', abbr: 'IOT/UK/FN (B2)', name: 'IoT Lab', time: '11.10 AM - 01.00 PM', fac: 'Prof. Uzma Kausar & Prof. Farhnaz', room: 'IoT & Cyber Lab (Room 306)', batch: 'Batch B2' },
+        { code: 'BCSL502', abbr: 'CNL/MJ (B1)', name: 'Computer Networks Laboratory', time: '11.10 AM - 01.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)', batch: 'Batch B1' }
       ]
     },
     {
       day: 'WEDNESDAY',
       slots: [
-        { code: 'BIC515C', abbr: 'FSD LAB', name: 'Full Stack Development Laboratory', time: '11.10 AM - 01.00 PM', fac: 'Prof. Ibtesham Zarrine', room: 'Web Tech Lab (Room 307)' },
-        { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', time: '04.00 PM - 05.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)' }
+        { code: 'BIC515C', abbr: 'FSD LAB/IZ', name: 'Full Stack Development Laboratory', time: '11.10 AM - 01.00 PM', fac: 'Prof. Ibtesham Zarrine', room: 'Web Tech Lab (Room 307)', batch: 'All Batches' },
+        { code: 'BICL504', abbr: 'IOT/UK/FN (B1)', name: 'IoT Lab', time: '03.00 PM - 05.00 PM', fac: 'Prof. Uzma Kausar & Prof. Farhnaz', room: 'IoT & Cyber Lab (Room 306)', batch: 'Batch B1' },
+        { code: 'BCSL502', abbr: 'CNL/MJ (B2)', name: 'Computer Networks Laboratory', time: '03.00 PM - 05.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)', batch: 'Batch B2' }
       ]
     },
     {
       day: 'THURSDAY',
-      slots: [
-        { code: 'BICL504', abbr: 'IOT/UK/FN', name: 'IoT Lab', time: '11.10 AM - 01.00 PM', fac: 'Prof. Uzma Kausar & Prof. Farhnaz', room: 'IoT & Cyber Lab (Room 306)' },
-        { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', time: '02.00 PM - 03.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)' }
-      ]
+      slots: []
     },
     {
       day: 'FRIDAY',
       slots: [
-        { code: 'BCSL502', abbr: 'CNL/MJ', name: 'Computer Networks Laboratory', time: '09.00 AM - 09.55 AM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)' }
+        { code: 'BNSK559', abbr: 'NSS/AP', name: 'National Service Scheme', time: '02.00 PM - 04.00 PM', fac: 'Prof. Aarti Pawar', room: 'Activity Center', batch: 'All Batches' }
       ]
     },
     {
       day: 'SATURDAY',
       slots: [
-        { code: 'BIC586', abbr: 'Mini Project', name: 'Mini Project Laboratory', time: '11.10 AM - 01.00 PM', fac: 'Dr. Harish Joshi (HOD)', room: 'Project Center (Room 308)' }
+        { code: 'BIC586', abbr: 'Mini Project/HJ', name: 'Mini Project', time: '11.10 AM - 01.00 PM', fac: 'Dr. Harish Joshi (HOD)', room: 'Project Center (Room 308)', batch: 'All Batches' }
       ]
     }
   ];
@@ -207,21 +206,23 @@ export const TimetablePage: React.FC = () => {
     {
       day: 'MONDAY',
       slots: [
-        { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', time: '09.55 AM - 10.50 AM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)' },
-        { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', time: '02.00 PM - 03.00 PM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)' }
+        { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', time: '11.30 AM - 01.30 PM', fac: 'Dr. Harish Joshi (HOD)', room: 'VAPT Lab (Room 407)', batch: 'All Batches' },
+        { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', time: '09.55 AM - 11.25 AM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)', batch: 'All Batches' },
+        { code: 'BIC702(P)', abbr: 'BTL/AB', name: 'Blockchain Technology Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)', batch: 'All Batches' }
       ]
     },
     {
       day: 'TUESDAY',
       slots: [
-        { code: 'BIC702(P)', abbr: 'BTL/AB', name: 'Blockchain Technology Lab', time: '11.10 AM - 12.05 PM', fac: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)' }
+        { code: 'BIC702(P)', abbr: 'BTL/AB', name: 'Blockchain Technology Lab', time: '11.10 AM - 01.00 PM', fac: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)', batch: 'All Batches' },
+        { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Harish Joshi (HOD)', room: 'VAPT Lab (Room 407)', batch: 'All Batches' }
       ]
     },
     {
       day: 'WEDNESDAY',
       slots: [
-        { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', time: '09.55 AM - 10.50 AM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)' },
-        { code: 'BIC786', abbr: 'PP-II/AB', name: 'Major Project Phase-II Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Prof. Ashok Bawge', room: 'Advanced Project Lab (Room 408)' }
+        { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', time: '09.55 AM - 11.30 AM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)', batch: 'All Batches' },
+        { code: 'BIC786', abbr: 'PP-II/AB', name: 'Major Project Phase-II Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Prof. Ashok Bawge', room: 'Advanced Project Lab (Room 408)', batch: 'All Batches' }
       ]
     },
     {
@@ -235,12 +236,14 @@ export const TimetablePage: React.FC = () => {
       day: 'FRIDAY',
       slots: [
         { code: 'BIC702(P)', abbr: 'BTL/AB (B2)', name: 'Blockchain Technology Lab (Batch 2)', time: '11.10 AM - 01.00 PM', fac: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)', batch: 'Batch B2' },
-        { code: 'BCO701(P)', abbr: 'ICPL/FN (B1)', name: 'IOT Communication Protocols Lab (Batch 1)', time: '11.10 AM - 01.00 PM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)', batch: 'Batch B1' }
+        { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Harish Joshi (HOD)', room: 'VAPT Lab (Room 407)', batch: 'All Batches' }
       ]
     },
     {
       day: 'SATURDAY',
-      slots: []
+      slots: [
+        { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', time: '09.00 AM - 12.00 PM', fac: 'Dr. Harish Joshi (HOD)', room: 'VAPT Lab (Room 407)', batch: 'All Batches' }
+      ]
     }
   ];
 
@@ -270,13 +273,19 @@ export const TimetablePage: React.FC = () => {
     return 'Batch 2023';
   };
 
+  const [selectedDayFilter, setSelectedDayFilter] = useState<string>('ALL');
+
+  const filteredSchedule = selectedDayFilter === 'ALL'
+    ? currentSchedule
+    : currentSchedule.filter(d => d.day === selectedDayFilter);
+
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
       {/* Top Banner */}
       <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-subtle flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-cyan-600" />
+            <FlaskConical className="w-5 h-5 text-pink-700" />
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               {isStudent
                 ? `Semester ${studentSem} Practical Laboratory Timetable`
@@ -298,7 +307,7 @@ export const TimetablePage: React.FC = () => {
                   onClick={() => setActiveSem(sem)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     activeSem === sem
-                      ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20'
+                      ? 'bg-gradient-to-r from-pink-800 to-pink-700 text-white shadow-md shadow-pink-900/20'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -307,8 +316,8 @@ export const TimetablePage: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-cyan-50 border border-cyan-200 px-3 py-1.5 rounded-xl text-xs font-bold text-cyan-900 flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-cyan-600" />
+            <div className="bg-pink-50 border border-pink-200 px-3 py-1.5 rounded-xl text-xs font-bold text-pink-900 flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-pink-700" />
               <span>Semester {studentSem} ({getBatchLabel(studentSem)})</span>
             </div>
           )}
@@ -334,15 +343,38 @@ export const TimetablePage: React.FC = () => {
           <h3 className="text-xs sm:text-sm font-bold text-slate-700">
             Department of CSE in IoT & Cyber Security including Block Chain Technology
           </h3>
-          <div className="text-sm font-extrabold text-cyan-800 uppercase tracking-wider pt-1">
+          <div className="text-sm font-extrabold text-pink-900 uppercase tracking-wider pt-1">
             {getSemOrdinal(activeSem)} SEMESTER LAB TIME TABLE (PRACTICAL LABORATORIES)
           </div>
           <div className="flex flex-wrap items-center justify-between text-xs font-semibold text-slate-600 pt-2 px-2 gap-2">
             <span>Academic Year 2026-27</span>
-            <span className="bg-cyan-50 text-cyan-800 font-bold px-2 py-0.5 rounded-full border border-cyan-200">
+            <span className="bg-pink-50 text-pink-900 font-bold px-2 py-0.5 rounded-full border border-pink-200">
               With Effect from: {getEffectDate(activeSem)}
             </span>
             <span>Room Geofence: 25m Radius Active</span>
+          </div>
+        </div>
+
+        {/* Day Filter Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200 print:hidden">
+          <div className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
+            <Calendar className="w-4 h-4 text-pink-700" />
+            <span>Filter by Day:</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {['ALL', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'].map((d) => (
+              <button
+                key={d}
+                onClick={() => setSelectedDayFilter(d)}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                  selectedDayFilter === d
+                    ? 'bg-pink-700 text-white shadow-sm shadow-pink-900/30'
+                    : 'bg-white hover:bg-slate-200 text-slate-600 border border-slate-200'
+                }`}
+              >
+                {d === 'ALL' ? 'All Days (Weekly)' : d}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -350,16 +382,16 @@ export const TimetablePage: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-cyan-600" />
-              <span>Weekly Practical Laboratory Schedule</span>
+              <Calendar className="w-4 h-4 text-pink-700" />
+              <span>{selectedDayFilter === 'ALL' ? 'Weekly' : selectedDayFilter} Practical Laboratory Schedule</span>
             </h4>
-            <span className="text-[11px] font-bold text-orange-600 bg-orange-50 border border-orange-200 px-2.5 py-0.5 rounded-full">
+            <span className="text-[11px] font-bold text-pink-800 bg-pink-50 border border-pink-200 px-2.5 py-0.5 rounded-full">
               Only Practical Labs Scheduled
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {currentSchedule.map((dayItem) => (
+          <div className={`grid gap-4 ${selectedDayFilter === 'ALL' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
+            {filteredSchedule.map((dayItem) => (
               <div
                 key={dayItem.day}
                 className="bg-slate-50/80 rounded-2xl border border-slate-200 overflow-hidden flex flex-col justify-between"
@@ -380,13 +412,20 @@ export const TimetablePage: React.FC = () => {
                     dayItem.slots.map((slot, sIdx) => (
                       <div
                         key={sIdx}
-                        className="bg-white rounded-xl p-3 border border-slate-200/90 shadow-xs hover:border-cyan-300 transition-all space-y-1.5"
+                        className="bg-white rounded-xl p-3 border border-slate-200/90 shadow-xs hover:border-pink-300 transition-all space-y-1.5"
                       >
                         <div className="flex items-center justify-between gap-1">
-                          <span className="font-mono font-bold text-cyan-800 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded text-[10px]">
-                            {slot.code}
-                          </span>
-                          <span className="text-[10px] font-extrabold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-mono font-bold text-pink-900 bg-pink-50 border border-pink-200 px-2 py-0.5 rounded text-[10px]">
+                              {slot.code}
+                            </span>
+                            {slot.batch && (
+                              <span className="font-sans font-bold text-[9px] text-pink-950 bg-pink-100 border border-pink-300 px-1.5 py-0.2 rounded-full">
+                                {slot.batch}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] font-extrabold text-pink-800 bg-pink-50 border border-pink-200 px-2 py-0.5 rounded-full flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {slot.time}
                           </span>
@@ -403,7 +442,7 @@ export const TimetablePage: React.FC = () => {
 
                         <div className="pt-1.5 border-t border-slate-100 flex flex-wrap items-center justify-between text-[11px] text-slate-600 gap-1">
                           <div className="flex items-center gap-1 font-semibold text-slate-700">
-                            <UserCheck className="w-3 h-3 text-cyan-600 shrink-0" />
+                            <UserCheck className="w-3 h-3 text-pink-700 shrink-0" />
                             <span className="truncate">{slot.fac}</span>
                           </div>
                           <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
@@ -423,7 +462,7 @@ export const TimetablePage: React.FC = () => {
         {/* Official Subject Codes, Abbreviations & Legends Table */}
         <div className="pt-4 border-t border-slate-200 space-y-3">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-cyan-600" />
+            <BookOpen className="w-4 h-4 text-pink-700" />
             <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
               Subject Code, Abbreviations & Faculty In-Charge ({getSemOrdinal(activeSem)} Semester)
             </h4>
@@ -443,13 +482,13 @@ export const TimetablePage: React.FC = () => {
               <tbody>
                 {currentLegends.map((item, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/80 text-[11px]">
-                    <td className="border border-slate-300 p-2.5 font-mono font-bold text-cyan-900 bg-slate-50/50">
+                    <td className="border border-slate-300 p-2.5 font-mono font-bold text-pink-900 bg-slate-50/50">
                       {item.code}
                     </td>
                     <td className="border border-slate-300 p-2.5 font-bold text-slate-900">
                       {item.name}
                     </td>
-                    <td className="border border-slate-300 p-2.5 font-mono font-bold text-orange-800">
+                    <td className="border border-slate-300 p-2.5 font-mono font-bold text-pink-800">
                       {item.abbr}
                     </td>
                     <td className="border border-slate-300 p-2.5 text-slate-700 font-semibold">
@@ -474,7 +513,7 @@ export const TimetablePage: React.FC = () => {
         {/* Official Institutional Authority Signatures Footer */}
         <div className="pt-6 border-t-2 border-slate-300 flex items-center justify-between text-xs font-black text-slate-900 uppercase tracking-wider px-4">
           <div className="space-y-1 text-center">
-            <div className="h-8 flex items-end justify-center font-serif text-[11px] text-cyan-800 italic">
+            <div className="h-8 flex items-end justify-center font-serif text-[11px] text-pink-900 italic">
               Verified & Approved
             </div>
             <div className="border-t border-slate-900 pt-1 px-4">
@@ -483,7 +522,7 @@ export const TimetablePage: React.FC = () => {
           </div>
 
           <div className="space-y-1 text-center">
-            <div className="h-8 flex items-end justify-center font-serif text-[11px] text-cyan-800 italic">
+            <div className="h-8 flex items-end justify-center font-serif text-[11px] text-pink-900 italic">
               Dr. Harish Joshi
             </div>
             <div className="border-t border-slate-900 pt-1 px-4">
@@ -493,8 +532,8 @@ export const TimetablePage: React.FC = () => {
         </div>
 
         {/* Institutional Policy Notice */}
-        <div className="p-4 bg-cyan-50/60 rounded-2xl border border-cyan-100 text-slate-600 text-[11px] leading-relaxed flex items-start gap-2 print:hidden">
-          <ShieldCheck className="w-4 h-4 text-cyan-600 shrink-0 mt-0.5" />
+        <div className="p-4 bg-pink-50/60 rounded-2xl border border-pink-100 text-slate-600 text-[11px] leading-relaxed flex items-start gap-2 print:hidden">
+          <ShieldCheck className="w-4 h-4 text-pink-700 shrink-0 mt-0.5" />
           <span>
             <strong>Official Practical Timetable:</strong> All laboratory attendance check-ins, active geofencing (25m perimeter), and 5-minute student feedback submission windows operate strictly according to these registered practical laboratory slots.
           </span>

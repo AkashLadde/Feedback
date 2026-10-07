@@ -81,7 +81,7 @@ export const AdminAttendancePage: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-subtle flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-pink-700"></span>
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Classroom & Laboratory Attendance Records
             </h1>
@@ -102,7 +102,7 @@ export const AdminAttendancePage: React.FC = () => {
 
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-orange transition-all"
+            className="px-4 py-2 bg-gradient-to-r from-pink-800 to-pink-700 hover:from-pink-900 hover:to-pink-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-pink-900/20 transition-all"
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span>Export CSV</span>
@@ -114,7 +114,7 @@ export const AdminAttendancePage: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
-            <Users className="w-4 h-4 text-cyan-600" />
+            <Users className="w-4 h-4 text-pink-700" />
             <span>Total Attendance Marks</span>
           </div>
           <div className="text-2xl font-extrabold text-slate-900">{stats.total}</div>
@@ -139,13 +139,13 @@ export const AdminAttendancePage: React.FC = () => {
           <div className="text-[11px] text-rose-700 mt-1">Verified Absentees</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-orange-200 bg-orange-50/20 shadow-subtle">
-          <div className="flex items-center gap-2 text-xs font-semibold text-orange-800 mb-1">
-            <Clock className="w-4 h-4 text-orange-600" />
+        <div className="bg-white p-5 rounded-2xl border border-pink-200 bg-pink-50/20 shadow-subtle">
+          <div className="flex items-center gap-2 text-xs font-semibold text-pink-900 mb-1">
+            <Clock className="w-4 h-4 text-pink-700" />
             <span>Late Check-ins</span>
           </div>
-          <div className="text-2xl font-extrabold text-orange-950">{stats.late}</div>
-          <div className="text-[11px] text-orange-700 mt-1">Arrived Post-Threshold</div>
+          <div className="text-2xl font-extrabold text-pink-950">{stats.late}</div>
+          <div className="text-[11px] text-pink-800 mt-1">Arrived Post-Threshold</div>
         </div>
       </div>
 
@@ -160,7 +160,7 @@ export const AdminAttendancePage: React.FC = () => {
                 onClick={() => setSelectedSem(sem)}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
                   selectedSem === sem
-                    ? 'bg-cyan-600 text-white shadow-sm'
+                    ? 'bg-pink-700 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -195,7 +195,7 @@ export const AdminAttendancePage: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchAttendance()}
-            className="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
+            className="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-pink-600 bg-white"
           />
         </div>
       </div>
@@ -204,7 +204,7 @@ export const AdminAttendancePage: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-subtle overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-slate-500">
-            <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <div className="w-8 h-8 border-3 border-pink-700 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
             <span className="text-xs font-bold">Loading department attendance records...</span>
           </div>
         ) : records.length === 0 ? (

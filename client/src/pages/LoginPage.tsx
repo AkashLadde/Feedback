@@ -79,6 +79,14 @@ export const LoginPage: React.FC = () => {
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regDepartment] = useState('CSE in IoT & Cyber Security including Block Chain Technology');
 
+  // Phone OTP Verification States
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [devOtpPreview, setDevOtpPreview] = useState<string | null>(null);
+  const [otpCountdown, setOtpCountdown] = useState(0);
+
   // Signup Instructions Modal State
   const [showSignupModal, setShowSignupModal] = useState(false);
 
@@ -91,6 +99,14 @@ export const LoginPage: React.FC = () => {
     }, 6000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    let timer: any;
+    if (otpCountdown > 0) {
+      timer = setInterval(() => setOtpCountdown((prev) => prev - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [otpCountdown]);
 
   const handleSemesterChangeInReg = (sem: number) => {
     setRegSemester(sem);
@@ -105,6 +121,48 @@ export const LoginPage: React.FC = () => {
     setAuthMode('REGISTER');
     setError(null);
     setShowSignupModal(true);
+  };
+
+  const handleSendOtp = async () => {
+    if (!regPhone || regPhone.trim().length < 8) {
+      setError('Please enter a valid 10-digit mobile number to receive OTP.');
+      return;
+    }
+    setError(null);
+    setOtpLoading(true);
+    try {
+      const res = await api.sendOtp({ phone: regPhone.trim() });
+      if (res.success) {
+        setOtpSent(true);
+        setDevOtpPreview(res.otp || null);
+        setOtpCountdown(60);
+        setSuccessMsg(res.message || `OTP sent to ${regPhone.trim()}`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to send OTP to mobile number.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode || otpCode.trim().length < 4) {
+      setError('Please enter the 6-digit OTP sent to your phone.');
+      return;
+    }
+    setError(null);
+    setOtpLoading(true);
+    try {
+      const res = await api.verifyOtp({ phone: regPhone.trim(), otp: otpCode.trim() });
+      if (res.success) {
+        setOtpVerified(true);
+        setSuccessMsg('✅ Mobile number verified successfully!');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Invalid or expired OTP code.');
+    } finally {
+      setOtpLoading(false);
+    }
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -136,6 +194,11 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
+    if (regPhone.trim() && !otpVerified) {
+      setError('Please verify your mobile number via OTP before submitting registration.');
+      return;
+    }
+
     if (regPassword.length < 6) {
       setError('Password must be at least 6 characters.');
       return;
@@ -156,6 +219,7 @@ export const LoginPage: React.FC = () => {
         batch: regBatch,
         department: regDepartment,
         phone: regPhone.trim() || undefined,
+        phone_otp: otpCode.trim() || undefined,
         password: regPassword
       });
 
@@ -166,12 +230,16 @@ export const LoginPage: React.FC = () => {
           origin: { y: 0.6 }
         });
 
-        setSuccessMsg(res.message || 'Account registered successfully! Your account is pending verification by the Administrator. You can sign in once verified.');
-        setIdentifier(regUsn.trim().toUpperCase() || regEmail.trim().toLowerCase());
-        setPassword('');
-        setRegPassword('');
-        setRegConfirmPassword('');
-        setAuthMode('LOGIN');
+        setSuccessMsg(res.message || 'Student account registered and saved to database successfully!');
+        
+        // Auto sign-in or prepare sign-in
+        try {
+          await login({ usn: regUsn.trim().toUpperCase(), password: regPassword });
+        } catch {
+          setIdentifier(regUsn.trim().toUpperCase() || regEmail.trim().toLowerCase());
+          setPassword(regPassword);
+          setAuthMode('LOGIN');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Account registration failed. Please check your credentials.');
@@ -183,11 +251,11 @@ export const LoginPage: React.FC = () => {
   const activeQuote = CYBER_QUOTES[quoteIndex];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50/40 via-white to-orange-50/40 flex flex-col justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50/50 via-white to-orange-50/50 flex flex-col justify-between">
       {/* Institutional Top Navigation Header */}
       <div className="bg-white border-b border-cyan-100 px-4 sm:px-6 py-3.5 flex items-center justify-between shadow-subtle">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-cyan-500 to-orange-500 flex items-center justify-center text-white shadow-md shadow-cyan-500/20 font-black text-sm tracking-wider">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 via-orange-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20 font-black text-sm tracking-wider">
             GND
           </div>
           <div>
@@ -197,9 +265,9 @@ export const LoginPage: React.FC = () => {
             </span>
           </div>
         </div>
-        <div className="text-xs font-bold text-slate-700 hidden sm:flex items-center gap-2 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200">
-          <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-          <span className="text-orange-900">Academic Year 2026-27</span>
+        <div className="text-xs font-bold text-slate-700 hidden sm:flex items-center gap-2 bg-cyan-50 px-3 py-1.5 rounded-xl border border-cyan-200">
+          <span className="w-2 h-2 rounded-full bg-cyan-600 animate-pulse"></span>
+          <span className="text-cyan-900">Academic Year 2026-27</span>
         </div>
       </div>
 
@@ -208,7 +276,7 @@ export const LoginPage: React.FC = () => {
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 bg-white rounded-3xl shadow-xl border border-cyan-100 overflow-hidden">
           
           {/* Left Panel: Dynamic Cybersecurity Theme & Rotating Quotes */}
-          <div className="md:col-span-5 bg-gradient-to-br from-slate-900 via-cyan-950 to-slate-900 p-6 sm:p-8 text-white flex flex-col justify-between relative overflow-hidden">
+          <div className="md:col-span-5 bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 p-6 sm:p-8 text-white flex flex-col justify-between relative overflow-hidden">
             {/* Animated Cyber Matrix Background Elements */}
             <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#06b6d4_1px,transparent_1px)] [background-size:16px_16px]"></div>
             <div className="absolute -right-16 -top-16 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
@@ -221,8 +289,8 @@ export const LoginPage: React.FC = () => {
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
                   <span>GNDEC CSE-ICB Security Grid</span>
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-orange-300/90 font-mono font-bold">
-                  <Radio className="w-3 h-3 text-orange-400 animate-ping" />
+                <div className="flex items-center gap-1 text-[10px] text-cyan-300/90 font-mono font-bold">
+                  <Radio className="w-3 h-3 text-cyan-400 animate-ping" />
                   <span>25m Geofence</span>
                 </div>
               </div>
@@ -231,12 +299,12 @@ export const LoginPage: React.FC = () => {
               <div className="p-4 rounded-2xl bg-white/5 border border-cyan-500/20 backdrop-blur-md relative overflow-hidden">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-orange-500 flex items-center justify-center text-white shadow-md">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-orange-500 to-cyan-500 flex items-center justify-center text-white shadow-md">
                       <Shield className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="text-xs font-black tracking-wider text-cyan-200 uppercase">LabGuard Engine</div>
-                      <div className="text-[10px] text-slate-400 font-mono">SHA-256 Dynamic Token</div>
+                      <div className="text-[10px] text-slate-400 font-mono">HMAC SHA-256 Dynamic Token</div>
                     </div>
                   </div>
                   <Cpu className="w-4 h-4 text-cyan-400 animate-pulse" />
@@ -260,14 +328,14 @@ export const LoginPage: React.FC = () => {
             </div>
 
             {/* Middle: Dynamic Rotating Quotes */}
-            <div className="relative z-10 my-6 bg-slate-800/40 p-5 rounded-2xl border border-cyan-500/20 backdrop-blur-sm transition-all duration-500">
+            <div className="relative z-10 my-6 bg-slate-900/60 p-5 rounded-2xl border border-cyan-500/20 backdrop-blur-sm transition-all duration-500">
               <Quote className="w-6 h-6 text-cyan-400/50 mb-2" />
               <p className="text-xs sm:text-sm font-medium text-cyan-50 leading-relaxed italic min-h-[55px]">
                 "{activeQuote.quote}"
               </p>
               <div className="mt-3 pt-2.5 border-t border-cyan-500/20 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-orange-300">{activeQuote.author}</div>
+                  <div className="text-xs font-bold text-cyan-300">{activeQuote.author}</div>
                   <div className="text-[10px] text-slate-400">{activeQuote.topic}</div>
                 </div>
                 {/* Manual Quote Controls */}
@@ -325,7 +393,7 @@ export const LoginPage: React.FC = () => {
                   }}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 ${
                     authMode === 'LOGIN'
-                      ? 'bg-white text-cyan-800 shadow-sm ring-1 ring-cyan-100'
+                      ? 'bg-white text-cyan-900 shadow-sm ring-1 ring-cyan-100'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -337,7 +405,7 @@ export const LoginPage: React.FC = () => {
                   onClick={handleOpenRegister}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 ${
                     authMode === 'REGISTER'
-                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
+                      ? 'bg-gradient-to-r from-orange-500 to-cyan-600 text-white shadow-md shadow-orange-500/20'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -380,7 +448,7 @@ export const LoginPage: React.FC = () => {
                           required
                           value={identifier}
                           onChange={(e) => setIdentifier(e.target.value)}
-                          placeholder="e.g. 3GN26IC001 (USN) or institutional email"
+                          placeholder="e.g. 3GN24IC006 (USN) or aiml.harishjoshi@gmail.com"
                           className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white font-medium text-slate-800"
                         />
                       </div>
@@ -404,7 +472,7 @@ export const LoginPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-gradient-to-r from-cyan-600 via-cyan-500 to-orange-500 hover:from-cyan-700 hover:to-orange-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-cyan-500/20 transition-all disabled:opacity-50"
+                      className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-cyan-600 hover:from-orange-600 hover:to-cyan-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-orange-500/20 transition-all disabled:opacity-50"
                     >
                       {loading ? (
                         <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -417,12 +485,42 @@ export const LoginPage: React.FC = () => {
                     </button>
                   </form>
 
-                  <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-xl text-xs text-cyan-900 flex items-center justify-between gap-2 mt-2">
+                  {/* Quick One-Click Demo Credentials */}
+                  <div className="pt-3 border-t border-slate-100">
+                    <p className="text-[11px] font-bold text-slate-500 mb-2">Quick Access Profiles:</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIdentifier('aiml.harishjoshi@gmail.com');
+                          setPassword('Joshi@2308');
+                        }}
+                        className="p-2 rounded-xl bg-orange-50/80 hover:bg-orange-100/80 border border-orange-200 text-left transition-colors"
+                      >
+                        <div className="text-[11px] font-bold text-orange-900">Dr. Harish Joshi</div>
+                        <div className="text-[10px] text-orange-700 font-mono">HOD / Admin</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIdentifier('3GN24IC006');
+                          setPassword('Student@123');
+                        }}
+                        className="p-2 rounded-xl bg-cyan-50/80 hover:bg-cyan-100/80 border border-cyan-200 text-left transition-colors"
+                      >
+                        <div className="text-[11px] font-bold text-cyan-900">Akash (Sem 5)</div>
+                        <div className="text-[10px] text-cyan-700 font-mono">3GN24IC006</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-xl text-xs text-cyan-950 flex items-center justify-between gap-2 mt-2">
                     <span className="text-[11px] font-medium">New student? Create your account first.</span>
                     <button
                       type="button"
                       onClick={handleOpenRegister}
-                      className="text-cyan-700 font-extrabold hover:underline text-[11px]"
+                      className="text-cyan-800 font-extrabold hover:underline text-[11px]"
                     >
                       Register Now →
                     </button>
@@ -434,7 +532,7 @@ export const LoginPage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                        <GraduationCap className="w-5 h-5 text-cyan-600" />
+                        <GraduationCap className="w-5 h-5 text-cyan-700" />
                         <span>Student Account Registration</span>
                       </h2>
                       <p className="text-xs text-slate-500 mt-0.5">
@@ -446,7 +544,7 @@ export const LoginPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowSignupModal(true)}
-                      className="text-[11px] text-orange-600 hover:text-orange-800 font-bold flex items-center gap-1 bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200"
+                      className="text-[11px] text-cyan-800 hover:text-cyan-950 font-bold flex items-center gap-1 bg-cyan-50 px-2.5 py-1 rounded-lg border border-cyan-200"
                     >
                       <Info className="w-3.5 h-3.5" />
                       <span>Instructions</span>
@@ -477,7 +575,7 @@ export const LoginPage: React.FC = () => {
                         <input
                           type="text"
                           required
-                          placeholder="e.g. 3GN26IC001"
+                          placeholder="e.g. 3GN24IC006"
                           value={regUsn}
                           onChange={(e) => setRegUsn(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-cyan-500 outline-none font-mono uppercase font-bold"
@@ -503,36 +601,112 @@ export const LoginPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Email & Phone */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-1">Email Address *</label>
-                        <div className="relative">
-                          <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                          <input
-                            type="email"
-                            required
-                            placeholder="ramesh.patil@gndec.ac.in"
-                            value={regEmail}
-                            onChange={(e) => setRegEmail(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-cyan-500 outline-none font-mono"
-                          />
-                        </div>
+                    {/* Email Address */}
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Institutional Email Address *</label>
+                      <div className="relative">
+                        <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="email"
+                          required
+                          placeholder="ramesh.patil@gndec.ac.in"
+                          value={regEmail}
+                          onChange={(e) => setRegEmail(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-cyan-500 outline-none font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Phone Number with OTP Verification */}
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block font-bold text-slate-700">
+                          Mobile Number & Phone Verification
+                        </label>
+                        {otpVerified ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Mobile Verified</span>
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold text-slate-500">
+                            OTP verification sent on mobile
+                          </span>
+                        )}
                       </div>
 
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-1">Phone Number (Optional)</label>
-                        <div className="relative">
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
                           <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                           <input
-                            type="text"
-                            placeholder="+91-9448012345"
+                            type="tel"
+                            placeholder="e.g. 9845012345 or +91-9845012345"
                             value={regPhone}
-                            onChange={(e) => setRegPhone(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                            disabled={otpVerified}
+                            onChange={(e) => {
+                              setRegPhone(e.target.value);
+                              setOtpVerified(false);
+                              setOtpSent(false);
+                            }}
+                            className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none bg-white disabled:bg-slate-100"
                           />
                         </div>
+                        {!otpVerified && (
+                          <button
+                            type="button"
+                            onClick={handleSendOtp}
+                            disabled={otpLoading || !regPhone || otpCountdown > 0}
+                            className="px-3.5 py-2 bg-gradient-to-r from-orange-500 to-cyan-600 hover:from-orange-600 hover:to-cyan-700 text-white font-bold rounded-xl text-xs whitespace-nowrap shadow-xs disabled:opacity-50 transition-all flex items-center gap-1.5"
+                          >
+                            {otpLoading ? (
+                              <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            ) : otpCountdown > 0 ? (
+                              <span>Resend ({otpCountdown}s)</span>
+                            ) : otpSent ? (
+                              <span>Resend OTP</span>
+                            ) : (
+                              <span>Send OTP</span>
+                            )}
+                          </button>
+                        )}
                       </div>
+
+                      {/* OTP Input and Verification Bar */}
+                      {otpSent && !otpVerified && (
+                        <div className="pt-2 border-t border-slate-200/80 space-y-2 animate-fadeIn">
+                          {devOtpPreview && (
+                            <div className="p-2 bg-orange-100/70 border border-orange-300 rounded-xl text-[11px] text-orange-950 flex items-center justify-between">
+                              <span className="font-semibold">📲 Simulated SMS OTP Code:</span>
+                              <span className="font-mono font-extrabold text-xs tracking-widest bg-orange-800 text-white px-2 py-0.5 rounded-lg shadow-xs">
+                                {devOtpPreview}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                              <input
+                                type="text"
+                                maxLength={6}
+                                placeholder="Enter 6-digit OTP"
+                                value={otpCode}
+                                onChange={(e) => setOtpCode(e.target.value)}
+                                className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 font-mono font-bold tracking-widest text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleVerifyOtp}
+                              disabled={otpLoading || !otpCode}
+                              className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold rounded-xl text-xs whitespace-nowrap shadow-xs disabled:opacity-50 transition-all flex items-center gap-1.5"
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                              <span>Verify OTP</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Passwords */}
@@ -572,12 +746,12 @@ export const LoginPage: React.FC = () => {
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4" />
-                          <span>Submit Registration (Pending Admin Approval)</span>
+                          <span>Register & Save Student Profile</span>
                         </>
                       )}
                     </button>
                     <p className="text-[10px] text-center text-slate-400 mt-1">
-                      Note: Your account must be approved & verified by the Administrator before you can sign in.
+                      Your registered account is safely preserved in the database until an Administrator removes it.
                     </p>
                   </form>
                 </div>
@@ -613,7 +787,7 @@ export const LoginPage: React.FC = () => {
                 <span className="w-5 h-5 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
                 <div>
                   <strong className="text-slate-900 block font-bold">Genuine University USN & Full Name</strong>
-                  Enter your official university USN (e.g. <span className="font-mono font-bold text-cyan-800">3GN26IC001</span>) and full name matching your GNDEC college ID card.
+                  Enter your official university USN (e.g. <span className="font-mono font-bold text-cyan-800">3GN24IC006</span>) and full name matching your GNDEC college ID card.
                 </div>
               </div>
 
@@ -661,3 +835,4 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
+

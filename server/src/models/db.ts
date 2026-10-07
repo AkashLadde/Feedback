@@ -125,6 +125,7 @@ export function initDatabase() {
       department TEXT NOT NULL DEFAULT 'CSE in IoT & Cyber Security including Block Chain Technology',
       academic_year TEXT NOT NULL DEFAULT '2026-2027',
       phone TEXT,
+      phone_verified INTEGER DEFAULT 0,
       profile_photo TEXT
     );
 
@@ -145,10 +146,20 @@ export function initDatabase() {
       academic_year TEXT NOT NULL DEFAULT '2026-2027',
       faculty_id INTEGER REFERENCES faculty(id),
       room_number TEXT NOT NULL,
+      location TEXT,
       latitude REAL NOT NULL DEFAULT 17.9104,
       longitude REAL NOT NULL DEFAULT 77.5199,
       geofence_radius REAL NOT NULL DEFAULT 25.0,
       status TEXT DEFAULT 'ACTIVE',
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS otp_verifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      phone TEXT NOT NULL,
+      otp_code TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      verified INTEGER DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now'))
     );
 
@@ -225,7 +236,8 @@ export function initDatabase() {
       subject_name TEXT NOT NULL,
       faculty_abbr TEXT NOT NULL,
       faculty_name TEXT NOT NULL,
-      room TEXT NOT NULL
+      room TEXT NOT NULL,
+      batch TEXT DEFAULT ''
     );
 
     CREATE TABLE IF NOT EXISTS qr_sessions (
@@ -365,6 +377,27 @@ export function initDatabase() {
     } catch {
       // Column already exists
     }
+  }
+
+  // Safe migrations for student columns
+  try {
+    sqliteDb.exec(`ALTER TABLE students ADD COLUMN phone_verified INTEGER DEFAULT 0`);
+  } catch {
+    // Column already exists
+  }
+
+  // Safe migrations for laboratory location column
+  try {
+    sqliteDb.exec(`ALTER TABLE laboratories ADD COLUMN location TEXT`);
+  } catch {
+    // Column already exists
+  }
+
+  // Safe migrations for timetable_entries batch column
+  try {
+    sqliteDb.exec(`ALTER TABLE timetable_entries ADD COLUMN batch TEXT DEFAULT ''`);
+  } catch {
+    // Column already exists
   }
 
   // Ensure Admin user (aiml.harishjoshi@gmail.com / Joshi@2308) is always active and accessible

@@ -225,7 +225,7 @@ export const StudentFeedbackPage: React.FC = () => {
             >
               {semesterLabs.map((l) => (
                 <option key={l.id} value={l.id}>
-                  {l.code} - {l.name} (Faculty: {l.faculty_name} • {l.room_number})
+                  {l.code} - {l.name} ({l.location ? `${l.location} • ` : ''}Room {l.room_number} • Faculty: {l.faculty_name})
                 </option>
               ))}
             </select>
@@ -243,6 +243,12 @@ export const StudentFeedbackPage: React.FC = () => {
               <p className="text-xs text-slate-500 mt-0.5">
                 Experiment {activeSession?.experiment_number}: {activeSession?.experiment_title}
               </p>
+              {activeSession?.location && (
+                <p className="text-xs font-semibold text-cyan-800 mt-1 flex items-center gap-1">
+                  <Building2 className="w-3.5 h-3.5 text-cyan-600" />
+                  <span>{activeSession.location}</span>
+                </p>
+              )}
             </div>
 
             <div className="flex items-center gap-2">

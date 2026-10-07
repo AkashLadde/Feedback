@@ -14,7 +14,8 @@ import {
   Layers,
   Calendar,
   ShieldCheck,
-  UserCheck
+  UserCheck,
+  AlertTriangle
 } from 'lucide-react';
 
 export const StudentManagementPage: React.FC = () => {
@@ -33,7 +34,7 @@ export const StudentManagementPage: React.FC = () => {
   const [name, setName] = useState('');
   const [usn, setUsn] = useState('');
   const [email, setEmail] = useState('');
-  const [semester, setSemester] = useState('3');
+  const [semester, setSemester] = useState('5');
   const [batch, setBatch] = useState('2024-2028');
   const [phone, setPhone] = useState('+91-9876543210');
   const [password, setPassword] = useState('Student@123');
@@ -147,7 +148,7 @@ export const StudentManagementPage: React.FC = () => {
   };
 
   const handleDeleteStudent = async (id: number, studentName: string, studentUsn: string) => {
-    if (!confirm(`Are you sure you want to remove student ${studentName} (${studentUsn})?`)) return;
+    if (!confirm(`Are you sure you want to permanently remove student ${studentName} (${studentUsn})? This will delete their records and attendance.`)) return;
     try {
       const res = await api.deleteStudent(id);
       if (res.success) {
@@ -177,25 +178,27 @@ export const StudentManagementPage: React.FC = () => {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header Banner */}
-      <div className="bg-white p-6 rounded-2xl border border-cyan-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-2xl border border-pink-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-cyan-600" />
+            <div className="p-2 bg-pink-100 text-pink-800 rounded-xl">
+              <GraduationCap className="w-5 h-5 text-pink-700" />
+            </div>
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Student Accounts & Verification Registry
             </h1>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Department of CSE in IoT & Cyber Security including Block Chain Technology • Student self-registration approval & cohort verification
+            Department of CSE in IoT & Cyber Security including Block Chain Technology • Full student lifecycle, approval & deletion controls
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {isAdmin && pendingCount > 0 && (
             <button
               onClick={handleVerifyAllPending}
               disabled={bulkVerifying}
-              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-orange-500/20 transition-all"
+              className="px-4 py-2.5 bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-rose-600/20 transition-all"
             >
               <ShieldCheck className="w-4 h-4" />
               <span>{bulkVerifying ? 'Verifying All...' : `Verify All (${pendingCount}) Pending`}</span>
@@ -205,10 +208,10 @@ export const StudentManagementPage: React.FC = () => {
           {isAdmin && (
             <button
               onClick={() => {
-                setSemester(selectedSemester !== 'ALL' ? selectedSemester : '3');
+                setSemester(selectedSemester !== 'ALL' ? selectedSemester : '5');
                 setCreateModalOpen(true);
               }}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-cyan-500/20 transition-all"
+              className="px-4 py-2.5 bg-gradient-to-r from-pink-800 via-pink-700 to-rose-600 hover:from-pink-900 hover:to-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-pink-800/20 transition-all"
             >
               <Plus className="w-4 h-4" />
               <span>Add Student Profile</span>
@@ -218,15 +221,15 @@ export const StudentManagementPage: React.FC = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="bg-white p-4 rounded-2xl border border-cyan-100 shadow-sm space-y-3">
+      <div className="bg-white p-4 rounded-2xl border border-pink-100 shadow-sm space-y-3">
         <div className="flex items-center justify-between gap-4 flex-wrap pb-2 border-b border-slate-100">
           {/* Semester Selector */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
-              <Layers className="w-4 h-4 text-cyan-600" />
+              <Layers className="w-4 h-4 text-pink-700" />
               <span>Semester:</span>
             </span>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {semesterOptions.map((opt) => {
                 const isSelected = selectedSemester === opt.value;
                 return (
@@ -235,7 +238,7 @@ export const StudentManagementPage: React.FC = () => {
                     onClick={() => setSelectedSemester(opt.value)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                       isSelected
-                        ? 'bg-gradient-to-r from-cyan-500 to-orange-500 text-white shadow-sm ring-2 ring-cyan-300'
+                        ? 'bg-gradient-to-r from-pink-800 to-rose-600 text-white shadow-sm ring-2 ring-pink-300'
                         : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200'
                     }`}
                   >
@@ -257,7 +260,7 @@ export const StudentManagementPage: React.FC = () => {
                 onClick={() => setSelectedStatus('ALL')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   selectedStatus === 'ALL'
-                    ? 'bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-sm'
+                    ? 'bg-gradient-to-r from-pink-800 to-pink-900 text-white shadow-sm'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
@@ -267,13 +270,13 @@ export const StudentManagementPage: React.FC = () => {
                 onClick={() => setSelectedStatus('PENDING_VERIFICATION')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                   selectedStatus === 'PENDING_VERIFICATION'
-                    ? 'bg-orange-500 text-white ring-2 ring-orange-300'
-                    : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200'
+                    ? 'bg-amber-600 text-white ring-2 ring-amber-300'
+                    : 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200'
                 }`}
               >
                 <span>Pending Verification</span>
                 {pendingCount > 0 && (
-                  <span className="bg-orange-600 text-white px-1.5 py-0.2 rounded-full text-[10px]">
+                  <span className="bg-amber-700 text-white px-1.5 py-0.2 rounded-full text-[10px]">
                     {pendingCount}
                   </span>
                 )}
@@ -298,10 +301,10 @@ export const StudentManagementPage: React.FC = () => {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Search by USN (e.g. 3GN...), Name, or Institutional Email..."
+              placeholder="Search by USN (e.g. 3GN24IC006), Name, or Institutional Email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-cyan-500 outline-none"
+              className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-pink-500 outline-none"
             />
           </div>
 
@@ -313,12 +316,12 @@ export const StudentManagementPage: React.FC = () => {
 
       {/* Students Table / Grid */}
       {loading ? (
-        <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-cyan-100 shadow-sm">
-          <div className="w-8 h-8 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+        <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-pink-100 shadow-sm">
+          <div className="w-8 h-8 border-3 border-pink-700 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
           <span>Loading student accounts...</span>
         </div>
       ) : students.length === 0 ? (
-        <div className="bg-white p-12 rounded-2xl border border-cyan-100 shadow-sm text-center space-y-4">
+        <div className="bg-white p-12 rounded-2xl border border-pink-100 shadow-sm text-center space-y-4">
           <GraduationCap className="w-12 h-12 text-slate-300 mx-auto" />
           <h2 className="text-base font-bold text-slate-800">
             No Student Accounts Found
@@ -333,10 +336,10 @@ export const StudentManagementPage: React.FC = () => {
           {isAdmin && (
             <button
               onClick={() => {
-                setSemester(selectedSemester !== 'ALL' ? selectedSemester : '3');
+                setSemester(selectedSemester !== 'ALL' ? selectedSemester : '5');
                 setCreateModalOpen(true);
               }}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow"
+              className="px-4 py-2 bg-gradient-to-r from-pink-800 to-rose-600 hover:from-pink-900 hover:to-rose-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow"
             >
               <Plus className="w-4 h-4" />
               <span>Create Student Account</span>
@@ -344,10 +347,10 @@ export const StudentManagementPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-cyan-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-pink-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-cyan-50/50 border-b border-cyan-100 text-slate-700 font-semibold uppercase tracking-wider text-[10px]">
+              <thead className="bg-pink-50/70 border-b border-pink-100 text-pink-950 font-semibold uppercase tracking-wider text-[10px]">
                 <tr>
                   <th className="py-3.5 px-4">USN & Student Name</th>
                   <th className="py-3.5 px-4">Semester & Batch</th>
@@ -355,26 +358,26 @@ export const StudentManagementPage: React.FC = () => {
                   <th className="py-3.5 px-4 text-center">Lab Attendance</th>
                   <th className="py-3.5 px-4 text-center">Feedback</th>
                   <th className="py-3.5 px-4 text-center">Account Status</th>
-                  {isAdmin && <th className="py-3.5 px-4 text-right">Verification & Actions</th>}
+                  {isAdmin && <th className="py-3.5 px-4 text-right">Verification & Delete Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {students.map((st) => {
                   const isPending = st.status === 'PENDING_VERIFICATION';
                   return (
-                    <tr key={st.id} className={`transition-colors group ${isPending ? 'bg-orange-50/20 hover:bg-orange-50/50' : 'hover:bg-cyan-50/30'}`}>
+                    <tr key={st.id} className={`transition-colors group ${isPending ? 'bg-amber-50/20 hover:bg-amber-50/50' : 'hover:bg-pink-50/30'}`}>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-lg font-bold flex items-center justify-center text-xs ${
-                            isPending ? 'bg-orange-100 text-orange-700' : 'bg-cyan-100 text-cyan-700'
+                            isPending ? 'bg-amber-100 text-amber-800' : 'bg-pink-100 text-pink-800'
                           }`}>
                             {st.name?.charAt(0) || 'S'}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-900 group-hover:text-cyan-600 transition-colors">
+                            <div className="font-bold text-slate-900 group-hover:text-pink-700 transition-colors">
                               {st.name}
                             </div>
-                            <div className="font-mono text-[11px] font-bold text-cyan-700">
+                            <div className="font-mono text-[11px] font-bold text-pink-800">
                               {st.usn}
                             </div>
                           </div>
@@ -408,19 +411,19 @@ export const StudentManagementPage: React.FC = () => {
                       </td>
 
                       <td className="py-3.5 px-4 text-center">
-                        <span className="inline-block px-2.5 py-0.5 bg-cyan-50 text-cyan-700 rounded-full font-bold text-[11px] border border-cyan-200">
+                        <span className="inline-block px-2.5 py-0.5 bg-pink-50 text-pink-800 rounded-full font-bold text-[11px] border border-pink-200">
                           {st.feedback_count || 0} Submissions
                         </span>
                       </td>
 
                       <td className="py-3.5 px-4 text-center">
                         {isPending ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full border border-amber-300">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                             PENDING VERIFICATION
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-300">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
                             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                             ACTIVE & VERIFIED
                           </span>
@@ -443,7 +446,7 @@ export const StudentManagementPage: React.FC = () => {
                             )}
                             <button
                               onClick={() => setEditStudent({ ...st, new_password: '' })}
-                              className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
+                              className="p-1.5 text-slate-400 hover:text-pink-700 hover:bg-pink-50 rounded-lg transition-colors"
                               title="Edit Student Profile"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
@@ -451,7 +454,7 @@ export const StudentManagementPage: React.FC = () => {
                             <button
                               onClick={() => handleDeleteStudent(st.id, st.name, st.usn)}
                               className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                              title="Remove Student"
+                              title="Permanently Delete Student"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -469,11 +472,16 @@ export const StudentManagementPage: React.FC = () => {
 
       {/* Add New Student Modal */}
       {createModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-cyan-100 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-pink-100 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-base">Add New Student Profile</h3>
-              <button onClick={() => setCreateModalOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-pink-100 text-pink-800 rounded-xl">
+                  <Plus className="w-4 h-4" />
+                </div>
+                <h3 className="font-extrabold text-slate-900 text-base">Add New Student Profile</h3>
+              </div>
+              <button onClick={() => setCreateModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
             </div>
 
             {errorMsg && (
@@ -491,7 +499,7 @@ export const StudentManagementPage: React.FC = () => {
                   placeholder="e.g. Ramesh Kumar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-pink-500 outline-none"
                 />
               </div>
 
@@ -501,10 +509,10 @@ export const StudentManagementPage: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="1RV24CY012"
+                    placeholder="3GN24IC006"
                     value={usn}
                     onChange={(e) => setUsn(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-300 font-mono uppercase focus:ring-2 focus:ring-cyan-500 outline-none"
+                    className="w-full p-2.5 rounded-xl border border-slate-300 font-mono uppercase focus:ring-2 focus:ring-pink-500 outline-none"
                   />
                 </div>
 
@@ -513,7 +521,7 @@ export const StudentManagementPage: React.FC = () => {
                   <select
                     value={semester}
                     onChange={(e) => setSemester(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-cyan-500 outline-none"
+                    className="w-full p-2.5 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-pink-500 outline-none"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
                       <option key={n} value={n}>
@@ -531,7 +539,7 @@ export const StudentManagementPage: React.FC = () => {
                   value={batch}
                   onChange={(e) => setBatch(e.target.value)}
                   placeholder="2024-2028"
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-500 outline-none"
                 />
               </div>
 
@@ -540,10 +548,10 @@ export const StudentManagementPage: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="ramesh.kumar@student.edu"
+                  placeholder="student@gndec.ac.in"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-500 outline-none"
                 />
               </div>
 
@@ -554,7 +562,7 @@ export const StudentManagementPage: React.FC = () => {
                   placeholder="+91-9876543210"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-500 outline-none"
                 />
               </div>
 
@@ -565,7 +573,7 @@ export const StudentManagementPage: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-500 outline-none"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">Student can log in using their USN or Email with this password.</p>
               </div>
@@ -574,14 +582,14 @@ export const StudentManagementPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCreateModalOpen(false)}
-                  className="px-3 py-1.5 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white rounded-lg font-bold shadow"
+                  className="px-5 py-2 bg-gradient-to-r from-pink-800 to-rose-600 hover:from-pink-900 hover:to-rose-700 text-white rounded-xl font-bold shadow-md shadow-pink-800/20"
                 >
                   {submitting ? 'Registering...' : 'Register Student Profile'}
                 </button>
@@ -593,14 +601,14 @@ export const StudentManagementPage: React.FC = () => {
 
       {/* Edit Student Modal */}
       {editStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-cyan-100 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-pink-100 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">Edit Student Profile</h3>
+                <h3 className="font-extrabold text-slate-900 text-base">Edit Student Profile</h3>
                 <p className="text-xs text-slate-500">{editStudent.name} ({editStudent.usn})</p>
               </div>
-              <button onClick={() => setEditStudent(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <button onClick={() => setEditStudent(null)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
             </div>
 
             <form onSubmit={handleUpdateStudent} className="space-y-3 text-xs">
@@ -611,7 +619,7 @@ export const StudentManagementPage: React.FC = () => {
                   required
                   value={editStudent.name}
                   onChange={(e) => setEditStudent({ ...editStudent, name: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-pink-500 outline-none"
                 />
               </div>
 
@@ -620,7 +628,7 @@ export const StudentManagementPage: React.FC = () => {
                 <select
                   value={editStudent.semester}
                   onChange={(e) => setEditStudent({ ...editStudent, semester: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-pink-500 outline-none"
                 >
                   {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
                     <option key={n} value={n}>
@@ -636,7 +644,7 @@ export const StudentManagementPage: React.FC = () => {
                   type="text"
                   value={editStudent.batch || ''}
                   onChange={(e) => setEditStudent({ ...editStudent, batch: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-500 outline-none"
                 />
               </div>
 
@@ -646,7 +654,7 @@ export const StudentManagementPage: React.FC = () => {
                   type="text"
                   value={editStudent.phone || ''}
                   onChange={(e) => setEditStudent({ ...editStudent, phone: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-500 outline-none"
                 />
               </div>
 
@@ -657,7 +665,7 @@ export const StudentManagementPage: React.FC = () => {
                   placeholder="New password (optional)"
                   value={editStudent.new_password || ''}
                   onChange={(e) => setEditStudent({ ...editStudent, new_password: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-500 outline-none"
                 />
               </div>
 
@@ -665,14 +673,14 @@ export const StudentManagementPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setEditStudent(null)}
-                  className="px-3 py-1.5 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-600 hover:to-orange-600 text-white rounded-lg font-bold shadow"
+                  className="px-5 py-2 bg-gradient-to-r from-pink-800 to-rose-600 hover:from-pink-900 hover:to-rose-700 text-white rounded-xl font-bold shadow-md shadow-pink-800/20"
                 >
                   {submitting ? 'Saving...' : 'Save Profile Changes'}
                 </button>
@@ -684,3 +692,4 @@ export const StudentManagementPage: React.FC = () => {
     </div>
   );
 };
+

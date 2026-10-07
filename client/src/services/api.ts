@@ -73,7 +73,11 @@ export const api = {
   // Auth & Student Self-Registration
   login: (credentials: { email?: string; usn?: string; password: string }) =>
     request<any>('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
-  registerStudent: (data: { name: string; usn: string; email: string; semester: number; batch?: string; department?: string; phone?: string; password: string }) =>
+  sendOtp: (data: { phone: string }) =>
+    request<any>('/auth/send-otp', { method: 'POST', body: JSON.stringify(data) }),
+  verifyOtp: (data: { phone: string; otp: string }) =>
+    request<any>('/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
+  registerStudent: (data: { name: string; usn: string; email: string; semester: number; batch?: string; department?: string; phone?: string; phone_otp?: string; password: string }) =>
     request<any>('/auth/register-student', { method: 'POST', body: JSON.stringify(data) }),
   getMe: () => request<any>('/auth/me'),
   updateProfile: (data: { name?: string; email?: string; password?: string }) =>
@@ -93,6 +97,12 @@ export const api = {
   getExperiments: (labId: number | string) => request<any>(`/labs/${labId}/experiments`),
   updateExperiment: (id: number | string, data: any) =>
     request<any>(`/labs/experiments/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  calibrateAllLabs: (data: { latitude: number; longitude: number; geofence_radius?: number; semester?: number | string; apply_uniform?: boolean }) =>
+    request<any>('/labs/calibrate-all', { method: 'POST', body: JSON.stringify(data) }),
+  setLabLocation: (id: number | string, data: { latitude: number; longitude: number; geofence_radius?: number; location?: string; room_number?: string }) =>
+    request<any>(`/labs/${id}/set-location`, { method: 'POST', body: JSON.stringify(data) }),
+  calibrateCurrentLab: (data: { code?: string; id?: number | string; semester?: number | string; latitude: number; longitude: number; geofence_radius?: number; location?: string; room_number?: string }) =>
+    request<any>('/labs/calibrate-current', { method: 'POST', body: JSON.stringify(data) }),
 
   // Semesters
   getSemesters: () => request<any>('/semesters'),
@@ -182,8 +192,18 @@ export const api = {
   getSessionFeedback: (sessionId: number | string) => request<any>(`/feedback/session/${sessionId}`),
 
   // Timetable
-  getTimetables: () => request<any>('/timetable'),
-  getSemesterTimetable: (semester: number) => request<any>(`/timetable/${semester}`),
+  getTimetables: (params?: { day?: string; semester?: number | string }) => {
+    const query = new URLSearchParams();
+    if (params?.day) query.append('day', params.day);
+    if (params?.semester && params.semester !== 'ALL') query.append('semester', String(params.semester));
+    return request<any>(`/timetable?${query.toString()}`);
+  },
+  getSemesterTimetable: (semester: number, day?: string) => {
+    const query = new URLSearchParams();
+    if (day) query.append('day', day);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return request<any>(`/timetable/${semester}${qs}`);
+  },
 
   // Verification Engine
   getVerificationRecords: (params?: { status?: string; lab_id?: string; search?: string; limit?: number }) => {

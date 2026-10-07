@@ -204,7 +204,7 @@ export const FacultyManagementPage: React.FC = () => {
       <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <UserCheck className="w-5 h-5 text-cyan-600" />
+            <UserCheck className="w-5 h-5 text-pink-700" />
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Teachers & Faculty Directory
             </h1>
@@ -217,7 +217,7 @@ export const FacultyManagementPage: React.FC = () => {
         {isAdmin && (
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-cyan-500/20 transition-all"
+            className="px-4 py-2.5 bg-gradient-to-r from-pink-800 to-pink-700 hover:from-pink-900 hover:to-pink-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-pink-900/20 transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>Add New Teacher</span>
@@ -230,7 +230,7 @@ export const FacultyManagementPage: React.FC = () => {
         {/* Semester Filter Tabs */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mr-1">
-            <Filter className="w-3.5 h-3.5 text-cyan-600" />
+            <Filter className="w-3.5 h-3.5 text-pink-700" />
             <span>Filter by Lab Semester:</span>
           </div>
           {[
@@ -247,7 +247,7 @@ export const FacultyManagementPage: React.FC = () => {
                 onClick={() => setSelectedSemFilter(tab.value)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20 ring-2 ring-cyan-200'
+                    ? 'bg-gradient-to-r from-pink-800 to-pink-700 text-white shadow-md shadow-pink-900/20 ring-2 ring-pink-200'
                     : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200'
                 }`}
               >
@@ -265,7 +265,7 @@ export const FacultyManagementPage: React.FC = () => {
             placeholder="Search teacher name, designation, or handled lab..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-cyan-500 outline-none"
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-pink-600 outline-none"
           />
         </div>
       </div>
@@ -273,7 +273,7 @@ export const FacultyManagementPage: React.FC = () => {
       {/* Teachers & Handled Labs Grid */}
       {loading ? (
         <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">
-          <div className="w-8 h-8 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <div className="w-8 h-8 border-3 border-pink-700 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
           <span className="text-xs font-semibold">Loading teachers directory and assigned laboratories...</span>
         </div>
       ) : filteredFaculty.length === 0 ? (
@@ -290,7 +290,7 @@ export const FacultyManagementPage: React.FC = () => {
           {isAdmin && !search && selectedSemFilter === 'ALL' && (
             <button
               onClick={() => setCreateModalOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow"
+              className="px-4 py-2 bg-gradient-to-r from-pink-800 to-pink-700 hover:from-pink-900 hover:to-pink-800 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow"
             >
               <Plus className="w-4 h-4" />
               <span>Register First Teacher</span>
@@ -310,7 +310,7 @@ export const FacultyManagementPage: React.FC = () => {
             return (
               <div
                 key={f.id}
-                className="bg-white rounded-3xl border border-slate-200 shadow-card hover:border-cyan-400/80 transition-all p-6 flex flex-col justify-between space-y-5"
+                className="bg-white rounded-3xl border border-slate-200 shadow-card hover:border-pink-300 transition-all p-6 flex flex-col justify-between space-y-5"
               >
                 <div className="space-y-4">
                   {/* Top Profile Header */}
@@ -319,8 +319,8 @@ export const FacultyManagementPage: React.FC = () => {
                       <div
                         className={`w-13 h-13 rounded-2xl ${
                           isHOD
-                            ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white'
-                            : 'bg-gradient-to-br from-cyan-600 to-cyan-500 text-white'
+                            ? 'bg-gradient-to-br from-pink-900 to-pink-700 text-white'
+                            : 'bg-gradient-to-br from-pink-800 to-pink-700 text-white'
                         } font-black flex items-center justify-center text-lg shadow-md`}
                       >
                         {f.name?.charAt(0) || 'T'}
@@ -331,15 +331,15 @@ export const FacultyManagementPage: React.FC = () => {
                             {f.name}
                           </h2>
                           {isHOD && (
-                            <span className="bg-orange-100 text-orange-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-orange-200 flex items-center gap-1">
-                              <Award className="w-3 h-3 text-orange-600" />
+                            <span className="bg-pink-100 text-pink-900 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-pink-200 flex items-center gap-1">
+                              <Award className="w-3 h-3 text-pink-700" />
                               HOD
                             </span>
                           )}
                         </div>
                         {/* Designation */}
-                        <div className="text-xs font-bold text-cyan-800 flex items-center gap-1.5 mt-0.5">
-                          <Shield className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
+                        <div className="text-xs font-bold text-pink-800 flex items-center gap-1.5 mt-0.5">
+                          <Shield className="w-3.5 h-3.5 text-pink-700 shrink-0" />
                           <span>{f.designation}</span>
                         </div>
                         <div className="flex items-center gap-2 mt-1">
@@ -358,7 +358,7 @@ export const FacultyManagementPage: React.FC = () => {
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => setEditFaculty({ ...f, new_password: '' })}
-                          className="p-2 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-colors"
+                          className="p-2 text-slate-400 hover:text-pink-700 hover:bg-pink-50 rounded-xl transition-colors"
                           title="Edit Teacher"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -386,10 +386,10 @@ export const FacultyManagementPage: React.FC = () => {
                   <div className="pt-2 border-t border-slate-100 space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                        <FlaskConical className="w-4 h-4 text-cyan-600" />
+                        <FlaskConical className="w-4 h-4 text-pink-700" />
                         <span>Respected Handled Practical Laboratories</span>
                       </div>
-                      <span className="text-[10px] font-bold text-cyan-800 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold text-pink-800 bg-pink-50 border border-pink-200 px-2 py-0.5 rounded-full">
                         {f.assigned_labs?.length || 0} Total Lab{f.assigned_labs?.length === 1 ? '' : 's'}
                       </span>
                     </div>
@@ -408,8 +408,8 @@ export const FacultyManagementPage: React.FC = () => {
                               className="bg-slate-50/90 rounded-2xl p-3 border border-slate-200 space-y-1.5"
                             >
                               <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-extrabold text-cyan-900 bg-cyan-100/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                                  <Layers className="w-3 h-3 text-cyan-700" />
+                                <span className="text-[11px] font-extrabold text-pink-900 bg-pink-100/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                                  <Layers className="w-3 h-3 text-pink-700" />
                                   <span>{getSemOrdinal(sem)} Practical Labs</span>
                                 </span>
                                 <span className="text-[10px] text-slate-500 font-semibold">
@@ -425,7 +425,7 @@ export const FacultyManagementPage: React.FC = () => {
                                   >
                                     <div className="min-w-0">
                                       <div className="flex items-center gap-1.5">
-                                        <span className="font-mono font-bold text-orange-800 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded text-[10px]">
+                                        <span className="font-mono font-bold text-pink-800 bg-pink-50 border border-pink-200 px-1.5 py-0.5 rounded text-[10px]">
                                           {lab.code}
                                         </span>
                                         <span className="font-bold text-slate-900 text-xs truncate">
@@ -471,7 +471,7 @@ export const FacultyManagementPage: React.FC = () => {
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-cyan-600" />
+                <UserCheck className="w-5 h-5 text-pink-700" />
                 <h3 className="font-extrabold text-slate-900 text-base">Register New Faculty Member</h3>
               </div>
               <button onClick={() => setCreateModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
@@ -492,7 +492,7 @@ export const FacultyManagementPage: React.FC = () => {
                   placeholder="e.g. Prof. Mahesh Kanjikar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-pink-600 outline-none"
                 />
               </div>
 
@@ -505,7 +505,7 @@ export const FacultyManagementPage: React.FC = () => {
                     placeholder="GNDEC-ICB-014"
                     value={employeeId}
                     onChange={(e) => setEmployeeId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-300 font-mono uppercase focus:ring-2 focus:ring-cyan-500 outline-none"
+                    className="w-full p-2.5 rounded-xl border border-slate-300 font-mono uppercase focus:ring-2 focus:ring-pink-600 outline-none"
                   />
                 </div>
                 <div>
@@ -513,7 +513,7 @@ export const FacultyManagementPage: React.FC = () => {
                   <select
                     value={designation}
                     onChange={(e) => setDesignation(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                    className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-600 outline-none"
                   >
                     <option value="Associate Professor & Head of Department">Associate Professor & Head of Department</option>
                     <option value="Associate Professor">Associate Professor</option>
@@ -533,7 +533,7 @@ export const FacultyManagementPage: React.FC = () => {
                   placeholder="e.g. mahesh.kanjikar@gndec.ac.in"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-600 outline-none"
                 />
               </div>
 
@@ -544,7 +544,7 @@ export const FacultyManagementPage: React.FC = () => {
                   placeholder="e.g. Object Oriented Programming with Java"
                   value={specialization}
                   onChange={(e) => setSpecialization(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-pink-600 outline-none"
                 />
               </div>
 
@@ -555,7 +555,7 @@ export const FacultyManagementPage: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-600 outline-none"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">Teacher will use this password to sign in to GNDEC LabGuard.</p>
               </div>
@@ -571,7 +571,7 @@ export const FacultyManagementPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white rounded-xl font-bold shadow-md shadow-cyan-500/20 transition-all"
+                  className="px-4 py-2 bg-gradient-to-r from-pink-800 to-pink-700 hover:from-pink-900 hover:to-pink-800 text-white rounded-xl font-bold shadow-md shadow-pink-900/20 transition-all"
                 >
                   {submitting ? 'Registering...' : 'Register Teacher'}
                 </button>
@@ -587,7 +587,7 @@ export const FacultyManagementPage: React.FC = () => {
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Edit2 className="w-5 h-5 text-cyan-600" />
+                <Edit2 className="w-5 h-5 text-pink-700" />
                 <h3 className="font-extrabold text-slate-900 text-base">Edit Teacher Profile & Designation</h3>
               </div>
               <button onClick={() => setEditFaculty(null)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
@@ -601,7 +601,7 @@ export const FacultyManagementPage: React.FC = () => {
                   required
                   value={editFaculty.name}
                   onChange={(e) => setEditFaculty({ ...editFaculty, name: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-pink-600 outline-none"
                 />
               </div>
 
@@ -610,7 +610,7 @@ export const FacultyManagementPage: React.FC = () => {
                 <select
                   value={editFaculty.designation}
                   onChange={(e) => setEditFaculty({ ...editFaculty, designation: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-white focus:ring-2 focus:ring-pink-600 outline-none"
                 >
                   <option value="Associate Professor & Head of Department">Associate Professor & Head of Department</option>
                   <option value="Associate Professor">Associate Professor</option>
@@ -627,7 +627,7 @@ export const FacultyManagementPage: React.FC = () => {
                   type="text"
                   value={editFaculty.specialization || ''}
                   onChange={(e) => setEditFaculty({ ...editFaculty, specialization: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-medium focus:ring-2 focus:ring-pink-600 outline-none"
                 />
               </div>
 
@@ -638,7 +638,7 @@ export const FacultyManagementPage: React.FC = () => {
                   placeholder="New password (optional)"
                   value={editFaculty.new_password || ''}
                   onChange={(e) => setEditFaculty({ ...editFaculty, new_password: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-pink-600 outline-none"
                 />
               </div>
 
@@ -653,7 +653,7 @@ export const FacultyManagementPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white rounded-xl font-bold shadow-md shadow-cyan-500/20 transition-all"
+                  className="px-4 py-2 bg-gradient-to-r from-pink-800 to-pink-700 hover:from-pink-900 hover:to-pink-800 text-white rounded-xl font-bold shadow-md shadow-pink-900/20 transition-all"
                 >
                   {submitting ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -665,4 +665,5 @@ export const FacultyManagementPage: React.FC = () => {
     </div>
   );
 };
+
 
