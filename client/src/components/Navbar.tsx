@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Bell, LogOut, User as UserIcon, Key, Menu, X } from 'lucide-react';
 import { api } from '../services/api';
+import { LiveClock } from './LiveClock';
 
 export const Navbar: React.FC = () => {
   const { user, logout, setActiveTab, refreshTrigger, triggerRefresh, mobileMenuOpen, setMobileMenuOpen } = useAuth();
@@ -79,7 +80,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-subtle">
-      {/* Top Department Banner: Balanced Multi-Accent Header */}
+      {/* Top Department Banner: Balanced Multi-Accent Header with Real-Time Clock */}
       <div className="bg-gradient-to-r from-slate-950 via-pink-950 to-slate-900 border-b border-slate-900 px-3 sm:px-6 py-1.5 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-200 font-medium">
         <div className="flex items-center gap-1.5 sm:gap-2 truncate">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0"></span>
@@ -87,7 +88,8 @@ export const Navbar: React.FC = () => {
           <span className="text-cyan-400 hidden md:inline">|</span>
           <span className="text-pink-200 font-semibold hidden md:inline">Dept. of CSE (IoT & Cyber Security including Blockchain)</span>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
+          <LiveClock variant="banner" className="hidden sm:flex" />
           <span className="bg-orange-500/20 border border-orange-400/40 text-orange-300 px-2 py-0.5 rounded-md font-mono text-[10px] font-bold">2026-2027</span>
         </div>
       </div>
@@ -122,9 +124,11 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Right side controls */}
+        {/* Right side controls & Real-Time Date/Time */}
         {user ? (
           <div className="flex items-center gap-2 sm:gap-4">
+            <LiveClock variant="header" className="hidden xl:flex" />
+
             {/* Alert Bell for Admin / HOD */}
             {(user.role === 'ADMIN' || user.role === 'HOD') && (
               <button

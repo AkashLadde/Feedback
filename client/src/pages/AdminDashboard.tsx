@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+import { LiveClock } from '../components/LiveClock';
 import {
   Users,
   Building2,
@@ -111,7 +112,8 @@ export const AdminDashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
+          <LiveClock variant="header" />
           <button
             onClick={() => setActiveTab('students')}
             className="px-3.5 py-2.5 bg-gradient-to-r from-pink-800 to-rose-600 hover:from-pink-900 hover:to-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-pink-800/20"

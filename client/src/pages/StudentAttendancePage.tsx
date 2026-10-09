@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import confetti from 'canvas-confetti';
+import { LiveClock } from '../components/LiveClock';
 import {
   MapPin,
   ShieldCheck,
@@ -40,6 +41,7 @@ export const StudentAttendancePage: React.FC = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [forceOpenWindow, setForceOpenWindow] = useState<boolean>(false);
 
   // Strong GPS Geolocation State (< 25m geofencing inside lab)
   const [latitude, setLatitude] = useState<number>(17.9104);
@@ -285,10 +287,10 @@ export const StudentAttendancePage: React.FC = () => {
     );
   }
 
-  const isLabActive = scheduleStatus?.isLabActive;
-  const is5MinWindowActive = scheduleStatus?.is5MinWindowActive;
-  const isBeforeWindow = scheduleStatus?.isBeforeWindow;
-  const isWindowExpired = scheduleStatus?.isWindowExpired;
+  const isLabActive = scheduleStatus?.isLabActive || forceOpenWindow;
+  const is5MinWindowActive = scheduleStatus?.is5MinWindowActive || forceOpenWindow;
+  const isBeforeWindow = scheduleStatus?.isBeforeWindow && !forceOpenWindow;
+  const isWindowExpired = scheduleStatus?.isWindowExpired && !forceOpenWindow;
   const hasSubmitted = scheduleStatus?.hasSubmitted;
   const activeLab = scheduleStatus?.activeSession || scheduleStatus?.matchingSlot;
 
@@ -309,16 +311,13 @@ export const StudentAttendancePage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="bg-gradient-to-r from-cyan-50 to-orange-50 border border-cyan-200 px-3.5 py-1.5 rounded-2xl text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-orange-600" />
-            <span>{scheduleStatus?.currentDay || 'Today'} • {scheduleStatus?.currentTime}</span>
-          </div>
           <button
             onClick={fetchStatus}
             title="Refresh Status"
-            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-all"
+            className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold border border-slate-200 shadow-xs"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 text-pink-700 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh Portal</span>
           </button>
         </div>
       </div>
@@ -406,13 +405,14 @@ export const StudentAttendancePage: React.FC = () => {
             </div>
           )}
 
-          <div className="text-xs text-slate-500">
-            Current time: <span className="font-bold text-slate-700">{scheduleStatus?.currentTime}</span>. The portal will automatically unlock at your exact laboratory time slot.
+          <div className="flex items-center justify-center gap-2 text-xs text-slate-500 pt-2">
+            <span>Live System Time:</span>
+            <LiveClock variant="minimal" />
           </div>
         </div>
       )}
 
-      {/* ================= SCENARIO 3: LAB ACTIVE BUT BEFORE THE 5-MINUTE WINDOW ================= */}
+      {/* ================= SCENARIO 3: LAB ACTIVE BUT BEFORE THE SUBMISSION WINDOW ================= */}
       {!hasSubmitted && isLabActive && isBeforeWindow && (
         <div className="bg-white p-8 rounded-3xl border-2 border-orange-300 shadow-card space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
@@ -439,7 +439,7 @@ export const StudentAttendancePage: React.FC = () => {
             </div>
 
             <div className="bg-orange-50 border border-orange-200 px-4 py-2 rounded-2xl text-right">
-              <div className="text-[10px] text-orange-800 uppercase font-bold tracking-wider">Submission Portal Opens In</div>
+              <div className="text-[10px] text-orange-800 uppercase font-bold tracking-wider">Scheduled Window In</div>
               <div className="text-base font-black text-orange-950 font-mono flex items-center gap-1.5 justify-end">
                 <Timer className="w-4 h-4 text-orange-600 animate-pulse" />
                 <span>~{scheduleStatus?.minutesUntilWindowOpens || 10} min</span>
@@ -451,29 +451,36 @@ export const StudentAttendancePage: React.FC = () => {
             <Info className="w-5 h-5 text-orange-700 shrink-0 mt-0.5" />
             <div className="text-xs text-slate-700 leading-relaxed space-y-1">
               <div className="font-bold text-slate-900 text-sm">
-                Attendance & Feedback Opens for 5 Minutes at {scheduleStatus?.windowOpenTimeStr || 'End of Lab - 10m'}
+                Attendance & Feedback Opens 10 Minutes Before End of Lab (or Submit Directly Now)
               </div>
               <p>
-                As per institutional guidelines, the attendance and compulsory feedback portal will unlock <strong>10 minutes before the end of the lab session and remain open for strictly 5 minutes</strong> (from {scheduleStatus?.windowOpenTimeStr} to {scheduleStatus?.windowCloseTimeStr}).
+                As per institutional guidelines, the attendance and compulsory feedback portal unlocks <strong>10 minutes before the end of the lab session</strong> (from {scheduleStatus?.windowOpenTimeStr || '10m before end'} to {scheduleStatus?.windowCloseTimeStr || 'end of lab'}).
               </p>
             </div>
           </div>
 
-          {/* Admin Override if needed */}
-          {scheduleStatus?.activeSession && (
-            <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
-              <span>Testing Quick Unlock Option:</span>
+          <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setForceOpenWindow(true)}
+              className="px-5 py-2.5 bg-gradient-to-r from-pink-800 via-rose-700 to-orange-600 hover:from-pink-900 hover:to-orange-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-2 shadow-md shadow-pink-900/20 transition-all"
+            >
+              <CheckCircle2 className="w-4 h-4 text-pink-200" />
+              <span>Completed Practical Experiment? Fill & Submit Feedback Now</span>
+            </button>
+
+            {scheduleStatus?.activeSession && (
               <button
                 type="button"
                 onClick={handleTestingUnlock}
                 disabled={testingUnlock}
-                className="px-3 py-1.5 bg-gradient-to-r from-orange-600 to-pink-700 text-white rounded-xl font-bold flex items-center gap-1.5 shadow-xs hover:opacity-90 disabled:opacity-50"
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200"
               >
                 <Unlock className="w-3.5 h-3.5" />
-                <span>{testingUnlock ? 'Unlocking...' : 'Unlock 5-Minute Window Now'}</span>
+                <span>{testingUnlock ? 'Unlocking...' : 'Quick Unlock Window'}</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
@@ -484,15 +491,23 @@ export const StudentAttendancePage: React.FC = () => {
             <AlertCircle className="w-6 h-6" />
           </div>
           <h2 className="text-base font-extrabold text-slate-900">
-            Attendance & Feedback Submission Window Closed for Today's Lab
+            Attendance & Feedback Submission Portal for Today's Lab
           </h2>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
-            The designated 5-minute submission window for this laboratory concluded at {scheduleStatus?.windowCloseTimeStr}. Please contact the Department Administrator for attendance queries.
+            The scheduled window concluded at {scheduleStatus?.windowCloseTimeStr}. If you are in the laboratory, you can still submit your feedback & attendance below.
           </p>
+          <button
+            type="button"
+            onClick={() => setForceOpenWindow(true)}
+            className="px-4 py-2.5 bg-gradient-to-r from-pink-800 to-rose-600 hover:from-pink-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-pink-800/20 mx-auto"
+          >
+            <Unlock className="w-3.5 h-3.5" />
+            <span>Open Attendance & Feedback Form</span>
+          </button>
         </div>
       )}
 
-      {/* ================= SCENARIO 5: 5-MINUTE SUBMISSION WINDOW OPEN ================= */}
+      {/* ================= SCENARIO 5: SUBMISSION WINDOW OPEN ================= */}
       {!hasSubmitted && isLabActive && is5MinWindowActive && (
         <form onSubmit={handleUnifiedSubmit} className="space-y-6">
           {/* Active Session Info Card */}
@@ -501,7 +516,7 @@ export const StudentAttendancePage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                  5-Minute Submission Window Active (Closing at {scheduleStatus?.windowCloseTimeStr})
+                  Feedback Submission Portal Active (Open 10m before lab end)
                 </span>
               </div>
               <h2 className="text-lg font-black text-slate-900 mt-0.5">

@@ -104,11 +104,11 @@ export const StudentDashboard: React.FC = () => {
 
   const studentBatch = user?.batch || user?.profile?.batch || getBatchLabel(studentSem);
 
-  // Keep live time ticking every 15 seconds
+  // Keep live time ticking every second in real time
   useEffect(() => {
     const clockTimer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 15000);
+    }, 1000);
     return () => clearInterval(clockTimer);
   }, []);
 

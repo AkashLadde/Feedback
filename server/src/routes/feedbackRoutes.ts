@@ -286,34 +286,39 @@ router.get('/all', authenticateJWT, requireRoles('ADMIN'), (req, res) => {
   try {
     let query = `
       SELECT f.*, 
-             s.usn, s.semester, s.department, u.name as student_name,
-             l.name as lab_name, l.code as lab_code,
-             fac_u.name as teacher_name, fac.employee_id as faculty_emp_id,
+             s.usn, COALESCE(l.semester, ls.semester, s.semester) as semester, s.department, u.name as student_name,
+             COALESCE(l.name, ls_l.name, 'Practical Lab') as lab_name,
+             COALESCE(l.code, ls_l.code, 'LAB') as lab_code,
+             COALESCE(fac_u.name, ls_fac_u.name, 'Faculty In-Charge') as teacher_name,
+             COALESCE(fac.employee_id, ls_fac.employee_id, '') as faculty_emp_id,
              ls.session_code, ls.date as session_date
       FROM feedback f
-      JOIN students s ON f.student_id = s.id
-      JOIN users u ON s.user_id = u.id
-      JOIN lab_sessions ls ON f.lab_session_id = ls.id
-      JOIN laboratories l ON ls.laboratory_id = l.id
-      LEFT JOIN faculty fac ON (f.faculty_id = fac.id OR ls.faculty_id = fac.id OR l.faculty_id = fac.id)
+      LEFT JOIN students s ON f.student_id = s.id
+      LEFT JOIN users u ON s.user_id = u.id
+      LEFT JOIN lab_sessions ls ON f.lab_session_id = ls.id
+      LEFT JOIN laboratories ls_l ON ls.laboratory_id = ls_l.id
+      LEFT JOIN laboratories l ON (f.laboratory_id = l.id OR ls.laboratory_id = l.id)
+      LEFT JOIN faculty fac ON (f.faculty_id = fac.id OR l.faculty_id = fac.id)
       LEFT JOIN users fac_u ON fac.user_id = fac_u.id
+      LEFT JOIN faculty ls_fac ON ls.faculty_id = ls_fac.id
+      LEFT JOIN users ls_fac_u ON ls_fac.user_id = ls_fac_u.id
       WHERE 1=1
     `;
     const params: any[] = [];
 
     if (semester && semester !== 'ALL') {
-      query += ` AND s.semester = ?`;
+      query += ` AND (COALESCE(l.semester, ls.semester, s.semester) = ?)`;
       params.push(parseInt(semester as string, 10));
     }
 
     if (laboratory_id && laboratory_id !== 'ALL') {
-      query += ` AND l.id = ?`;
-      params.push(parseInt(laboratory_id as string, 10));
+      query += ` AND (l.id = ? OR ls.laboratory_id = ?)`;
+      params.push(parseInt(laboratory_id as string, 10), parseInt(laboratory_id as string, 10));
     }
 
     if (faculty_id && faculty_id !== 'ALL') {
-      query += ` AND fac.id = ?`;
-      params.push(parseInt(faculty_id as string, 10));
+      query += ` AND (fac.id = ? OR ls_fac.id = ?)`;
+      params.push(parseInt(faculty_id as string, 10), parseInt(faculty_id as string, 10));
     }
 
     if (rating) {

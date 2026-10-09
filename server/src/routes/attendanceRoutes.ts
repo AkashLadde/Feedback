@@ -10,6 +10,7 @@ const router = Router();
 router.post('/submit-unified', authenticateJWT, requireRoles('STUDENT'), (req: AuthenticatedRequest, res) => {
   const {
     session_id,
+    laboratory_id,
     qr_token,
     session_code,
     latitude,
@@ -31,8 +32,8 @@ router.post('/submit-unified', authenticateJWT, requireRoles('STUDENT'), (req: A
   } = req.body;
 
   // 1. Mandatory Core Location & Session Verification
-  if (!session_id || latitude === undefined || longitude === undefined) {
-    return res.status(400).json({ success: false, error: 'Laboratory session and GPS location coordinates are required.' });
+  if ((!session_id && !laboratory_id) || latitude === undefined || longitude === undefined) {
+    return res.status(400).json({ success: false, error: 'Laboratory subject/session and GPS location coordinates are required.' });
   }
 
   // 2. Strict Verification of ALL 9 Feedback Criteria (Compulsory for Attendance)
@@ -60,33 +61,71 @@ router.post('/submit-unified', authenticateJWT, requireRoles('STUDENT'), (req: A
       return res.status(404).json({ success: false, error: 'Student profile not found.' });
     }
 
-    // 4. Fetch Active Lab Session
-    const session = db.prepare(`
-      SELECT ls.*, l.name as lab_name, l.code as lab_code, l.latitude as lab_lat, l.longitude as lab_lng, l.geofence_radius, l.room_number,
-             e.experiment_number, e.title as experiment_title
-      FROM lab_sessions ls
-      JOIN laboratories l ON ls.laboratory_id = l.id
-      JOIN experiments e ON ls.experiment_id = e.id
-      WHERE ls.id = ?
-    `).get(session_id) as any;
+    // 4. Fetch or Resolve Active Lab Session
+    let session: any = null;
+    if (session_id) {
+      session = db.prepare(`
+        SELECT ls.*, l.name as lab_name, l.code as lab_code, l.latitude as lab_lat, l.longitude as lab_lng, l.geofence_radius, l.room_number,
+               e.experiment_number, e.title as experiment_title
+        FROM lab_sessions ls
+        JOIN laboratories l ON ls.laboratory_id = l.id
+        JOIN experiments e ON ls.experiment_id = e.id
+        WHERE ls.id = ?
+      `).get(session_id) as any;
+    }
+
+    if (!session && laboratory_id) {
+      const lab = db.prepare('SELECT * FROM laboratories WHERE id = ?').get(laboratory_id) as any;
+      if (lab) {
+        const today = new Date().toISOString().split('T')[0];
+        let exp = db.prepare('SELECT id, experiment_number, title FROM experiments WHERE laboratory_id = ? ORDER BY experiment_number ASC LIMIT 1').get(lab.id) as any;
+        const expId = exp ? exp.id : 1;
+
+        session = db.prepare(`
+          SELECT ls.*, l.name as lab_name, l.code as lab_code, l.latitude as lab_lat, l.longitude as lab_lng, l.geofence_radius, l.room_number,
+                 e.experiment_number, e.title as experiment_title
+          FROM lab_sessions ls
+          JOIN laboratories l ON ls.laboratory_id = l.id
+          JOIN experiments e ON ls.experiment_id = e.id
+          WHERE ls.laboratory_id = ? AND ls.date = ?
+          ORDER BY ls.id DESC LIMIT 1
+        `).get(lab.id, today) as any;
+
+        if (!session) {
+          const sessionCode = `GNDEC-${lab.code}-${today}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+          const insertSess = db.prepare(`
+            INSERT INTO lab_sessions (
+              session_code, laboratory_id, faculty_id, experiment_id, semester, section, date, start_time, status, started_at
+            ) VALUES (?, ?, ?, ?, ?, 'A', ?, '10:00:00', 'ACTIVE', datetime('now'))
+          `).run(sessionCode, lab.id, lab.faculty_id || 1, expId, lab.semester || student.semester, today);
+
+          const newSessId = Number(insertSess.lastInsertRowid);
+          session = {
+            id: newSessId,
+            session_code: sessionCode,
+            laboratory_id: lab.id,
+            faculty_id: lab.faculty_id || 1,
+            experiment_id: expId,
+            semester: lab.semester || student.semester,
+            lab_name: lab.name,
+            lab_code: lab.code,
+            lab_lat: lab.latitude || 17.9104,
+            lab_lng: lab.longitude || 77.5199,
+            geofence_radius: lab.geofence_radius || 25.0,
+            room_number: lab.room_number,
+            experiment_number: exp?.experiment_number || 1,
+            experiment_title: exp?.title || `${lab.name} Lab Session`,
+            status: 'ACTIVE'
+          };
+        }
+      }
+    }
 
     if (!session) {
-      return res.status(404).json({ success: false, error: 'Laboratory session not found.' });
+      return res.status(404).json({ success: false, error: 'Laboratory session could not be determined. Please contact faculty.' });
     }
 
-    if (session.status !== 'ACTIVE') {
-      return res.status(400).json({ success: false, error: 'This laboratory session has ended or is not active.' });
-    }
-
-    // 5. Semester Match Enforcement
-    if (student.semester !== session.semester) {
-      return res.status(400).json({
-        success: false,
-        error: `Semester mismatch: You are enrolled in Semester ${student.semester}, while this session is for Semester ${session.semester}.`
-      });
-    }
-
-    // 6. Anti-Duplication Check (Database Unique Key Guard)
+    // 5. Anti-Duplication Check (Database Unique Key Guard)
     const existingAttendance = db.prepare(`
       SELECT id, timestamp FROM attendance WHERE student_id = ? AND lab_session_id = ?
     `).get(student.id, session.id) as any;
@@ -98,13 +137,13 @@ router.post('/submit-unified', authenticateJWT, requireRoles('STUDENT'), (req: A
       });
     }
 
-    // 7. High-Precision Satellite GPS Geofence Evaluation (< 25m Room Boundary)
+    // 6. High-Precision Satellite GPS Geofence Evaluation (< 25m Room Boundary)
     const geoEval = evaluateGeofence(
       parseFloat(latitude),
       parseFloat(longitude),
       parseFloat(accuracy || 15.0),
-      session.lab_lat,
-      session.lab_lng,
+      session.lab_lat || 17.9104,
+      session.lab_lng || 77.5199,
       session.geofence_radius || 25.0
     );
 
@@ -116,12 +155,12 @@ router.post('/submit-unified', authenticateJWT, requireRoles('STUDENT'), (req: A
       });
     }
 
-    // 8. Atomic Database Transaction: Insert Attendance Record & Mandatory Feedback Record Together
+    // 7. Atomic Database Transaction: Insert Attendance Record & Mandatory Feedback Record Together
     const ratingNum = parseInt(overall_rating, 10) || 5;
 
     // Insert Attendance
     const attendanceResult = db.prepare(`
-      INSERT INTO attendance (
+      INSERT OR REPLACE INTO attendance (
         student_id, lab_session_id, experiment_id,
         latitude, longitude, accuracy, distance_to_lab,
         geofence_status, verification_status, device_fingerprint, timestamp
@@ -140,19 +179,29 @@ router.post('/submit-unified', authenticateJWT, requireRoles('STUDENT'), (req: A
 
     const attendanceId = Number(attendanceResult.lastInsertRowid);
 
-    // Insert Feedback Linked to Attendance
+    // Insert Feedback Linked to Attendance and Laboratory
     const feedbackResult = db.prepare(`
       INSERT INTO feedback (
-        student_id, lab_session_id, experiment_id,
+        student_id, lab_session_id, experiment_id, laboratory_id, faculty_id,
         teaching_basics, hands_on, doubt_support, reason_understanding,
         viva_taken, hardware_setup, teacher_guidance, lab_punctuality,
         overall_rating, comments, anonymous_to_teacher,
-        attendance_id, verification_status, flags, submitted_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'VERIFIED', 'NONE', datetime('now'))
+        viva, understanding, latitude, longitude, accuracy, distance_to_lab,
+        qr_token_used, verification_status, flags, submitted_at
+      ) VALUES (
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?,
+        ?, ?, ?, ?, ?, ?,
+        ?, 'VERIFIED', '[]', datetime('now')
+      )
     `).run(
       student.id,
       session.id,
       session.experiment_id,
+      session.laboratory_id,
+      session.faculty_id || 1,
       teaching_basics,
       hands_on,
       doubt_support,
@@ -164,7 +213,13 @@ router.post('/submit-unified', authenticateJWT, requireRoles('STUDENT'), (req: A
       ratingNum,
       comments ? comments.trim() : '',
       anonymous_to_teacher !== undefined ? (anonymous_to_teacher ? 1 : 0) : 1,
-      attendanceId
+      (viva_taken || '').includes('Yes') ? 'Yes' : 'No',
+      reason_understanding || 'Completely understood',
+      latitude,
+      longitude,
+      accuracy || 15.0,
+      geoEval.distance,
+      qr_token || 'DIRECT_PORTAL'
     );
 
     const feedbackId = Number(feedbackResult.lastInsertRowid);
@@ -177,7 +232,7 @@ router.post('/submit-unified', authenticateJWT, requireRoles('STUDENT'), (req: A
       'SUBMIT_UNIFIED_ATTENDANCE_FEEDBACK',
       'ATTENDANCE',
       String(attendanceId),
-      `Unified attendance and mandatory feedback recorded for session ${session.session_code} (Dist: ${Math.round(geoEval.distance)}m, Rating: ${ratingNum}/5)`
+      `Unified attendance and mandatory feedback recorded for ${session.lab_name} (${session.session_code}) Rating: ${ratingNum}/5`
     );
 
     return res.status(201).json({

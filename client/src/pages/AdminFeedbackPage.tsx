@@ -144,14 +144,14 @@ export const AdminFeedbackPage: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-wrap">
           {/* Semester Filter */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
-            {['ALL', '3', '5', '7'].map(sem => (
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs flex-wrap">
+            {['ALL', '1', '2', '3', '4', '5', '6', '7', '8'].map(sem => (
               <button
                 key={sem}
                 onClick={() => setSelectedSem(sem)}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
                   selectedSem === sem
-                    ? 'bg-pink-700 text-white shadow-sm'
+                    ? 'bg-pink-800 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >

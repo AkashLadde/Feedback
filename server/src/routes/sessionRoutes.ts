@@ -238,13 +238,13 @@ router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: Au
 
     for (const slot of todayLabs) {
       const { startMin, endMin } = parseTimeRange(slot.time_range || '');
-      if (currentMinutesOfDay >= startMin && currentMinutesOfDay <= endMin) {
+      if (currentMinutesOfDay >= startMin && currentMinutesOfDay <= endMin + 15) {
         matchingSlot = slot;
         isWithinTimetableTime = true;
 
-        // The window opens 10 mins before end of lab, and stays visible for ONLY 5 mins (from endMin - 10 to endMin - 5)
-        const windowOpenMin = endMin - 10;
-        const windowCloseMin = endMin - 5;
+        // The submission window opens 10 mins before end of lab, and stays open through end of lab (+15 min buffer)
+        const windowOpenMin = Math.max(startMin, endMin - 10);
+        const windowCloseMin = endMin + 15;
 
         windowOpenTimeStr = formatMinutesToTime(windowOpenMin);
         windowCloseTimeStr = formatMinutesToTime(windowCloseMin);
@@ -253,13 +253,13 @@ router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: Au
           is5MinWindowActive = true;
           isBeforeWindow = false;
           isWindowExpired = false;
-          minutesRemainingInWindow = windowCloseMin - currentMinutesOfDay;
+          minutesRemainingInWindow = Math.max(1, windowCloseMin - currentMinutesOfDay);
           minutesUntilWindowOpens = 0;
         } else if (currentMinutesOfDay < windowOpenMin) {
           is5MinWindowActive = false;
           isBeforeWindow = true;
           isWindowExpired = false;
-          minutesUntilWindowOpens = windowOpenMin - currentMinutesOfDay;
+          minutesUntilWindowOpens = Math.max(1, windowOpenMin - currentMinutesOfDay);
         } else {
           is5MinWindowActive = false;
           isBeforeWindow = false;
@@ -277,10 +277,10 @@ router.get('/student-status', authenticateJWT, requireRoles('STUDENT'), (req: Au
       isBeforeWindow = false;
       isWindowExpired = false;
       if (!minutesRemainingInWindow || minutesRemainingInWindow <= 0) {
-        minutesRemainingInWindow = 15;
+        minutesRemainingInWindow = 20;
       }
       if (!windowCloseTimeStr) {
-        windowCloseTimeStr = formatMinutesToTime(currentMinutesOfDay + 15);
+        windowCloseTimeStr = formatMinutesToTime(currentMinutesOfDay + 20);
       }
     }
 
