@@ -19,14 +19,22 @@ import {
   MapPin,
   HelpCircle,
   Filter,
-  Radio
+  Calendar,
+  CalendarDays
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
   const { user, setActiveTab, refreshTrigger } = useAuth();
   const [data, setData] = useState<any | null>(null);
+  const [timetableEntries, setTimetableEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedSem, setSelectedSem] = useState<string>('ALL');
+
+  const daysOfWeek = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  const dayNamesFull = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  const currentDayOfWeek = dayNamesFull[new Date().getDay()];
+  const defaultDay = daysOfWeek.includes(currentDayOfWeek) ? currentDayOfWeek : 'MONDAY';
+  const [selectedDay, setSelectedDay] = useState<string>(defaultDay);
 
   const semesterOptions = [
     { value: 'ALL', label: 'All Semesters' },
@@ -44,9 +52,15 @@ export const AdminDashboard: React.FC = () => {
     async function load() {
       try {
         setLoading(true);
-        const res = await api.getDepartmentAnalytics({ semester: selectedSem });
+        const [res, ttRes] = await Promise.all([
+          api.getDepartmentAnalytics({ semester: selectedSem }),
+          api.getTimetables({ semester: selectedSem !== 'ALL' ? selectedSem : undefined })
+        ]);
         if (res.success) {
           setData(res);
+        }
+        if (ttRes.success && ttRes.allEntries) {
+          setTimetableEntries(ttRes.allEntries);
         }
       } catch (err) {
         console.error('Failed to load department analytics:', err);
@@ -72,6 +86,13 @@ export const AdminDashboard: React.FC = () => {
   const facultyConduct = data?.facultyConduct || [];
   const recentFeedbacks = data?.recentFeedbacks || [];
 
+  // Filter timetable for selected day
+  const filteredTimetable = timetableEntries.filter((t: any) => {
+    const semMatch = selectedSem === 'ALL' || t.semester === Number(selectedSem);
+    const dayMatch = selectedDay === 'ALL' || t.day_of_week === selectedDay;
+    return semMatch && dayMatch;
+  });
+
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
       {/* Top Welcome & Department Banner */}
@@ -92,18 +113,10 @@ export const AdminDashboard: React.FC = () => {
 
         <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={() => setActiveTab('live-sessions')}
+            onClick={() => setActiveTab('students')}
             className="px-3.5 py-2.5 bg-gradient-to-r from-pink-800 to-rose-600 hover:from-pink-900 hover:to-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-pink-800/20"
           >
-            <Radio className="w-3.5 h-3.5 animate-pulse text-pink-300" />
-            <span>Live Lab Sessions ({metrics.activeSessions || 3})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('student-verification')}
-            className="px-3.5 py-2.5 bg-pink-50 hover:bg-pink-100 text-pink-900 border border-pink-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all"
-          >
-            <UserCheck className="w-3.5 h-3.5 text-pink-700" />
+            <UserCheck className="w-3.5 h-3.5 text-pink-200" />
             <span>Verify & Manage Students</span>
           </button>
 
@@ -119,7 +132,7 @@ export const AdminDashboard: React.FC = () => {
             onClick={() => setActiveTab('timetable')}
             className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-200"
           >
-            <Clock className="w-3.5 h-3.5 text-pink-700" />
+            <Calendar className="w-3.5 h-3.5 text-pink-700" />
             <span>Lab Timetables</span>
           </button>
         </div>
@@ -209,6 +222,136 @@ export const AdminDashboard: React.FC = () => {
             {metrics.verification?.verified || metrics.totalFeedback} Verified Genuine Submissions
           </div>
         </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 📅 DEPARTMENT PRACTICAL LABORATORY SCHEDULE (REAL-TIME CALENDAR & DAY-WISE) */}
+      {/* ========================================================================= */}
+      <div className="bg-white rounded-2xl border border-pink-100 shadow-subtle p-6 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-pink-100">
+          <div>
+            <div className="flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-pink-700" />
+              <h2 className="text-base font-extrabold text-slate-900">
+                Department Practical Laboratory Schedule (Day-Wise)
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Live curriculum practical laboratory schedule with official time slots, assigned faculty, and room locations
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="bg-pink-50 text-pink-900 border border-pink-200 font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-pink-700" />
+              <span>System Day: <strong>{currentDayOfWeek}</strong></span>
+            </span>
+
+            <button
+              onClick={() => setActiveTab('timetable')}
+              className="text-xs font-bold text-pink-800 hover:text-pink-950 flex items-center gap-1 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl border border-slate-200 transition-all"
+            >
+              <span>Full Timetable Grid</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Day Selector Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+          {['ALL', ...daysOfWeek].map((day) => {
+            const isSelected = selectedDay === day;
+            const isToday = currentDayOfWeek === day;
+            const count = day === 'ALL'
+              ? timetableEntries.filter(t => selectedSem === 'ALL' || t.semester === Number(selectedSem)).length
+              : timetableEntries.filter(t => (selectedSem === 'ALL' || t.semester === Number(selectedSem)) && t.day_of_week === day).length;
+
+            return (
+              <button
+                key={day}
+                onClick={() => setSelectedDay(day)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-pink-800 via-pink-700 to-rose-700 text-white shadow-md shadow-pink-500/25 ring-2 ring-pink-300'
+                    : 'bg-pink-50/50 hover:bg-pink-100/70 text-slate-700 hover:text-pink-900 border border-pink-200'
+                }`}
+              >
+                <span>{day === 'ALL' ? 'ALL DAYS' : day}</span>
+                {isToday && (
+                  <span className="bg-rose-500 text-white text-[9px] px-1.5 py-0.2 rounded-full font-black">
+                    TODAY
+                  </span>
+                )}
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                  isSelected ? 'bg-pink-950 text-white' : 'bg-pink-200 text-pink-900 font-bold'
+                }`}>
+                  {count} {count === 1 ? 'Lab' : 'Labs'}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Schedule Cards Grid */}
+        {filteredTimetable.length === 0 ? (
+          <div className="p-8 text-center text-slate-400 bg-pink-50/20 rounded-xl border border-pink-100">
+            No laboratory practicals scheduled on {selectedDay} for {selectedSem === 'ALL' ? 'any semester' : `Semester ${selectedSem}`}.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+            {filteredTimetable.map((entry: any, idx: number) => (
+              <div
+                key={entry.id || idx}
+                className="p-4 rounded-xl border border-slate-200 hover:border-pink-300 bg-slate-50 hover:bg-pink-50/30 transition-all space-y-2.5 flex flex-col justify-between"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono text-[10px] font-bold text-pink-900 bg-pink-100 border border-pink-200 px-2 py-0.5 rounded">
+                        {entry.subject_code}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                        Sem {entry.semester}
+                      </span>
+                      {entry.batch && (
+                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded">
+                          {entry.batch}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">
+                      {entry.day_of_week}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="font-extrabold text-xs text-slate-900 line-clamp-1">
+                      {entry.subject_name}
+                    </h3>
+                    <p className="text-[11px] text-pink-700 font-semibold mt-0.5">
+                      {entry.subject_abbr}
+                    </p>
+                  </div>
+
+                  <div className="space-y-1 text-[11px] text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200/80">
+                    <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                      <Clock className="w-3.5 h-3.5 text-pink-600 shrink-0" />
+                      <span>{entry.time_range}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <UserCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">Faculty: <strong className="text-slate-800">{entry.faculty_name || entry.faculty_abbr}</strong></span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">{entry.room}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* LABORATORY-WISE & TEACHER-WISE FEEDBACK TABLE (SEMESTER-WISE) */}

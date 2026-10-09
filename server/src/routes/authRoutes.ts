@@ -8,112 +8,9 @@ import { logAudit } from '../services/auditService.js';
 
 const router = Router();
 
-// POST /api/auth/send-otp - Send a 6-digit OTP to student's phone number
-router.post('/send-otp', (req, res) => {
-  const { phone } = req.body;
-
-  if (!phone || String(phone).trim().length < 8) {
-    return res.status(400).json({
-      success: false,
-      error: 'Please provide a valid 10-digit mobile number.'
-    });
-  }
-
-  try {
-    const cleanPhone = String(phone).trim();
-    // Generate a secure 6-digit numeric OTP
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes expiry
-
-    // Save to database
-    db.prepare(`
-      INSERT INTO otp_verifications (phone, otp_code, expires_at, verified, created_at)
-      VALUES (?, ?, ?, 0, datetime('now'))
-    `).run(cleanPhone, otpCode, expiresAt);
-
-    console.log(`📱 [SMS/OTP SERVICE] Generated OTP ${otpCode} for phone ${cleanPhone}`);
-
-    return res.json({
-      success: true,
-      message: `OTP has been sent successfully to ${cleanPhone}.`,
-      phone: cleanPhone,
-      otp: otpCode, // Provided for instant testing and UI verification preview
-      expiresInSeconds: 600
-    });
-  } catch (err: any) {
-    console.error('Send OTP error:', err);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to send OTP. Please try again.'
-    });
-  }
-});
-
-// POST /api/auth/verify-otp - Verify phone number OTP
-router.post('/verify-otp', (req, res) => {
-  const { phone, otp } = req.body;
-
-  if (!phone || !otp) {
-    return res.status(400).json({
-      success: false,
-      error: 'Mobile number and 6-digit OTP code are required.'
-    });
-  }
-
-  try {
-    const cleanPhone = String(phone).trim();
-    const cleanOtp = String(otp).trim();
-
-    // Check latest OTP record for this phone
-    const record = db.prepare(`
-      SELECT * FROM otp_verifications 
-      WHERE phone = ? 
-      ORDER BY id DESC LIMIT 1
-    `).get(cleanPhone) as any;
-
-    if (!record) {
-      return res.status(400).json({
-        success: false,
-        error: 'No OTP requested for this phone number. Please request an OTP first.'
-      });
-    }
-
-    if (record.otp_code !== cleanOtp) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid OTP code. Please check and enter the correct 6-digit code.'
-      });
-    }
-
-    // Check expiration
-    if (new Date(record.expires_at).getTime() < Date.now()) {
-      return res.status(400).json({
-        success: false,
-        error: 'OTP code has expired. Please request a new OTP.'
-      });
-    }
-
-    // Mark verified
-    db.prepare('UPDATE otp_verifications SET verified = 1 WHERE id = ?').run(record.id);
-
-    return res.json({
-      success: true,
-      message: 'Mobile number verified successfully!',
-      phone: cleanPhone,
-      verified: true
-    });
-  } catch (err: any) {
-    console.error('Verify OTP error:', err);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to verify OTP.'
-    });
-  }
-});
-
-// POST /api/auth/register-student - Allow genuine students to create their own accounts
+// POST /api/auth/register-student - Allow genuine students to create their own accounts (Admin/HOD Verification Required)
 router.post('/register-student', (req, res) => {
-  const { name, usn, email, semester, department, batch, phone, phone_otp, password } = req.body;
+  const { name, usn, email, semester, department, batch, phone, password } = req.body;
 
   if (!name || !usn || !email || !semester || !password) {
     return res.status(400).json({
@@ -141,7 +38,7 @@ router.post('/register-student', (req, res) => {
     if (existingUsn) {
       return res.status(400).json({
         success: false,
-        error: `A student account with USN '${cleanUsn}' already exists. Please sign in directly.`
+        error: `A student account with USN '${cleanUsn}' already exists. Please sign in directly or await admin approval.`
       });
     }
 
@@ -154,35 +51,12 @@ router.post('/register-student', (req, res) => {
       });
     }
 
-    // Check Phone Verification if phone is provided
-    let isPhoneVerified = 0;
-    if (cleanPhone) {
-      // Check if phone was verified via verify-otp or if inline phone_otp matches
-      const latestOtp = db.prepare(`
-        SELECT * FROM otp_verifications 
-        WHERE phone = ? 
-        ORDER BY id DESC LIMIT 1
-      `).get(cleanPhone) as any;
-
-      if (latestOtp && (latestOtp.verified === 1 || (phone_otp && latestOtp.otp_code === String(phone_otp).trim()))) {
-        isPhoneVerified = 1;
-        if (latestOtp.verified !== 1) {
-          db.prepare('UPDATE otp_verifications SET verified = 1 WHERE id = ?').run(latestOtp.id);
-        }
-      } else if (phone_otp) {
-        return res.status(400).json({
-          success: false,
-          error: 'The entered phone OTP is incorrect or expired.'
-        });
-      }
-    }
-
     const passwordHash = bcrypt.hashSync(password, 10);
 
-    // 1. Create user in users table with ACTIVE status (persistent in DB until Admin removes it)
+    // 1. Create user in users table with PENDING_VERIFICATION status (Requires Admin Approval before Login)
     const userResult = db.prepare(`
       INSERT INTO users (name, email, password_hash, role, status)
-      VALUES (?, ?, ?, 'STUDENT', 'ACTIVE')
+      VALUES (?, ?, ?, 'STUDENT', 'PENDING_VERIFICATION')
     `).run(cleanName, cleanEmail, passwordHash);
 
     const userId = Number(userResult.lastInsertRowid);
@@ -201,48 +75,24 @@ router.post('/register-student', (req, res) => {
     const studentResult = db.prepare(`
       INSERT INTO students (
         user_id, usn, semester, section, batch, department, academic_year, phone, phone_verified
-      ) VALUES (?, ?, ?, '', ?, ?, '2026-2027', ?, ?)
+      ) VALUES (?, ?, ?, '', ?, ?, '2026-2027', ?, 1)
     `).run(
       userId,
       cleanUsn,
       semNum,
       computedBatch,
       department || 'CSE in IoT & Cyber Security including Block Chain Technology',
-      cleanPhone,
-      isPhoneVerified
+      cleanPhone
     );
 
     const studentId = Number(studentResult.lastInsertRowid);
 
-    logAudit(userId, cleanEmail, 'STUDENT', 'REGISTER', 'USER', String(userId), `Student ${cleanName} (${cleanUsn}) registered for Semester ${semNum} with phone verification: ${isPhoneVerified ? 'YES' : 'NO'}`);
-
-    const studentProfile = db.prepare('SELECT * FROM students WHERE id = ?').get(studentId) as any;
-
-    const payload = {
-      id: userId,
-      email: cleanEmail,
-      name: cleanName,
-      role: 'STUDENT' as const,
-      status: 'ACTIVE',
-      studentId,
-      usn: cleanUsn,
-      semester: semNum,
-      batch: computedBatch,
-      department: department || 'CSE in IoT & Cyber Security including Block Chain Technology',
-      phone: cleanPhone,
-      phone_verified: isPhoneVerified
-    };
-
-    const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: '12h' });
+    logAudit(userId, cleanEmail, 'STUDENT', 'REGISTER_PENDING', 'USER', String(userId), `New student ${cleanName} (${cleanUsn}) registered for Semester ${semNum}. Pending Administrator verification.`);
 
     return res.status(201).json({
       success: true,
-      message: `Student account ${cleanUsn} registered successfully! You can now log in anytime with your USN or email.`,
-      token,
-      user: {
-        ...payload,
-        profile: studentProfile
-      },
+      requiresVerification: true,
+      message: `Registration submitted successfully for ${cleanName} (${cleanUsn})! Your account is currently pending verification by the Administrator. You can log in once approved by the HOD / Admin.`,
       studentId,
       usn: cleanUsn,
       semester: semNum
@@ -286,6 +136,15 @@ router.post('/login', (req, res) => {
 
     if (!user) {
       return res.status(401).json({ success: false, error: 'Invalid email, USN, or password.' });
+    }
+
+    // Strict Admin Verification Check for Students
+    if (user.status === 'PENDING_VERIFICATION' || user.status === 'PENDING') {
+      return res.status(403).json({
+        success: false,
+        isPendingVerification: true,
+        error: 'Your student registration is pending verification and approval by the Administrator. Please contact the HOD / Admin office to activate your account.'
+      });
     }
 
     if (user.status === 'REJECTED') {

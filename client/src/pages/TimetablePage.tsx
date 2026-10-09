@@ -54,24 +54,23 @@ export const TimetablePage: React.FC = () => {
     { code: '1BCSL306', name: 'Data Structures Laboratory', abbr: 'DSAL/AP', legend: 'Prof. Aarti Pawar', room: 'Data Structures Lab (Room 207)' },
     { code: '1BCSL307A', name: 'Project Management (with GIT)', abbr: 'GIT/FN', legend: 'Prof. Farhnaz & Mr. Anand Patil', room: 'Project Lab (Room 208)' },
     { code: '1BCP308', name: 'Community Project', abbr: 'CP/ANP', legend: 'Mr. Anand Patil', room: 'Project Center (Room 209)' },
-    { code: 'BNSK359', name: 'NSS / Sports Activity', abbr: 'NSS/MJ', legend: 'Prof. Madhuri Joshi', room: 'Sports Complex / Ground' }
+    { code: 'BNSK359', name: 'NSS/Sports', abbr: 'NSS/MJ', legend: 'Prof. Madhuri Joshi', room: 'Sports Complex / Ground' }
   ];
 
   // 5th Semester Practical Laboratories (Official GNDEC 5th Sem Timetable - With Effect from: 07-09-2026)
   const sem5Legends: LabLegend[] = [
-    { code: 'BCSL502', name: 'Computer Networks Laboratory', abbr: 'CNL/MJ', legend: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)' },
+    { code: 'BCSL502', name: 'Computer Networks Lab', abbr: 'CNL/MJ', legend: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)' },
     { code: 'BICL504', name: 'IoT Lab', abbr: 'IOT/UK/FN', legend: 'Prof. Uzma Kausar & Prof. Farhnaz', room: 'IoT & Cyber Lab (Room 306)' },
     { code: 'BIC515C', name: 'Full Stack Development Laboratory', abbr: 'FSD LAB/IZ', legend: 'Prof. Ibtesham Zarrine', room: 'Web Tech Lab (Room 307)' },
     { code: 'BIC586', name: 'Mini Project', abbr: 'MiniProject/HJ', legend: 'Dr. Harish Joshi (HOD)', room: 'Project Center (Room 308)' },
     { code: 'BNSK559', name: 'National Service Scheme', abbr: 'NSS/AP', legend: 'Prof. Aarti Pawar', room: 'Activity Center' }
   ];
 
-  // 7th Semester Practical Laboratories (Official GNDEC 7th Sem Timetable)
+  // 7th Semester Practical Laboratories (Official GNDEC 7th Sem Timetable - With Effect from: 24-08-2026)
   const sem7Legends: LabLegend[] = [
-    { code: '22CSL71', name: 'Cyber Security & Penetration Testing Laboratory', abbr: 'VAPT/HJ', legend: 'Dr. Harish Joshi (HOD)', room: 'VAPT Lab (Room 407)' },
     { code: 'BCO701(P)', name: 'IOT Communication Protocols Lab', abbr: 'ICPL/FN', legend: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)' },
     { code: 'BIC702(P)', name: 'Blockchain Technology Lab', abbr: 'BTL/AB', legend: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)' },
-    { code: 'BIC786', name: 'Major Project Phase-II', abbr: 'PP-II/AB', legend: 'Prof. Ashok Bawge & Dr. Harish Joshi', room: 'Advanced Project Lab (Room 408)' }
+    { code: 'BIC786', name: 'Major Project Phase-II', abbr: 'PP-II/AB', legend: 'Prof. Ashok Bawge', room: 'Advanced Project Lab (Room 408)' }
   ];
 
   // 1st Sem Practical Schedule
@@ -79,42 +78,43 @@ export const TimetablePage: React.FC = () => {
     {
       day: 'MONDAY',
       slots: [
-        { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'All Batches' },
-        { code: '1BCSL107', abbr: 'CAED LAB', name: 'Computer Aided Engineering Drawing Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)', batch: 'All Batches' }
+        { code: '1BPOPS103', abbr: 'POPC/MK (B1)', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'Batch B1' },
+        { code: '1BCSL107', abbr: 'CAED/AP (B2)', name: 'Computer Aided Engineering Drawing Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)', batch: 'Batch B2' }
       ]
     },
     {
       day: 'TUESDAY',
       slots: [
-        { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', time: '09.00 AM - 12.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'All Batches' },
-        { code: '1BENG106', abbr: 'LANG LAB', name: 'Professional Communication & Language Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)', batch: 'All Batches' }
+        { code: '1BPHY102', abbr: 'PHY/PP (B1)', name: 'Applied Engineering Physics Laboratory', time: '09.00 AM - 12.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'Batch B1' },
+        { code: '1BENG106', abbr: 'LANG/FN (B2)', name: 'Professional Communication & Language Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)', batch: 'Batch B2' }
       ]
     },
     {
       day: 'WEDNESDAY',
       slots: [
-        { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'All Batches' },
-        { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'All Batches' }
+        { code: '1BPOPS103', abbr: 'POPC/MK (B2)', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'Batch B2' },
+        { code: '1BPHY102', abbr: 'PHY/PP (B1)', name: 'Applied Engineering Physics Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'Batch B1' }
       ]
     },
     {
       day: 'THURSDAY',
       slots: [
-        { code: '1BCSL107', abbr: 'CAED LAB', name: 'Computer Aided Engineering Drawing Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)', batch: 'All Batches' },
-        { code: '1BENG106', abbr: 'LANG LAB', name: 'Professional Communication & Language Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)', batch: 'All Batches' }
+        { code: '1BCSL107', abbr: 'CAED/AP (B1)', name: 'Computer Aided Engineering Drawing Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)', batch: 'Batch B1' },
+        { code: '1BENG106', abbr: 'LANG/FN (B2)', name: 'Professional Communication & Language Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)', batch: 'Batch B2' }
       ]
     },
     {
       day: 'FRIDAY',
       slots: [
-        { code: '1BPOPS103', abbr: 'C PROG LAB', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'All Batches' },
-        { code: '1BPHY102', abbr: 'PHY LAB', name: 'Applied Engineering Physics Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'All Batches' }
+        { code: '1BPOPS103', abbr: 'POPC/MK', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'All Batches' },
+        { code: '1BPHY102', abbr: 'PHY/PP', name: 'Applied Engineering Physics Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'All Batches' }
       ]
     },
     {
       day: 'SATURDAY',
       slots: [
-        { code: '1BPOPS103', abbr: 'C & CAED LAB', name: 'C Programming & CAED Practical Practice Lab', time: '09.00 AM - 01.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'All Batches' }
+        { code: '1BENG106', abbr: 'LANG/FN', name: 'Professional Communication & Language Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)', batch: 'All Batches' },
+        { code: '1BCSL107', abbr: 'CAED/AP', name: 'Computer Aided Engineering Drawing Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)', batch: 'All Batches' }
       ]
     }
   ];
@@ -157,7 +157,7 @@ export const TimetablePage: React.FC = () => {
       slots: [
         { code: '1BCSL307A', abbr: 'GIT/FN (B2)', name: 'Project Management (with GIT)', time: '09.00 AM - 10.50 AM', fac: 'Prof. Farhnaz & Mr. Anand Patil', room: 'Project Lab (Room 208)', batch: 'Batch B2' },
         { code: '1BCS304(P)', abbr: 'OSL/AP (B1)', name: 'Operating Systems LAB', time: '09.00 AM - 10.50 AM', fac: 'Prof. Aarti Pawar', room: 'OS Lab (Room 206)', batch: 'Batch B1' },
-        { code: 'BNSK359', abbr: 'NSS/MJ', name: 'NSS / Sports Activity', time: '11.10 AM - 01.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Sports Complex / Ground', batch: 'All Batches' }
+        { code: 'BNSK359', abbr: 'NSS/MJ', name: 'NSS/Sports', time: '11.10 AM - 01.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Sports Complex / Ground', batch: 'All Batches' }
       ]
     }
   ];
@@ -172,7 +172,7 @@ export const TimetablePage: React.FC = () => {
       day: 'TUESDAY',
       slots: [
         { code: 'BICL504', abbr: 'IOT/UK/FN (B2)', name: 'IoT Lab', time: '11.10 AM - 01.00 PM', fac: 'Prof. Uzma Kausar & Prof. Farhnaz', room: 'IoT & Cyber Lab (Room 306)', batch: 'Batch B2' },
-        { code: 'BCSL502', abbr: 'CNL/MJ (B1)', name: 'Computer Networks Laboratory', time: '11.10 AM - 01.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)', batch: 'Batch B1' }
+        { code: 'BCSL502', abbr: 'CNL/MJ (B1)', name: 'Computer Networks Lab', time: '11.10 AM - 01.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)', batch: 'Batch B1' }
       ]
     },
     {
@@ -180,7 +180,7 @@ export const TimetablePage: React.FC = () => {
       slots: [
         { code: 'BIC515C', abbr: 'FSD LAB/IZ', name: 'Full Stack Development Laboratory', time: '11.10 AM - 01.00 PM', fac: 'Prof. Ibtesham Zarrine', room: 'Web Tech Lab (Room 307)', batch: 'All Batches' },
         { code: 'BICL504', abbr: 'IOT/UK/FN (B1)', name: 'IoT Lab', time: '03.00 PM - 05.00 PM', fac: 'Prof. Uzma Kausar & Prof. Farhnaz', room: 'IoT & Cyber Lab (Room 306)', batch: 'Batch B1' },
-        { code: 'BCSL502', abbr: 'CNL/MJ (B2)', name: 'Computer Networks Laboratory', time: '03.00 PM - 05.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)', batch: 'Batch B2' }
+        { code: 'BCSL502', abbr: 'CNL/MJ (B2)', name: 'Computer Networks Lab', time: '03.00 PM - 05.00 PM', fac: 'Prof. Madhuri Joshi', room: 'Networks Lab (Room 305)', batch: 'Batch B2' }
       ]
     },
     {
@@ -201,49 +201,39 @@ export const TimetablePage: React.FC = () => {
     }
   ];
 
-  // 7th Sem Practical Schedule (Real Time Slots from Official Timetable)
+  // 7th Sem Practical Schedule (Official GNDEC 7th Sem Timetable - With Effect from: 24-08-2026)
   const sem7Schedule: DaySchedule[] = [
     {
       day: 'MONDAY',
-      slots: [
-        { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', time: '11.30 AM - 01.30 PM', fac: 'Dr. Harish Joshi (HOD)', room: 'VAPT Lab (Room 407)', batch: 'All Batches' },
-        { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', time: '09.55 AM - 11.25 AM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)', batch: 'All Batches' },
-        { code: 'BIC702(P)', abbr: 'BTL/AB', name: 'Blockchain Technology Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)', batch: 'All Batches' }
-      ]
+      slots: []
     },
     {
       day: 'TUESDAY',
-      slots: [
-        { code: 'BIC702(P)', abbr: 'BTL/AB', name: 'Blockchain Technology Lab', time: '11.10 AM - 01.00 PM', fac: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)', batch: 'All Batches' },
-        { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Harish Joshi (HOD)', room: 'VAPT Lab (Room 407)', batch: 'All Batches' }
-      ]
+      slots: []
     },
     {
       day: 'WEDNESDAY',
       slots: [
-        { code: 'BCO701(P)', abbr: 'ICPL/FN', name: 'IOT Communication Protocols Lab', time: '09.55 AM - 11.30 AM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)', batch: 'All Batches' },
-        { code: 'BIC786', abbr: 'PP-II/AB', name: 'Major Project Phase-II Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Prof. Ashok Bawge', room: 'Advanced Project Lab (Room 408)', batch: 'All Batches' }
+        { code: 'BIC786', abbr: 'PP-II/AB', name: 'Major Project Phase-II', time: '02.00 PM - 04.00 PM', fac: 'Prof. Ashok Bawge', room: 'Advanced Project Lab (Room 408)', batch: 'All Batches' }
       ]
     },
     {
       day: 'THURSDAY',
       slots: [
-        { code: 'BIC702(P)', abbr: 'BTL/AB (B1)', name: 'Blockchain Technology Lab (Batch 1)', time: '11.10 AM - 01.00 PM', fac: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)', batch: 'Batch B1' },
-        { code: 'BCO701(P)', abbr: 'ICPL/FN (B2)', name: 'IOT Communication Protocols Lab (Batch 2)', time: '11.10 AM - 01.00 PM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)', batch: 'Batch B2' }
+        { code: 'BIC702(P)', abbr: 'BTL/AB (B1)', name: 'Blockchain Technology Lab', time: '11.10 AM - 01.00 PM', fac: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)', batch: 'Batch B1' },
+        { code: 'BCO701(P)', abbr: 'ICPL/FN (B2)', name: 'IOT Communication Protocols Lab', time: '11.10 AM - 01.00 PM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)', batch: 'Batch B2' }
       ]
     },
     {
       day: 'FRIDAY',
       slots: [
-        { code: 'BIC702(P)', abbr: 'BTL/AB (B2)', name: 'Blockchain Technology Lab (Batch 2)', time: '11.10 AM - 01.00 PM', fac: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)', batch: 'Batch B2' },
-        { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Harish Joshi (HOD)', room: 'VAPT Lab (Room 407)', batch: 'All Batches' }
+        { code: 'BIC702(P)', abbr: 'BTL/AB (B2)', name: 'Blockchain Technology Lab', time: '11.10 AM - 01.00 PM', fac: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)', batch: 'Batch B2' },
+        { code: 'BCO701(P)', abbr: 'ICPL/FN (B1)', name: 'IOT Communication Protocols Lab', time: '11.10 AM - 01.00 PM', fac: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)', batch: 'Batch B1' }
       ]
     },
     {
       day: 'SATURDAY',
-      slots: [
-        { code: '22CSL71', abbr: 'VAPT/HJ', name: 'Cyber Security & Penetration Testing Laboratory', time: '09.00 AM - 12.00 PM', fac: 'Dr. Harish Joshi (HOD)', room: 'VAPT Lab (Room 407)', batch: 'All Batches' }
-      ]
+      slots: []
     }
   ];
 

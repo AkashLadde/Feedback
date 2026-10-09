@@ -36,7 +36,6 @@ export const Sidebar: React.FC = () => {
     { id: 'faculty', label: 'Teachers / Faculty', icon: UserCheck, subtitle: 'Faculty Directory & Labs' },
     { id: 'laboratories', label: 'Subjects & Labs', icon: Building2, subtitle: 'Curriculum & 25m Geofences' },
     { id: 'semesters', label: 'Academic Semesters', icon: Layers, subtitle: '1st, 3rd, 5th, 7th Sem' },
-    { id: 'live-sessions', label: 'Live Lab Sessions', icon: Radio, subtitle: 'Dynamic 1-Min QR' },
     { id: 'reports', label: 'Reports & Export', icon: FileSpreadsheet, subtitle: 'CSV Data Downloads' },
     { id: 'audit-logs', label: 'Audit Logs', icon: History, subtitle: 'Security Activity Stream' }
   ];

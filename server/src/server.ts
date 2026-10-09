@@ -44,7 +44,10 @@ app.use(express.json());
 // Initialize Database & check if seeding is needed
 initDatabase();
 const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as any;
-if (!userCount || userCount.count === 0) {
+const labCount = db.prepare('SELECT COUNT(*) as count FROM laboratories').get() as any;
+const ttCount = db.prepare('SELECT COUNT(*) as count FROM timetable_entries').get() as any;
+if (!userCount || userCount.count <= 1 || !labCount || labCount.count === 0 || !ttCount || ttCount.count === 0) {
+  console.log('🔄 Seeding clean practical laboratories, timetables, and academic departments...');
   cleanDatabase();
 }
 

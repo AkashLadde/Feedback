@@ -72,20 +72,12 @@ export const LoginPage: React.FC = () => {
   const [regName, setRegName] = useState('');
   const [regUsn, setRegUsn] = useState('');
   const [regEmail, setRegEmail] = useState('');
-  const [regSemester, setRegSemester] = useState<number>(1);
-  const [regBatch, setRegBatch] = useState('2026-2030 (Batch 2026)');
+  const [regSemester, setRegSemester] = useState<number>(3);
+  const [regBatch, setRegBatch] = useState('2025-2029 (Batch 2025)');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regDepartment] = useState('CSE in IoT & Cyber Security including Block Chain Technology');
-
-  // Phone OTP Verification States
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [devOtpPreview, setDevOtpPreview] = useState<string | null>(null);
-  const [otpCountdown, setOtpCountdown] = useState(0);
 
   // Signup Instructions Modal State
   const [showSignupModal, setShowSignupModal] = useState(false);
@@ -100,69 +92,20 @@ export const LoginPage: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    let timer: any;
-    if (otpCountdown > 0) {
-      timer = setInterval(() => setOtpCountdown((prev) => prev - 1), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [otpCountdown]);
-
   const handleSemesterChangeInReg = (sem: number) => {
     setRegSemester(sem);
     if (sem === 1 || sem === 2) setRegBatch('2026-2030 (Batch 2026)');
     else if (sem === 3 || sem === 4) setRegBatch('2025-2029 (Batch 2025)');
     else if (sem === 5 || sem === 6) setRegBatch('2024-2028 (Batch 2024)');
     else if (sem === 7 || sem === 8) setRegBatch('2023-2027 (Batch 2023)');
-    else setRegBatch('2026-2030 (Batch 2026)');
+    else setRegBatch('2025-2029 (Batch 2025)');
   };
 
   const handleOpenRegister = () => {
     setAuthMode('REGISTER');
     setError(null);
+    setSuccessMsg(null);
     setShowSignupModal(true);
-  };
-
-  const handleSendOtp = async () => {
-    if (!regPhone || regPhone.trim().length < 8) {
-      setError('Please enter a valid 10-digit mobile number to receive OTP.');
-      return;
-    }
-    setError(null);
-    setOtpLoading(true);
-    try {
-      const res = await api.sendOtp({ phone: regPhone.trim() });
-      if (res.success) {
-        setOtpSent(true);
-        setDevOtpPreview(res.otp || null);
-        setOtpCountdown(60);
-        setSuccessMsg(res.message || `OTP sent to ${regPhone.trim()}`);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to send OTP to mobile number.');
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otpCode || otpCode.trim().length < 4) {
-      setError('Please enter the 6-digit OTP sent to your phone.');
-      return;
-    }
-    setError(null);
-    setOtpLoading(true);
-    try {
-      const res = await api.verifyOtp({ phone: regPhone.trim(), otp: otpCode.trim() });
-      if (res.success) {
-        setOtpVerified(true);
-        setSuccessMsg('✅ Mobile number verified successfully!');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Invalid or expired OTP code.');
-    } finally {
-      setOtpLoading(false);
-    }
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -190,12 +133,7 @@ export const LoginPage: React.FC = () => {
     setSuccessMsg(null);
 
     if (!regName.trim() || !regUsn.trim() || !regEmail.trim() || !regPassword) {
-      setError('Please fill in all mandatory fields (Full Name, USN, Email, Password).');
-      return;
-    }
-
-    if (regPhone.trim() && !otpVerified) {
-      setError('Please verify your mobile number via OTP before submitting registration.');
+      setError('Please fill in all mandatory fields (Full Name, USN, Institutional Email, Semester, Password).');
       return;
     }
 
@@ -211,15 +149,15 @@ export const LoginPage: React.FC = () => {
 
     setLoading(true);
     try {
+      const cleanUsnFormatted = regUsn.trim().toUpperCase();
       const res = await api.registerStudent({
         name: regName.trim(),
-        usn: regUsn.trim().toUpperCase(),
+        usn: cleanUsnFormatted,
         email: regEmail.trim().toLowerCase(),
         semester: regSemester,
         batch: regBatch,
         department: regDepartment,
         phone: regPhone.trim() || undefined,
-        phone_otp: otpCode.trim() || undefined,
         password: regPassword
       });
 
@@ -230,16 +168,13 @@ export const LoginPage: React.FC = () => {
           origin: { y: 0.6 }
         });
 
-        setSuccessMsg(res.message || 'Student account registered and saved to database successfully!');
-        
-        // Auto sign-in or prepare sign-in
-        try {
-          await login({ usn: regUsn.trim().toUpperCase(), password: regPassword });
-        } catch {
-          setIdentifier(regUsn.trim().toUpperCase() || regEmail.trim().toLowerCase());
-          setPassword(regPassword);
-          setAuthMode('LOGIN');
-        }
+        // Set prominent success message and switch to login with USN prefilled
+        setSuccessMsg(`✅ Student Registration Submitted! Your account (${cleanUsnFormatted}) has been sent for administrative verification. Please wait for Admin approval before logging in.`);
+        setIdentifier(cleanUsnFormatted);
+        setPassword('');
+        setRegPassword('');
+        setRegConfirmPassword('');
+        setAuthMode('LOGIN');
       }
     } catch (err: any) {
       setError(err.message || 'Account registration failed. Please check your credentials.');
@@ -415,16 +350,35 @@ export const LoginPage: React.FC = () => {
               </div>
 
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2 animate-fadeIn">
-                  <ShieldAlert className="w-4 h-4 shrink-0 text-red-600" />
-                  <span>{error}</span>
+                <div className={`mb-4 p-3.5 border rounded-xl text-xs flex items-start gap-2.5 animate-fadeIn ${
+                  error.toLowerCase().includes('pending verification') || error.toLowerCase().includes('await')
+                    ? 'bg-amber-50 border-amber-300 text-amber-900'
+                    : 'bg-red-50 border-red-200 text-red-700'
+                }`}>
+                  <ShieldAlert className={`w-4 h-4 shrink-0 mt-0.5 ${
+                    error.toLowerCase().includes('pending verification') || error.toLowerCase().includes('await')
+                      ? 'text-amber-600'
+                      : 'text-red-600'
+                  }`} />
+                  <div>
+                    {error.toLowerCase().includes('pending verification') || error.toLowerCase().includes('await') && (
+                      <div className="font-extrabold text-amber-950 mb-0.5 flex items-center gap-1.5">
+                        <span>⏳ Verification Pending</span>
+                        <span className="text-[10px] bg-amber-200 text-amber-800 font-bold px-2 py-0.2 rounded-full">Requires Admin / HOD Approval</span>
+                      </div>
+                    )}
+                    <span>{error}</span>
+                  </div>
                 </div>
               )}
 
               {successMsg && (
-                <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs rounded-xl flex items-center gap-2 animate-fadeIn">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                  <span>{successMsg}</span>
+                <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs rounded-xl flex items-start gap-2.5 animate-fadeIn">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+                  <div>
+                    <div className="font-extrabold text-emerald-950 mb-0.5">Registration Submitted Successfully</div>
+                    <span>{successMsg}</span>
+                  </div>
                 </div>
               )}
 
@@ -617,96 +571,19 @@ export const LoginPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Phone Number with OTP Verification */}
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <label className="block font-bold text-slate-700">
-                          Mobile Number & Phone Verification
-                        </label>
-                        {otpVerified ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Mobile Verified</span>
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-semibold text-slate-500">
-                            OTP verification sent on mobile
-                          </span>
-                        )}
+                    {/* Mobile Phone Number */}
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Mobile Phone Number (Optional)</label>
+                      <div className="relative">
+                        <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="tel"
+                          placeholder="e.g. 9845012345 or +91-9845012345"
+                          value={regPhone}
+                          onChange={(e) => setRegPhone(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none bg-white text-slate-900"
+                        />
                       </div>
-
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                          <input
-                            type="tel"
-                            placeholder="e.g. 9845012345 or +91-9845012345"
-                            value={regPhone}
-                            disabled={otpVerified}
-                            onChange={(e) => {
-                              setRegPhone(e.target.value);
-                              setOtpVerified(false);
-                              setOtpSent(false);
-                            }}
-                            className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-cyan-500 outline-none bg-white disabled:bg-slate-100"
-                          />
-                        </div>
-                        {!otpVerified && (
-                          <button
-                            type="button"
-                            onClick={handleSendOtp}
-                            disabled={otpLoading || !regPhone || otpCountdown > 0}
-                            className="px-3.5 py-2 bg-gradient-to-r from-orange-500 to-cyan-600 hover:from-orange-600 hover:to-cyan-700 text-white font-bold rounded-xl text-xs whitespace-nowrap shadow-xs disabled:opacity-50 transition-all flex items-center gap-1.5"
-                          >
-                            {otpLoading ? (
-                              <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                            ) : otpCountdown > 0 ? (
-                              <span>Resend ({otpCountdown}s)</span>
-                            ) : otpSent ? (
-                              <span>Resend OTP</span>
-                            ) : (
-                              <span>Send OTP</span>
-                            )}
-                          </button>
-                        )}
-                      </div>
-
-                      {/* OTP Input and Verification Bar */}
-                      {otpSent && !otpVerified && (
-                        <div className="pt-2 border-t border-slate-200/80 space-y-2 animate-fadeIn">
-                          {devOtpPreview && (
-                            <div className="p-2 bg-orange-100/70 border border-orange-300 rounded-xl text-[11px] text-orange-950 flex items-center justify-between">
-                              <span className="font-semibold">📲 Simulated SMS OTP Code:</span>
-                              <span className="font-mono font-extrabold text-xs tracking-widest bg-orange-800 text-white px-2 py-0.5 rounded-lg shadow-xs">
-                                {devOtpPreview}
-                              </span>
-                            </div>
-                          )}
-
-                          <div className="flex gap-2">
-                            <div className="relative flex-1">
-                              <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                              <input
-                                type="text"
-                                maxLength={6}
-                                placeholder="Enter 6-digit OTP"
-                                value={otpCode}
-                                onChange={(e) => setOtpCode(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 font-mono font-bold tracking-widest text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
-                              />
-                            </div>
-                            <button
-                              type="button"
-                              onClick={handleVerifyOtp}
-                              disabled={otpLoading || !otpCode}
-                              className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold rounded-xl text-xs whitespace-nowrap shadow-xs disabled:opacity-50 transition-all flex items-center gap-1.5"
-                            >
-                              <ShieldCheck className="w-3.5 h-3.5" />
-                              <span>Verify OTP</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     {/* Passwords */}

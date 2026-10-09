@@ -11,7 +11,7 @@ async function runTests() {
   const teacherLoginRes = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'aarti.pawar@gndec.ac.in', password: 'Faculty@123' })
+    body: JSON.stringify({ email: 'aarti.pawar@gndecb.ac.in', password: 'Faculty@123' })
   });
   const teacherLogin = await teacherLoginRes.json();
   console.log('Teacher Login Success:', teacherLogin.success, '| Role:', teacherLogin.user?.role, '| Name:', teacherLogin.user?.name);
@@ -33,38 +33,40 @@ async function runTests() {
     headers: { Authorization: `Bearer ${teacherToken}` }
   });
   const labsData = await labsRes.json();
-  const sem5Lab = labsData.labs.find((l: any) => l.semester === 5) || labsData.labs[0];
-  console.log('Selected Lab for Attendance:', sem5Lab.code, '-', sem5Lab.name);
+  const sem5Lab = labsData.labs?.find((l: any) => l.semester === 5) || labsData.labs?.[0];
+  console.log('Selected Lab for Attendance:', sem5Lab?.code, '-', sem5Lab?.name);
 
-  const studentsList = rosterData.students.map((s: any, idx: number) => ({
-    student_id: s.student_id,
-    status: idx === 1 ? 'ABSENT' : idx === 3 ? 'LATE' : 'PRESENT',
-    remarks: idx === 1 ? 'Medical leave requested' : ''
-  }));
+  if (rosterData.students && rosterData.students.length > 0) {
+    const studentsList = rosterData.students.map((s: any, idx: number) => ({
+      student_id: s.student_id,
+      status: idx === 1 ? 'ABSENT' : idx === 3 ? 'LATE' : 'PRESENT',
+      remarks: idx === 1 ? 'Medical leave requested' : ''
+    }));
 
-  const takeRes = await fetch(`${baseUrl}/api/attendance/take`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${teacherToken}`
-    },
-    body: JSON.stringify({
-      laboratory_id: sem5Lab.id,
-      semester: 5,
-      section: 'A',
-      date: new Date().toISOString().split('T')[0],
-      time_slot: '09:00 AM - 10:00 AM',
-      attendance: studentsList
-    })
-  });
-  const takeData = await takeRes.json();
-  console.log('Attendance Taken Response:', takeData);
+    const takeRes = await fetch(`${baseUrl}/api/attendance/take`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${teacherToken}`
+      },
+      body: JSON.stringify({
+        laboratory_id: sem5Lab?.id,
+        semester: 5,
+        section: 'A',
+        date: new Date().toISOString().split('T')[0],
+        time_slot: '09:00 AM - 10:00 AM',
+        attendance: studentsList
+      })
+    });
+    const takeData = await takeRes.json();
+    console.log('Attendance Taken Response:', takeData);
+  }
 
-  console.log('\n--- 5. Testing Student Login (3GN24CB001) ---');
+  console.log('\n--- 5. Testing Student Login (3GN24IC006) ---');
   const studentLoginRes = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: '3GN24CB001', password: 'Student@123' })
+    body: JSON.stringify({ email: '3GN24IC006', password: 'Student@123' })
   });
   const studentLogin = await studentLoginRes.json();
   console.log('Student Login Success:', studentLogin.success, '| Role:', studentLogin.user?.role, '| Name:', studentLogin.user?.name);
@@ -81,36 +83,38 @@ async function runTests() {
   }
 
   console.log('\n--- 7. Testing Student Direct Feedback Submission ---');
-  const feedbackRes = await fetch(`${baseUrl}/api/feedback/submit-direct`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${studentToken}`
-    },
-    body: JSON.stringify({
-      laboratory_id: sem5Lab.id,
-      faculty_id: sem5Lab.faculty_id,
-      ratings: {
-        clarity_rating: 5,
-        preparedness_rating: 5,
-        support_rating: 4,
-        equipment_rating: 5,
-        safety_rating: 5
+  if (sem5Lab) {
+    const feedbackRes = await fetch(`${baseUrl}/api/feedback/submit-direct`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${studentToken}`
       },
-      comments: 'Excellent explanation of network topologies and socket programming concepts!'
-    })
-  });
-  const feedbackData = await feedbackRes.json();
-  console.log('Feedback Submission Response:', feedbackData);
+      body: JSON.stringify({
+        laboratory_id: sem5Lab.id,
+        faculty_id: sem5Lab.faculty_id,
+        ratings: {
+          clarity_rating: 5,
+          preparedness_rating: 5,
+          support_rating: 4,
+          equipment_rating: 5,
+          safety_rating: 5
+        },
+        comments: 'Excellent explanation of network topologies and socket programming concepts!'
+      })
+    });
+    const feedbackData = await feedbackRes.json();
+    console.log('Feedback Submission Response:', feedbackData);
+  }
 
-  console.log('\n--- 8. Testing HOD Login (harish.joshi@gndec.ac.in) ---');
+  console.log('\n--- 8. Testing Admin Login (aiml.harishjoshi@gmail.com) ---');
   const adminLoginRes = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'harish.joshi@gndec.ac.in', password: 'Faculty@123' })
+    body: JSON.stringify({ email: 'aiml.harishjoshi@gmail.com', password: 'Joshi@2308' })
   });
   const adminLogin = await adminLoginRes.json();
-  console.log('HOD Login Success:', adminLogin.success, '| Role:', adminLogin.user?.role, '| Name:', adminLogin.user?.name);
+  console.log('Admin Login Success:', adminLogin.success, '| Role:', adminLogin.user?.role, '| Name:', adminLogin.user?.name);
   const adminToken = adminLogin.token;
 
   console.log('\n--- 9. Testing Admin Viewing All Attendance Records ---');
@@ -131,13 +135,72 @@ async function runTests() {
     console.log(`Latest Feedback: Lab=${latest.lab_name}, Faculty=${latest.faculty_name || 'N/A'}, Avg Rating=${latest.average_rating}, Comment="${latest.comments}"`);
   }
 
-  console.log('\n--- 11. Testing Timetables for Semesters 3, 5, 7 ---');
-  for (const sem of [3, 5, 7]) {
+  console.log('\n--- 11. Testing Timetables for Semesters 1, 3, 5, 7 ---');
+  for (const sem of [1, 3, 5, 7]) {
     const sRes = await fetch(`${baseUrl}/api/timetable/${sem}`, {
       headers: { Authorization: `Bearer ${adminToken}` }
     });
     const sData = await sRes.json();
     console.log(`Semester ${sem} Timetable: ${sData.entries?.length} entries loaded.`);
+    if (sem === 3) {
+      const mondayIot = sData.entries?.find((e: any) => e.day_of_week === 'MONDAY' && e.subject_code === 'BICL305');
+      console.log('Sem 3 Monday IoT Lab Found:', mondayIot ? `YES (${mondayIot.subject_name}, ${mondayIot.time_range})` : 'NO');
+    }
+  }
+
+  console.log('\n--- 12. Testing Student Registration & Admin Approval Workflow (No Direct Login, No OTP) ---');
+  const testUsn = `3GN24IC${Math.floor(100 + Math.random() * 900)}`;
+  const regRes = await fetch(`${baseUrl}/api/auth/register-student`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'Test Verify Student',
+      usn: testUsn,
+      email: `${testUsn.toLowerCase()}@gndec.ac.in`,
+      phone: '9876543210',
+      semester: 3,
+      section: 'A',
+      batch: 'B1',
+      password: 'Student@123'
+    })
+  });
+  const regData = await regRes.json();
+  console.log('Registration Response:', regData);
+  console.log('Token Returned during registration (must be undefined):', regData.token);
+
+  console.log('\n--- 13. Testing Direct Login with Pending Student (Must Fail with 403) ---');
+  const pendingLoginRes = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: testUsn, password: 'Student@123' })
+  });
+  const pendingLoginData = await pendingLoginRes.json();
+  console.log('Pending Student Login Status:', pendingLoginRes.status, '| Message:', pendingLoginData.message);
+
+  console.log('\n--- 14. Testing Admin Approving the Pending Student ---');
+  const studentsListRes = await fetch(`${baseUrl}/api/students`, {
+    headers: { Authorization: `Bearer ${adminToken}` }
+  });
+  const studentsListData = await studentsListRes.json();
+  const createdStudent = studentsListData.students.find((s: any) => s.usn === testUsn);
+  console.log('Found newly registered student:', createdStudent?.name, 'ID:', createdStudent?.id, 'Status:', createdStudent?.verification_status);
+
+  if (createdStudent) {
+    const verifyRes = await fetch(`${baseUrl}/api/students/${createdStudent.id}/verify`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const verifyData = await verifyRes.json();
+    console.log('Admin Verification Action:', verifyData);
+
+    console.log('\n--- 15. Testing Student Login After Verification (Must Succeed) ---');
+    const approvedLoginRes = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: testUsn, password: 'Student@123' })
+    });
+    const approvedLoginData = await approvedLoginRes.json();
+    console.log('Approved Student Login Success:', approvedLoginData.success, '| Name:', approvedLoginData.user?.name);
   }
 
   console.log('\n=============================================');

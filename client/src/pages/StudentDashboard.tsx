@@ -82,14 +82,15 @@ export const StudentDashboard: React.FC = () => {
   // Real-time Day and Clock
   const daysOfWeek = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
   const dayNamesFull = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-  const todayDayName = dayNamesFull[new Date().getDay()];
+  const currentDayOfWeek = dayNamesFull[new Date().getDay()];
+  const defaultDay = daysOfWeek.includes(currentDayOfWeek) ? currentDayOfWeek : 'MONDAY';
   
-  const [selectedDay, setSelectedDay] = useState<string>('WEDNESDAY');
+  const [selectedDay, setSelectedDay] = useState<string>(defaultDay);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
 
-  const studentSem = Number(user?.semester || user?.profile?.semester || 5);
-  const studentUsn = user?.usn || user?.profile?.usn || '3GN24IC006';
+  const studentSem = Number(user?.semester || user?.profile?.semester || 3);
+  const studentUsn = user?.usn || user?.profile?.usn || '3GN25CI012';
   const studentPhone = user?.phone || user?.profile?.phone || '';
   const isPhoneVerified = Boolean(user?.phone_verified || user?.profile?.phone_verified);
 
@@ -98,7 +99,7 @@ export const StudentDashboard: React.FC = () => {
     if (sem === 3 || sem === 4) return '2025-2029 (Batch 2025)';
     if (sem === 5 || sem === 6) return '2024-2028 (Batch 2024)';
     if (sem === 7 || sem === 8) return '2023-2027 (Batch 2023)';
-    return '2024-2028 (Batch 2024)';
+    return '2025-2029 (Batch 2025)';
   };
 
   const studentBatch = user?.batch || user?.profile?.batch || getBatchLabel(studentSem);
@@ -135,7 +136,7 @@ export const StudentDashboard: React.FC = () => {
       if (labsRes.success && labsRes.labs) {
         setLabs(labsRes.labs);
         if (labsRes.labs.length > 0 && !selectedLabForCalib) {
-          const defaultLab = labsRes.labs.find((l: any) => l.code === 'BIC515C') || labsRes.labs[0];
+          const defaultLab = labsRes.labs[0];
           setSelectedLabForCalib(defaultLab);
           setCalibLat(defaultLab.latitude || 17.9104);
           setCalibLng(defaultLab.longitude || 77.5199);
@@ -236,37 +237,38 @@ export const StudentDashboard: React.FC = () => {
 
   // Calculate current minutes of the day
   const currentMinutesOfDay = currentTime.getHours() * 60 + currentTime.getMinutes();
-  const currentDayOfWeek = dayNamesFull[currentTime.getDay()];
 
   // Filter timetable for today and selected tab
-  const todayTimetableEntries = timetable.filter(t => t.day_of_week === (daysOfWeek.includes(currentDayOfWeek) ? currentDayOfWeek : 'WEDNESDAY'));
+  const todayTimetableEntries = timetable.filter(t => t.day_of_week === currentDayOfWeek);
   const selectedDayEntries = selectedDay === 'TODAY'
     ? todayTimetableEntries
     : selectedDay === 'ALL'
     ? timetable
     : timetable.filter(t => t.day_of_week === selectedDay);
 
-  // Helper to get slot status
+  // Helper to get slot timing status based on real-time clock
   const getSlotTimingStatus = (entry: any) => {
-    const isToday = entry.day_of_week === currentDayOfWeek || selectedDay === 'WEDNESDAY';
-    const isFSD = entry.subject_code === 'BIC515C';
+    const isToday = entry.day_of_week === currentDayOfWeek;
     
     if (activeSession && (activeSession.lab_code === entry.subject_code || activeSession.code === entry.subject_code)) {
       return { type: 'LIVE', label: '🔴 LIVE IN PROGRESS', color: 'bg-rose-100 text-rose-800 border-rose-400 font-black animate-pulse' };
     }
-    if (isFSD && isToday) {
-      return { type: 'LIVE', label: '🔴 LIVE RIGHT NOW', color: 'bg-rose-100 text-rose-800 border-rose-400 font-black animate-pulse' };
-    }
-    const { startMin, endMin } = parseTimeRange(entry.time_range);
-    if (currentMinutesOfDay >= startMin && currentMinutesOfDay <= endMin) {
-      return { type: 'LIVE', label: '🔴 LIVE IN PROGRESS', color: 'bg-rose-100 text-rose-800 border-rose-400 font-extrabold animate-pulse' };
-    }
-    if (currentMinutesOfDay < startMin) {
-      const diffMin = startMin - currentMinutesOfDay;
-      const hours = Math.floor(diffMin / 60);
-      const mins = diffMin % 60;
-      const timeStr = hours > 0 ? `in ${hours}h ${mins}m` : `in ${mins}m`;
-      return { type: 'UPCOMING', label: `Upcoming (${timeStr})`, color: 'bg-pink-100 text-pink-900 border-pink-300 font-bold' };
+    
+    if (isToday) {
+      const { startMin, endMin } = parseTimeRange(entry.time_range);
+      if (currentMinutesOfDay >= startMin && currentMinutesOfDay <= endMin) {
+        return { type: 'LIVE', label: '🔴 LIVE RIGHT NOW', color: 'bg-rose-100 text-rose-800 border-rose-400 font-extrabold animate-pulse' };
+      }
+      if (currentMinutesOfDay < startMin) {
+        const diffMin = startMin - currentMinutesOfDay;
+        const hours = Math.floor(diffMin / 60);
+        const mins = diffMin % 60;
+        const timeStr = hours > 0 ? `in ${hours}h ${mins}m` : `in ${mins}m`;
+        return { type: 'UPCOMING', label: `Upcoming (${timeStr})`, color: 'bg-pink-100 text-pink-900 border-pink-300 font-bold' };
+      }
+      if (currentMinutesOfDay > endMin) {
+        return { type: 'COMPLETED', label: 'Slot Concluded Today', color: 'bg-emerald-50 text-emerald-800 border-emerald-200 font-semibold' };
+      }
     }
     return { type: 'SCHEDULED', label: 'Scheduled Slot', color: 'bg-slate-100 text-slate-800 border-slate-200' };
   };
@@ -276,7 +278,7 @@ export const StudentDashboard: React.FC = () => {
     if (entry.location) return entry.location;
     const matchingLab = labs.find(l => l.code === entry.subject_code || l.code === entry.code);
     if (matchingLab?.location) return matchingLab.location;
-    return `CSE & IoT Complex - Room ${entry.room || entry.room_number || '307'}`;
+    return `CSE & IoT Complex - Room ${entry.room || entry.room_number || '306'}`;
   };
 
   return (

@@ -73,11 +73,7 @@ export const api = {
   // Auth & Student Self-Registration
   login: (credentials: { email?: string; usn?: string; password: string }) =>
     request<any>('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
-  sendOtp: (data: { phone: string }) =>
-    request<any>('/auth/send-otp', { method: 'POST', body: JSON.stringify(data) }),
-  verifyOtp: (data: { phone: string; otp: string }) =>
-    request<any>('/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
-  registerStudent: (data: { name: string; usn: string; email: string; semester: number; batch?: string; department?: string; phone?: string; phone_otp?: string; password: string }) =>
+  registerStudent: (data: { name: string; usn: string; email: string; semester: number; batch?: string; department?: string; phone?: string; password: string }) =>
     request<any>('/auth/register-student', { method: 'POST', body: JSON.stringify(data) }),
   getMe: () => request<any>('/auth/me'),
   updateProfile: (data: { name?: string; email?: string; password?: string }) =>
