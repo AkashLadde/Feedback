@@ -39,14 +39,6 @@ export const TimetablePage: React.FC = () => {
     }
   }, [user, isStudent, studentSem]);
 
-  // 1st Semester Practical Laboratories
-  const sem1Legends: LabLegend[] = [
-    { code: '1BPOPS103', name: 'Principles of Programming using C Lab', abbr: 'C PROG LAB', legend: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)' },
-    { code: '1BCSL107', name: 'Computer Aided Engineering Drawing Lab', abbr: 'CAED LAB', legend: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)' },
-    { code: '1BPHY102', name: 'Applied Engineering Physics Laboratory', abbr: 'PHY LAB', legend: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)' },
-    { code: '1BENG106', name: 'Professional Communication & Language Lab', abbr: 'LANG LAB', legend: 'Prof. Farhanaz', room: 'Language Lab (Room 108)' }
-  ];
-
   // 3rd Semester Practical Laboratories (Official GNDEC 3rd Sem Timetable - With Effect from: 08-09-2026)
   const sem3Legends: LabLegend[] = [
     { code: '1BCS302(P)', name: 'Object Oriented Programming with JAVA LAB', abbr: 'JAVAL/MK', legend: 'Prof. Mahesh Kanjikar', room: 'Java Lab (Room 205)' },
@@ -71,52 +63,6 @@ export const TimetablePage: React.FC = () => {
     { code: 'BCO701(P)', name: 'IOT Communication Protocols Lab', abbr: 'ICPL/FN', legend: 'Prof. Farhanaz', room: 'Protocols Lab (Room 405)' },
     { code: 'BIC702(P)', name: 'Blockchain Technology Lab', abbr: 'BTL/AB', legend: 'Prof. Ashok Bawge', room: 'Blockchain Lab (Room 406)' },
     { code: 'BIC786', name: 'Major Project Phase-II', abbr: 'PP-II/AB', legend: 'Prof. Ashok Bawge', room: 'Advanced Project Lab (Room 408)' }
-  ];
-
-  // 1st Sem Practical Schedule
-  const sem1Schedule: DaySchedule[] = [
-    {
-      day: 'MONDAY',
-      slots: [
-        { code: '1BPOPS103', abbr: 'POPC/MK (B1)', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'Batch B1' },
-        { code: '1BCSL107', abbr: 'CAED/AP (B2)', name: 'Computer Aided Engineering Drawing Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)', batch: 'Batch B2' }
-      ]
-    },
-    {
-      day: 'TUESDAY',
-      slots: [
-        { code: '1BPHY102', abbr: 'PHY/PP (B1)', name: 'Applied Engineering Physics Laboratory', time: '09.00 AM - 12.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'Batch B1' },
-        { code: '1BENG106', abbr: 'LANG/FN (B2)', name: 'Professional Communication & Language Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)', batch: 'Batch B2' }
-      ]
-    },
-    {
-      day: 'WEDNESDAY',
-      slots: [
-        { code: '1BPOPS103', abbr: 'POPC/MK (B2)', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'Batch B2' },
-        { code: '1BPHY102', abbr: 'PHY/PP (B1)', name: 'Applied Engineering Physics Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'Batch B1' }
-      ]
-    },
-    {
-      day: 'THURSDAY',
-      slots: [
-        { code: '1BCSL107', abbr: 'CAED/AP (B1)', name: 'Computer Aided Engineering Drawing Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)', batch: 'Batch B1' },
-        { code: '1BENG106', abbr: 'LANG/FN (B2)', name: 'Professional Communication & Language Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)', batch: 'Batch B2' }
-      ]
-    },
-    {
-      day: 'FRIDAY',
-      slots: [
-        { code: '1BPOPS103', abbr: 'POPC/MK', name: 'Principles of Programming using C Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Mahesh Kanjikar', room: 'C Programming Lab (Room 105)', batch: 'All Batches' },
-        { code: '1BPHY102', abbr: 'PHY/PP', name: 'Applied Engineering Physics Laboratory', time: '02.00 PM - 05.00 PM', fac: 'Dr. Pandit Patil', room: 'Physics Lab (Room 107)', batch: 'All Batches' }
-      ]
-    },
-    {
-      day: 'SATURDAY',
-      slots: [
-        { code: '1BENG106', abbr: 'LANG/FN', name: 'Professional Communication & Language Lab', time: '09.00 AM - 12.00 PM', fac: 'Prof. Farhanaz', room: 'Language Lab (Room 108)', batch: 'All Batches' },
-        { code: '1BCSL107', abbr: 'CAED/AP', name: 'Computer Aided Engineering Drawing Lab', time: '02.00 PM - 05.00 PM', fac: 'Prof. Aarti Pawar', room: 'CAED Lab (Room 106)', batch: 'All Batches' }
-      ]
-    }
   ];
 
   // 3rd Sem Practical Schedule (Official GNDEC 3rd Sem Timetable - With Effect from: 08-09-2026)
@@ -238,26 +184,23 @@ export const TimetablePage: React.FC = () => {
   ];
 
   const currentLegends =
-    activeSem === 1 ? sem1Legends : activeSem === 3 ? sem3Legends : activeSem === 5 ? sem5Legends : sem7Legends;
+    activeSem === 3 ? sem3Legends : activeSem === 5 ? sem5Legends : sem7Legends;
   const currentSchedule =
-    activeSem === 1 ? sem1Schedule : activeSem === 3 ? sem3Schedule : activeSem === 5 ? sem5Schedule : sem7Schedule;
+    activeSem === 3 ? sem3Schedule : activeSem === 5 ? sem5Schedule : sem7Schedule;
 
   const getSemOrdinal = (s: number) => {
-    if (s === 1) return '1ST';
     if (s === 3) return '3RD';
     if (s === 5) return '5TH';
     return '7TH';
   };
 
   const getEffectDate = (s: number) => {
-    if (s === 1) return '01-09-2026';
     if (s === 3) return '08-09-2026';
     if (s === 5) return '07-09-2026';
     return '24-08-2026';
   };
 
   const getBatchLabel = (s: number) => {
-    if (s === 1) return 'Batch 2026';
     if (s === 3) return 'Batch 2025';
     if (s === 5) return 'Batch 2024';
     return 'Batch 2023';
@@ -291,7 +234,7 @@ export const TimetablePage: React.FC = () => {
           {/* Semester Selector Tabs ONLY FOR ADMIN/FACULTY - LOCKED FOR STUDENTS */}
           {!isStudent ? (
             <div className="bg-slate-100 p-1 rounded-2xl flex gap-1 border border-slate-200">
-              {[1, 3, 5, 7].map((sem) => (
+              {[3, 5, 7].map((sem) => (
                 <button
                   key={sem}
                   onClick={() => setActiveSem(sem)}
@@ -301,7 +244,7 @@ export const TimetablePage: React.FC = () => {
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  {sem === 1 ? '1st Sem' : sem === 3 ? '3rd Sem' : sem === 5 ? '5th Sem' : '7th Sem'}
+                  {sem === 3 ? '3rd Sem' : sem === 5 ? '5th Sem' : '7th Sem'}
                 </button>
               ))}
             </div>

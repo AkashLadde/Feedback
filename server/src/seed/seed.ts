@@ -30,13 +30,11 @@ export function seedDatabase() {
   const adminHash = bcrypt.hashSync('Joshi@2308', 10);
   const hodHash = bcrypt.hashSync('Joshi@2308', 10);
 
-  // 1. Semesters (1st to 8th Semester with Batch Years)
+  // 1. Semesters (Official Department Semesters: 3rd, 5th, 7th Semesters with Batch Years)
   const insertSem = db.prepare(`
     INSERT INTO semesters (number, name, academic_year, status)
     VALUES (?, ?, '2026-2027', 'ACTIVE')
   `);
-  insertSem.run(1, '1st Semester (Batch 2026)');
-  insertSem.run(2, '2nd Semester (Batch 2026)');
   insertSem.run(3, '3rd Semester (Batch 2025)');
   insertSem.run(4, '4th Semester (Batch 2025)');
   insertSem.run(5, '5th Semester (Batch 2024)');
@@ -83,7 +81,7 @@ export function seedDatabase() {
     facultyMap[f.abbr] = fId;
   }
 
-  // 4. Seed Verified Demo Students for 1st, 3rd, 5th, and 7th Semesters + Sample Pending Verification Student
+  // 4. Seed Verified Demo Students for 3rd, 5th, and 7th Semesters + Sample Pending Verification Student
   const studentHash = bcrypt.hashSync('Student@123', 10);
   const insertStudent = db.prepare(`
     INSERT INTO students (user_id, usn, semester, section, batch, department, academic_year, phone, phone_verified)
@@ -94,7 +92,6 @@ export function seedDatabase() {
     { name: 'Akash (7th Sem)', email: 'akash.7th@gndec.ac.in', usn: '3GN24IC006', sem: 7, batch: '2023-2027 (Batch 2023)', phone: '+91-9845011005', status: 'ACTIVE' },
     { name: 'Rahul Sharma (5th Sem)', email: 'rahul.5th@gndec.ac.in', usn: '3GN24CI028', sem: 5, batch: '2024-2028 (Batch 2024)', phone: '+91-9845011003', status: 'ACTIVE' },
     { name: 'Sneha Biradar (3rd Sem)', email: 'sneha.3rd@gndec.ac.in', usn: '3GN25CI012', sem: 3, batch: '2025-2029 (Batch 2025)', phone: '+91-9845011002', status: 'ACTIVE' },
-    { name: 'Arun Kulkarni (1st Sem)', email: 'arun.1st@gndec.ac.in', usn: '3GN26CI005', sem: 1, batch: '2026-2030 (Batch 2026)', phone: '+91-9845011001', status: 'ACTIVE' },
     { name: 'Pooja Patil (Pending Approval)', email: 'pooja.patil@gndec.ac.in', usn: '3GN23CI045', sem: 7, batch: '2023-2027 (Batch 2023)', phone: '+91-9845011004', status: 'PENDING_VERIFICATION' }
   ];
 
@@ -106,19 +103,13 @@ export function seedDatabase() {
     insertStudent.run(sUserId, s.usn, s.sem, s.batch, s.phone);
   }
 
-  // 5. Official Practical Laboratories ONLY (Exact from Timetable Images)
+  // 5. Official Practical Laboratories ONLY (Exact from Timetable Images: Sem 3, 5, 7)
   // Campus coordinates: Guru Nanak Dev Engineering College, Mailoor Road, Bidar (17.9104, 77.5199)
   const baseLat = 17.9104;
   const baseLng = 77.5199;
 
   const practicalLabsData = [
-    // 1st Semester Practical Labs
-    { sem: 1, name: 'Principles of Programming using C Lab', code: '1BPOPS103', room: 'C Programming Lab (Room 105)', location: 'CSE & IoT Complex - 1st Floor (North Wing)', fAbbr: 'MK', desc: 'C Syntax, Control Structures, Arrays, Pointers, Functions & Algorithms Lab' },
-    { sem: 1, name: 'Computer Aided Engineering Drawing Lab', code: '1BCSL107', room: 'CAED Lab (Room 106)', location: 'Mechanical & Computing Block - 1st Floor', fAbbr: 'AP', desc: 'CAD 2D/3D Projections, Isometric Views & Computer Modeling Lab' },
-    { sem: 1, name: 'Applied Engineering Physics Laboratory', code: '1BPHY102', room: 'Physics Lab (Room 107)', location: 'Science Block - Ground Floor', fAbbr: 'PP', desc: 'Laser Optics, Semiconductor Bandgap, Dielectric Constants & Sensor Physics' },
-    { sem: 1, name: 'Professional Communication & Language Lab', code: '1BENG106', room: 'Language Lab (Room 108)', location: 'Main Academic Block - 1st Floor (East Wing)', fAbbr: 'FN', desc: 'Phonetics, Technical Presentation, Soft Skills & Professional Communication Lab' },
-
-    // 3rd Semester Practical Labs (Exact from Image 2 - With Effect from: 08-09-2026)
+    // 3rd Semester Practical Labs (Exact from Official GNDEC Timetable - With Effect from: 08-09-2026)
     { sem: 3, name: 'Object Oriented Programming with JAVA LAB', code: '1BCS302(P)', room: 'Java Lab (Room 205)', location: 'CSE & IoT Complex - 2nd Floor (West Wing)', fAbbr: 'MK', desc: 'Core Java, OOPs, Collections, Multithreading, Exception Handling & GUI Practical Lab' },
     { sem: 3, name: 'Operating Systems LAB', code: '1BCS304(P)', room: 'OS Lab (Room 206)', location: 'CSE & IoT Complex - 2nd Floor (South Wing)', fAbbr: 'AP', desc: 'Linux Shell Scripting, CPU Scheduling, System Calls & Inter-Process Communication Lab' },
     { sem: 3, name: 'Data Structures Laboratory', code: '1BCSL306', room: 'Data Structures Lab (Room 207)', location: 'Main Academic Block - 2nd Floor (Central Wing)', fAbbr: 'AP', desc: 'Stacks, Queues, Linked Lists, Trees, Graphs, Hashing & Sorting Practical Lab' },
@@ -126,14 +117,14 @@ export function seedDatabase() {
     { sem: 3, name: 'Community Project', code: '1BCP308', room: 'Project Center (Room 209)', location: 'Innovation & Incubation Hub - Ground Floor', fAbbr: 'ANP', desc: 'Social Innovation, Community Service & Applied Field Project Lab' },
     { sem: 3, name: 'NSS/Sports', code: 'BNSK359', room: 'Sports Complex / Ground', location: 'GNDEC Sports Arena - Ground Floor', fAbbr: 'MJ', desc: 'National Service Scheme, Physical Education, Sports & Community Activity' },
 
-    // 5th Semester Practical Labs (Exact from Image 4 - With Effect from: 07-09-2026)
+    // 5th Semester Practical Labs (Exact from Official GNDEC Timetable - With Effect from: 07-09-2026)
     { sem: 5, name: 'Computer Networks Lab', code: 'BCSL502', room: 'Networks Lab (Room 305)', location: 'Cyber Security & Networks Wing - 3rd Floor', fAbbr: 'MJ', desc: 'Wireshark Packet Analysis, Cisco Packet Tracer, Socket Programming & TCP/IP Protocol Analysis' },
     { sem: 5, name: 'IoT Lab', code: 'BICL504', room: 'IoT & Cyber Lab (Room 306)', location: 'IoT Sensors & Hardware Center - 3rd Floor (Room 306)', fAbbr: 'UK', desc: 'Arduino, Raspberry Pi, Sensors, Actuators, MQTT Broker & IoT Interfacing Lab' },
     { sem: 5, name: 'Full Stack Development Laboratory', code: 'BIC515C', room: 'Web Tech Lab (Room 307)', location: 'Software Engineering Complex - 3rd Floor', fAbbr: 'IZ', desc: 'HTML5, CSS3, JavaScript, React, Node.js, Express & Database Full Stack Practical Lab' },
     { sem: 5, name: 'Mini Project', code: 'BIC586', room: 'Project Center (Room 308)', location: 'Innovation & Incubation Hub - 3rd Floor', fAbbr: 'HJ', desc: 'IoT, Cyber Security and Blockchain Embedded Project Development' },
     { sem: 5, name: 'National Service Scheme', code: 'BNSK559', room: 'Activity Center', location: 'Main Academic Block - Ground Floor', fAbbr: 'AP', desc: 'National Service Scheme, Social Welfare & Community Activities' },
 
-    // 7th Semester Practical Labs (Exact from Image 3 - With Effect from: 24-08-2026)
+    // 7th Semester Practical Labs (Exact from Official GNDEC Timetable - With Effect from: 24-08-2026)
     { sem: 7, name: 'IOT Communication Protocols Lab', code: 'BCO701(P)', room: 'Protocols Lab (Room 405)', location: 'Advanced IoT & Wireless Protocol Testbed - 4th Floor (Room 405)', fAbbr: 'FN', desc: 'CoAP, MQTT, Zigbee, LoRaWAN, 6LoWPAN, Bluetooth Low Energy & Mesh Protocol Lab' },
     { sem: 7, name: 'Blockchain Technology Lab', code: 'BIC702(P)', room: 'Blockchain Lab (Room 406)', location: 'Distributed Ledger & Cryptography Center - 4th Floor (Room 406)', fAbbr: 'AB', desc: 'Solidity Smart Contracts, Ethereum Virtual Machine, Web3.js, Truffle/Hardhat & DApps Lab' },
     { sem: 7, name: 'Major Project Phase-II', code: 'BIC786', room: 'Advanced Project Lab (Room 408)', location: 'Department Research Center - 4th Floor (Room 408)', fAbbr: 'AB', desc: 'Capstone Project Research, Prototype Demonstration, Thesis Defense & Implementation' }
@@ -195,35 +186,7 @@ export function seedDatabase() {
     'PK': 'Prof. Puneeth Kumar'
   };
 
-  // 1st Sem Practical Labs Timetable Grid (Monday to Saturday)
-  const sem1LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string; batch?: string }>> = {
-    'MONDAY': [
-      { code: '1BPOPS103', abbr: 'POPC/MK (B1)', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)', batch: 'Batch B1' },
-      { code: '1BCSL107', abbr: 'CAED/AP (B2)', name: 'Computer Aided Engineering Drawing Lab', fAbbr: 'AP', time: '02.00 PM - 05.00 PM', room: 'CAED Lab (Room 106)', batch: 'Batch B2' }
-    ],
-    'TUESDAY': [
-      { code: '1BPHY102', abbr: 'PHY/PP (B1)', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '09.00 AM - 12.00 PM', room: 'Physics Lab (Room 107)', batch: 'Batch B1' },
-      { code: '1BENG106', abbr: 'LANG/FN (B2)', name: 'Professional Communication & Language Lab', fAbbr: 'FN', time: '02.00 PM - 05.00 PM', room: 'Language Lab (Room 108)', batch: 'Batch B2' }
-    ],
-    'WEDNESDAY': [
-      { code: '1BPOPS103', abbr: 'POPC/MK (B2)', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)', batch: 'Batch B2' },
-      { code: '1BPHY102', abbr: 'PHY/PP (B1)', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '02.00 PM - 05.00 PM', room: 'Physics Lab (Room 107)', batch: 'Batch B1' }
-    ],
-    'THURSDAY': [
-      { code: '1BCSL107', abbr: 'CAED/AP (B1)', name: 'Computer Aided Engineering Drawing Lab', fAbbr: 'AP', time: '09.00 AM - 12.00 PM', room: 'CAED Lab (Room 106)', batch: 'Batch B1' },
-      { code: '1BENG106', abbr: 'LANG/FN (B2)', name: 'Professional Communication & Language Lab', fAbbr: 'FN', time: '02.00 PM - 05.00 PM', room: 'Language Lab (Room 108)', batch: 'Batch B2' }
-    ],
-    'FRIDAY': [
-      { code: '1BPOPS103', abbr: 'POPC/MK', name: 'Principles of Programming using C Lab', fAbbr: 'MK', time: '09.00 AM - 12.00 PM', room: 'C Programming Lab (Room 105)', batch: 'All Batches' },
-      { code: '1BPHY102', abbr: 'PHY/PP', name: 'Applied Engineering Physics Laboratory', fAbbr: 'PP', time: '02.00 PM - 05.00 PM', room: 'Physics Lab (Room 107)', batch: 'All Batches' }
-    ],
-    'SATURDAY': [
-      { code: '1BENG106', abbr: 'LANG/FN', name: 'Professional Communication & Language Lab', fAbbr: 'FN', time: '09.00 AM - 12.00 PM', room: 'Language Lab (Room 108)', batch: 'All Batches' },
-      { code: '1BCSL107', abbr: 'CAED/AP', name: 'Computer Aided Engineering Drawing Lab', fAbbr: 'AP', time: '02.00 PM - 05.00 PM', room: 'CAED Lab (Room 106)', batch: 'All Batches' }
-    ]
-  };
-
-  // 3rd Sem Practical Labs Timetable Grid (EXACT from Image 2: 3rd Semester Class Time Table)
+  // 3rd Sem Practical Labs Timetable Grid (EXACT from Official Timetable: 3rd Semester Class Time Table)
   const sem3LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string; batch?: string }>> = {
     'MONDAY': [
       { code: '1BCSL307A', abbr: 'GIT/FN (B2)', name: 'Project Management (with GIT)', fAbbr: 'FN', time: '03.00 PM - 05.00 PM', room: 'Project Lab (Room 208)', batch: 'Batch B2' },
@@ -248,7 +211,7 @@ export function seedDatabase() {
     ]
   };
 
-  // 5th Sem Practical Labs Timetable Grid (EXACT from Image 4: 5th Semester Class Time Table)
+  // 5th Sem Practical Labs Timetable Grid (EXACT from Official Timetable: 5th Semester Class Time Table)
   const sem5LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string; batch?: string }>> = {
     'MONDAY': [],
     'TUESDAY': [
@@ -269,7 +232,7 @@ export function seedDatabase() {
     ]
   };
 
-  // 7th Sem Practical Labs Timetable Grid (EXACT from Image 3: 7th Semester Class Time Table)
+  // 7th Sem Practical Labs Timetable Grid (EXACT from Official Timetable: 7th Semester Class Time Table)
   const sem7LabGrid: Record<string, Array<{ code: string; abbr: string; name: string; fAbbr: string; time: string; room: string; batch?: string }>> = {
     'MONDAY': [],
     'TUESDAY': [],
@@ -310,7 +273,6 @@ export function seedDatabase() {
     }
   };
 
-  insertGridEntries(1, sem1LabGrid);
   insertGridEntries(3, sem3LabGrid);
   insertGridEntries(5, sem5LabGrid);
   insertGridEntries(7, sem7LabGrid);
@@ -392,7 +354,7 @@ export function seedDatabase() {
   ✅ CLEAN DATABASE INITIALIZED (OFFICIAL TIMETABLE IMAGES APPLIED)!
   🏛️ Department: CSE in IoT & Cyber Security including Block Chain Technology
   👨‍🏫 Head of Department (HOD): Dr. Harish Joshi
-  📅 Semesters: 1st, 3rd, 5th, 7th Semesters (Academic Year 2026-2027)
+  📅 Semesters: 3rd, 5th, 7th Semesters (Academic Year 2026-2027)
   👩‍🏫 Faculty: 13 Genuine Professors from Timetable Ready
   🔬 Laboratories: Official Practical Labs with Physical Campus Locations
   🕒 Timetable: Monday-Saturday Practical Lab Time Slots
@@ -410,4 +372,3 @@ export function cleanDatabase() {
 if (process.argv[1]?.endsWith('seed.ts')) {
   seedDatabase();
 }
-

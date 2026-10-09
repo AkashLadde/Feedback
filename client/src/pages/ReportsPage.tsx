@@ -126,14 +126,9 @@ export const ReportsPage: React.FC = () => {
 
   const semesterOptions = [
     { value: 'ALL', label: 'All Semesters' },
-    { value: '1', label: '1st Semester' },
-    { value: '2', label: '2nd Semester' },
     { value: '3', label: '3rd Semester' },
-    { value: '4', label: '4th Semester' },
     { value: '5', label: '5th Semester' },
-    { value: '6', label: '6th Semester' },
-    { value: '7', label: '7th Semester' },
-    { value: '8', label: '8th Semester' }
+    { value: '7', label: '7th Semester' }
   ];
 
   return (

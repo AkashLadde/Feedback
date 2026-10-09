@@ -165,14 +165,9 @@ export const StudentManagementPage: React.FC = () => {
 
   const semesterOptions = [
     { value: 'ALL', label: 'All Semesters' },
-    { value: '1', label: '1st Sem' },
-    { value: '2', label: '2nd Sem' },
     { value: '3', label: '3rd Sem' },
-    { value: '4', label: '4th Sem' },
     { value: '5', label: '5th Sem' },
-    { value: '6', label: '6th Sem' },
-    { value: '7', label: '7th Sem' },
-    { value: '8', label: '8th Sem' }
+    { value: '7', label: '7th Sem' }
   ];
 
   return (
@@ -523,7 +518,7 @@ export const StudentManagementPage: React.FC = () => {
                     onChange={(e) => setSemester(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-pink-500 outline-none"
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                    {[3, 5, 7].map((n) => (
                       <option key={n} value={n}>
                         Semester {n}
                       </option>
@@ -630,7 +625,7 @@ export const StudentManagementPage: React.FC = () => {
                   onChange={(e) => setEditStudent({ ...editStudent, semester: e.target.value })}
                   className="w-full p-2.5 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-pink-500 outline-none"
                 >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                  {[3, 5, 7].map((n) => (
                     <option key={n} value={n}>
                       Semester {n}
                     </option>

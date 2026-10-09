@@ -145,7 +145,7 @@ export const AdminFeedbackPage: React.FC = () => {
         <div className="flex items-center gap-3 flex-wrap">
           {/* Semester Filter */}
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs flex-wrap">
-            {['ALL', '1', '2', '3', '4', '5', '6', '7', '8'].map(sem => (
+            {['ALL', '3', '5', '7'].map(sem => (
               <button
                 key={sem}
                 onClick={() => setSelectedSem(sem)}

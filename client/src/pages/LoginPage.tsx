@@ -439,37 +439,7 @@ export const LoginPage: React.FC = () => {
                     </button>
                   </form>
 
-                  {/* Quick One-Click Demo Credentials */}
-                  <div className="pt-3 border-t border-slate-100">
-                    <p className="text-[11px] font-bold text-slate-500 mb-2">Quick Access Profiles:</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIdentifier('aiml.harishjoshi@gmail.com');
-                          setPassword('Joshi@2308');
-                        }}
-                        className="p-2 rounded-xl bg-orange-50/80 hover:bg-orange-100/80 border border-orange-200 text-left transition-colors"
-                      >
-                        <div className="text-[11px] font-bold text-orange-900">Dr. Harish Joshi</div>
-                        <div className="text-[10px] text-orange-700 font-mono">HOD / Admin</div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIdentifier('3GN24IC006');
-                          setPassword('Student@123');
-                        }}
-                        className="p-2 rounded-xl bg-cyan-50/80 hover:bg-cyan-100/80 border border-cyan-200 text-left transition-colors"
-                      >
-                        <div className="text-[11px] font-bold text-cyan-900">Akash (Sem 5)</div>
-                        <div className="text-[10px] text-cyan-700 font-mono">3GN24IC006</div>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-xl text-xs text-cyan-950 flex items-center justify-between gap-2 mt-2">
+                  <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-xl text-xs text-cyan-950 flex items-center justify-between gap-2 mt-4">
                     <span className="text-[11px] font-medium">New student? Create your account first.</span>
                     <button
                       type="button"
@@ -543,14 +513,9 @@ export const LoginPage: React.FC = () => {
                           onChange={(e) => handleSemesterChangeInReg(parseInt(e.target.value, 10))}
                           className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-slate-800 focus:ring-2 focus:ring-cyan-500 outline-none"
                         >
-                          <option value={1}>1st Semester (Batch 2026 - 2030)</option>
-                          <option value={2}>2nd Semester (Batch 2026 - 2030)</option>
                           <option value={3}>3rd Semester (Batch 2025 - 2029)</option>
-                          <option value={4}>4th Semester (Batch 2025 - 2029)</option>
                           <option value={5}>5th Semester (Batch 2024 - 2028)</option>
-                          <option value={6}>6th Semester (Batch 2024 - 2028)</option>
                           <option value={7}>7th Semester (Batch 2023 - 2027)</option>
-                          <option value={8}>8th Semester (Batch 2023 - 2027)</option>
                         </select>
                       </div>
                     </div>

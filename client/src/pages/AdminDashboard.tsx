@@ -39,14 +39,9 @@ export const AdminDashboard: React.FC = () => {
 
   const semesterOptions = [
     { value: 'ALL', label: 'All Semesters' },
-    { value: '1', label: '1st Sem' },
-    { value: '2', label: '2nd Sem' },
-    { value: '3', label: '3rd Sem' },
-    { value: '4', label: '4th Sem' },
-    { value: '5', label: '5th Sem' },
-    { value: '6', label: '6th Sem' },
-    { value: '7', label: '7th Sem' },
-    { value: '8', label: '8th Sem' }
+    { value: '3', label: '3rd Sem (Batch 2025)' },
+    { value: '5', label: '5th Sem (Batch 2024)' },
+    { value: '7', label: '7th Sem (Batch 2023)' }
   ];
 
   useEffect(() => {

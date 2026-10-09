@@ -7,20 +7,38 @@ const router = Router();
 router.get('/', (_req, res) => {
   try {
     const entries = db.prepare(`
-      SELECT t.*, f.employee_id as faculty_emp_id, f.designation as faculty_designation, l.location, l.id as laboratory_id
+      SELECT 
+        t.*, 
+        f.employee_id as faculty_emp_id, 
+        f.designation as faculty_designation, 
+        l.location, 
+        l.id as laboratory_id
       FROM timetable_entries t
-      LEFT JOIN faculty f ON (f.employee_id LIKE '%' || t.faculty_abbr || '%' OR lower(t.faculty_name) LIKE '%' || lower(t.faculty_name) || '%')
-      LEFT JOIN laboratories l ON (l.code = t.subject_code OR (l.semester = t.semester AND l.name LIKE '%' || t.subject_abbr || '%'))
-      ORDER BY t.semester ASC, t.day_of_week ASC, t.slot_index ASC
+      LEFT JOIN laboratories l ON (l.code = t.subject_code)
+      LEFT JOIN faculty f ON (f.employee_id = 'GNDEC-FAC-' || t.faculty_abbr)
+      GROUP BY t.id
+      ORDER BY 
+        t.semester ASC, 
+        CASE upper(t.day_of_week)
+          WHEN 'MONDAY' THEN 1
+          WHEN 'TUESDAY' THEN 2
+          WHEN 'WEDNESDAY' THEN 3
+          WHEN 'THURSDAY' THEN 4
+          WHEN 'FRIDAY' THEN 5
+          WHEN 'SATURDAY' THEN 6
+          ELSE 7
+        END,
+        t.slot_index ASC
     `).all();
 
     // Group by semester
-    const grouped: Record<number, any[]> = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [] };
+    const grouped: Record<number, any[]> = { 3: [], 5: [], 7: [] };
     for (const entry of entries) {
-      if (!grouped[(entry as any).semester]) {
-        grouped[(entry as any).semester] = [];
+      const sem = (entry as any).semester;
+      if (!grouped[sem]) {
+        grouped[sem] = [];
       }
-      grouped[(entry as any).semester].push(entry);
+      grouped[sem].push(entry);
     }
 
     return res.json({ success: true, timetables: grouped, allEntries: entries });
@@ -30,16 +48,22 @@ router.get('/', (_req, res) => {
   }
 });
 
-// GET /api/timetable/:semester - get timetable for specific semester (1 through 8) with optional ?day=MONDAY
+// GET /api/timetable/:semester - get timetable for specific semester with optional ?day=MONDAY
 router.get('/:semester', (req, res) => {
   try {
     const sem = parseInt(req.params.semester, 10);
     const day = req.query.day ? String(req.query.day).toUpperCase() : null;
 
     let sql = `
-      SELECT t.*, l.location, l.id as laboratory_id
+      SELECT 
+        t.*, 
+        l.location, 
+        l.id as laboratory_id,
+        f.employee_id as faculty_emp_id,
+        f.designation as faculty_designation
       FROM timetable_entries t
-      LEFT JOIN laboratories l ON (l.code = t.subject_code OR (l.semester = t.semester AND l.name LIKE '%' || t.subject_abbr || '%'))
+      LEFT JOIN laboratories l ON (l.code = t.subject_code)
+      LEFT JOIN faculty f ON (f.employee_id = 'GNDEC-FAC-' || t.faculty_abbr)
       WHERE t.semester = ?
     `;
     const params: any[] = [sem];
@@ -50,6 +74,7 @@ router.get('/:semester', (req, res) => {
     }
 
     sql += `
+      GROUP BY t.id
       ORDER BY 
         CASE upper(t.day_of_week)
           WHEN 'MONDAY' THEN 1
@@ -67,6 +92,7 @@ router.get('/:semester', (req, res) => {
 
     return res.json({ success: true, semester: sem, day: day || 'ALL', entries });
   } catch (err: any) {
+    console.error('Error fetching semester timetable:', err);
     return res.status(500).json({ success: false, error: 'Failed to fetch semester timetable.' });
   }
 });
